@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>The Archivist</title>
+  <title>Diablo II Items Viewer</title>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script>
+    const devEnv = false; // set true for dev mode
 /* Tiny $ helper fallback if jQuery CDN is unavailable.
    Supports only methods used by this page. */
 (function(){
@@ -195,6 +196,8 @@
     }
 
     .fileHidden{position:absolute;left:-99999px;top:-99999px;width:1px;height:1px;opacity:0;pointer-events:none;}
+
+    .dev-only{display:none;}
 
     .controls .btn{
       white-space:nowrap;
@@ -400,11 +403,11 @@
 
       <input id="fileAny" class="fileHidden" type="file" accept=".json,application/json" />
 
-      <div class="btn" id="loadWeaponsBtn">Load Weapons.json</div>
-      <div class="btn" id="loadArmorsBtn">Load Armors.json</div>
+      <div class="btn dev-only" id="loadWeaponsBtn">Load Weapons.json</div>
+      <div class="btn dev-only" id="loadArmorsBtn">Load Armors.json</div>
 
-      <div class="btn" id="autoloadWeapons">Auto-load Weapons.json</div>
-      <div class="btn" id="autoloadArmors">Auto-load Armors.json</div>
+      
+      
 
       <input id="search" type="text" placeholder="Search item name…" />
       <select id="typeFilter" style="max-width:240px;">
@@ -436,6 +439,7 @@
   </div>
 
   <script>
+    const devEnv = false; // set true for dev mode
     const WEAPONS_PATH = "Weapons.json";
     const ARMORS_PATH  = "Armors.json";
 
@@ -859,6 +863,13 @@
 
     // ---- Boot ----
     $(function(){
+      if (devEnv) {
+        $(".dev-only").show();
+      } else {
+        autoLoad("weapons", WEAPONS_PATH);
+        autoLoad("armors", ARMORS_PATH);
+      }
+
       $("#tabWeapons").on("click", () => setTab("weapons"));
       $("#tabArmors").on("click", () => setTab("armors"));
 
