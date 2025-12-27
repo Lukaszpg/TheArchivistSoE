@@ -418,7 +418,7 @@
       </select>
       <div class="btn" id="reset">Reset</div>
 
-      <div class="hint" id="hint">
+      <div class="hint dev-hint" id="hint">
         Load JSON via buttons (file picker = CORS-safe). Auto-load works only when served from the same origin.
       </div>
     </div>
@@ -439,7 +439,6 @@
   </div>
 
   <script>
-    const devEnv = false; // set true for dev mode
     const WEAPONS_PATH = "Weapons.json";
     const ARMORS_PATH  = "Armors.json";
 
@@ -865,7 +864,9 @@
     $(function(){
       if (devEnv) {
         $(".dev-only").show();
+        $(".dev-hint").show();
       } else {
+        $(".dev-hint").hide();
         autoLoad("weapons", WEAPONS_PATH);
         autoLoad("armors", ARMORS_PATH);
       }
