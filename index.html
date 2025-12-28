@@ -611,6 +611,14 @@
       const $sock = $("#socketsFilter").empty();
       $sock.append(`<option value="">All sockets</option>`);
 
+      // Show sockets filter only for weapons
+      if (currentTab === "weapons") {
+        $("#socketsFilter").show();
+      } else {
+        $("#socketsFilter").hide();
+        $("#socketsFilter").val("");
+      }
+
       if (!items.length) return;
 
       const typeFn = (currentTab === "weapons") ? weaponTypeForFilter : armorTypeForFilter;
@@ -625,12 +633,15 @@
       });
       tiers.forEach(t => $tier.append(`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`));
 
-      const socks = Array.from(new Set(items.map(it => getSocketsCount(it)).filter(s => s !== ""))).sort((a,b)=>{
-        const an = Number(a), bn = Number(b);
-        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
-        return a.localeCompare(b);
-      });
-      socks.forEach(s => $sock.append(`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`));
+      if (currentTab === "weapons") {
+        // weapons: build sockets values (typically from maxSockets / sockets / socketCount)
+        const socks = Array.from(new Set(items.map(it => getSocketsCount(it)).filter(s => s !== ""))).sort((a,b)=>{
+          const an = Number(a), bn = Number(b);
+          if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+          return a.localeCompare(b);
+        });
+        socks.forEach(s => $sock.append(`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`));
+      }
     }
 
     function applyFilters(){
@@ -656,8 +667,11 @@
         const okType = !type || itType === type;
         const itTier = n(it.itemTier);
         const okTier = !tier || itTier === tier;
-        const itSockets = getSocketsCount(it);
-        const okSockets = !sockets || itSockets === sockets;
+        let okSockets = true;
+        if (currentTab === "weapons") {
+          const itSockets = getSocketsCount(it);
+          okSockets = !sockets || itSockets === sockets;
+        }
         return okName && okType && okTier && okSockets;
       });
 
@@ -756,12 +770,6 @@
       if (nz(w.requiredLevel)) {
         $t.append(lineKV("Required Level:", n(w.requiredLevel), "req"));
         }
-
-      
-      if (has(w.onlyClassDisplayText)) {
-        $t.append(`<div class="hr"></div>`);
-        $t.append(`<div class="line onlyClass">${escapeHtml(w.onlyClassDisplayText)}</div>`);
-      }
 const reqs = [];
       if (nz(w.requiredStrength)) reqs.push({k:"Required Strength", v:n(w.requiredStrength)});
       if (nz(w.requiredDexterity)) reqs.push({k:"Required Dexterity", v:n(w.requiredDexterity)});
@@ -779,6 +787,10 @@ const reqs = [];
       }
 
       $t.append(`<div class="hr"></div>`);
+      if (has(w.onlyClassDisplayText)) {
+        $t.append(`<div class="line onlyClass">${escapeHtml(w.onlyClassDisplayText)}</div>`);
+      }
+
       $t.append(lineKV("Code:", n(w.code), "dim"));
     }
 
@@ -814,17 +826,15 @@ const reqs = [];
       if (nz(a.requiredLevel)) {
         $t.append(lineKV("Required Level:", n(a.requiredLevel), "req"));
         }
-
-      
-      if (has(a.onlyClassDisplayText)) {
-        $t.append(`<div class="hr"></div>`);
-        $t.append(`<div class="line onlyClass">${escapeHtml(a.onlyClassDisplayText)}</div>`);
-      }
 if (nz(a.requiredStrength)) {
         $t.append(lineKV("Required Strength:", n(a.requiredStrength), "req"));
       }
 
       $t.append(`<div class="hr"></div>`);
+      if (has(a.onlyClassDisplayText)) {
+        $t.append(`<div class="line onlyClass">${escapeHtml(a.onlyClassDisplayText)}</div>`);
+      }
+
       $t.append(lineKV("Code:", n(a.code), "dim"));
     }
 
