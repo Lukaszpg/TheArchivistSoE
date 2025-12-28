@@ -416,6 +416,9 @@
       <select id="tierFilter" style="max-width:180px;">
         <option value="">All tiers</option>
       </select>
+      <select id="socketsFilter" style="max-width:190px;">
+        <option value="">All sockets</option>
+      </select>
       <div class="btn" id="reset">Reset</div>
 
       <div class="hint dev-hint" id="hint">
@@ -446,6 +449,13 @@
     const n = (v) => (v === null || v === undefined) ? "" : String(v).trim();
     const has = (v) => n(v) !== "";
     const nz = (v) => has(v) && n(v) !== "0";
+
+    function getSocketsCount(it){
+      // Prefer maxSockets; fall back to sockets/socketCount if present
+      const v = (it && (it.maxSockets ?? it.sockets ?? it.socketCount)) ?? "";
+      return n(v);
+    }
+
     const fmtSigned = (v) => {
       if(!has(v)) return "";
       const x = Number(v);
@@ -598,6 +608,9 @@
       const $tier = $("#tierFilter").empty();
       $tier.append(`<option value="">All tiers</option>`);
 
+      const $sock = $("#socketsFilter").empty();
+      $sock.append(`<option value="">All sockets</option>`);
+
       if (!items.length) return;
 
       const typeFn = (currentTab === "weapons") ? weaponTypeForFilter : armorTypeForFilter;
@@ -606,18 +619,25 @@
       types.forEach(t => $type.append(`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`));
 
       const tiers = Array.from(new Set(items.map(it => n(it.itemTier)).filter(Boolean))).sort((a,b)=>{
-        // numeric-aware sort if possible
         const an = Number(a), bn = Number(b);
         if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
         return a.localeCompare(b);
       });
       tiers.forEach(t => $tier.append(`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`));
+
+      const socks = Array.from(new Set(items.map(it => getSocketsCount(it)).filter(s => s !== ""))).sort((a,b)=>{
+        const an = Number(a), bn = Number(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b);
+      });
+      socks.forEach(s => $sock.append(`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`));
     }
 
     function applyFilters(){
       const q = $("#search").val().trim().toLowerCase();
       const type = $("#typeFilter").val();
       const tier = $("#tierFilter").val();
+      const sockets = $("#socketsFilter").val();
 
       if (!items.length){
         $("#count").text("0 items");
@@ -636,7 +656,9 @@
         const okType = !type || itType === type;
         const itTier = n(it.itemTier);
         const okTier = !tier || itTier === tier;
-        return okName && okType && okTier;
+        const itSockets = getSocketsCount(it);
+        const okSockets = !sockets || itSockets === sockets;
+        return okName && okType && okTier && okSockets;
       });
 
       $("#count").text(`${filtered.length} items`);
@@ -883,10 +905,12 @@
       $("#search").on("input", applyFilters);
       $("#typeFilter").on("change", applyFilters);
       $("#tierFilter").on("change", applyFilters);
+      $("#socketsFilter").on("change", applyFilters);
       $("#reset").on("click", () => {
         $("#search").val("");
         $("#typeFilter").val("");
         $("#tierFilter").val("");
+        $("#socketsFilter").val("");
         applyFilters();
       });
 
