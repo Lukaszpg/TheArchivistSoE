@@ -610,14 +610,7 @@
 
       const $sock = $("#socketsFilter").empty();
       $sock.append(`<option value="">All sockets</option>`);
-
-      // Show sockets filter only for weapons
-      if (currentTab === "weapons") {
-        $("#socketsFilter").show();
-      } else {
-        $("#socketsFilter").hide();
-        $("#socketsFilter").val("");
-      }
+      $("#socketsFilter").show();
 
       if (!items.length) return;
 
@@ -633,15 +626,12 @@
       });
       tiers.forEach(t => $tier.append(`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`));
 
-      if (currentTab === "weapons") {
-        // weapons: build sockets values (typically from maxSockets / sockets / socketCount)
-        const socks = Array.from(new Set(items.map(it => getSocketsCount(it)).filter(s => s !== ""))).sort((a,b)=>{
-          const an = Number(a), bn = Number(b);
-          if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
-          return a.localeCompare(b);
-        });
-        socks.forEach(s => $sock.append(`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`));
-      }
+      const socks = Array.from(new Set(items.map(it => getSocketsCount(it)).filter(s => s !== ""))).sort((a,b)=>{
+        const an = Number(a), bn = Number(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b);
+      });
+      socks.forEach(s => $sock.append(`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`));
     }
 
     function applyFilters(){
@@ -667,11 +657,8 @@
         const okType = !type || itType === type;
         const itTier = n(it.itemTier);
         const okTier = !tier || itTier === tier;
-        let okSockets = true;
-        if (currentTab === "weapons") {
-          const itSockets = getSocketsCount(it);
-          okSockets = !sockets || itSockets === sockets;
-        }
+        const itSockets = getSocketsCount(it);
+        const okSockets = !sockets || itSockets === sockets;
         return okName && okType && okTier && okSockets;
       });
 
@@ -750,6 +737,9 @@
 
       $t.append(`<div class="tipTitle">${escapeHtml(title)}</div>`);
       $t.append(`<div class="tipSubtitle">${escapeHtml(weaponTypeLabel(w))}</div>`);
+      if (has(w.onlyClassDisplayText)) {
+        $t.append(`<div class="line onlyClassTop">${escapeHtml(w.onlyClassDisplayText)}</div>`);
+      }
       $t.append(`<div class="hr"></div>`);
 
       if (has(w.itemTier)) $t.append(lineKV("Item Tier:", n(w.itemTier), "dim"));
@@ -786,12 +776,7 @@ const reqs = [];
         hints.forEach(h => $t.append(`<div class="line dim">${escapeHtml(h)}</div>`));
       }
 
-      $t.append(`<div class="hr"></div>`);
-      if (has(w.onlyClassDisplayText)) {
-        $t.append(`<div class="line onlyClass">${escapeHtml(w.onlyClassDisplayText)}</div>`);
-      }
-
-      $t.append(lineKV("Code:", n(w.code), "dim"));
+      $t.append(`<div class="hr"></div>`);$t.append(lineKV("Code:", n(w.code), "dim"));
     }
 
     function renderArmorTooltip(a){
@@ -800,6 +785,9 @@ const reqs = [];
 
       $t.append(`<div class="tipTitle">${escapeHtml(title)}</div>`);
       $t.append(`<div class="tipSubtitle">${escapeHtml(armorTypeLabel(a))}</div>`);
+      if (has(a.onlyClassDisplayText)) {
+        $t.append(`<div class="line onlyClassTop">${escapeHtml(a.onlyClassDisplayText)}</div>`);
+      }
       $t.append(`<div class="hr"></div>`);
 
       if (has(a.itemTier)) $t.append(lineKV("Item Tier:", n(a.itemTier), "dim"));
@@ -830,12 +818,7 @@ if (nz(a.requiredStrength)) {
         $t.append(lineKV("Required Strength:", n(a.requiredStrength), "req"));
       }
 
-      $t.append(`<div class="hr"></div>`);
-      if (has(a.onlyClassDisplayText)) {
-        $t.append(`<div class="line onlyClass">${escapeHtml(a.onlyClassDisplayText)}</div>`);
-      }
-
-      $t.append(lineKV("Code:", n(a.code), "dim"));
+      $t.append(`<div class="hr"></div>`);$t.append(lineKV("Code:", n(a.code), "dim"));
     }
 
     // ---- Loading ----
