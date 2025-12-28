@@ -8,7 +8,7 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script>
-    const devEnv = false; // set true for dev mode
+    const devEnv = true; // set true for dev mode
 /* Tiny $ helper fallback if jQuery CDN is unavailable.
    Supports only methods used by this page. */
 (function(){
@@ -364,11 +364,17 @@
     .kv span:first-child{
       min-width: 220px;
     }
+    .codeLink{color: var(--c-blue); text-decoration: underline; cursor: pointer;}
+    .codeLink:hover{filter: brightness(1.15);}
+
     .kv span:last-child{
       text-align: right;
       white-space: nowrap;
     }
     .kv span:first-child{ color: rgba(255,255,255,0.82); }
+    .codeLink{color: var(--c-blue); text-decoration: underline; cursor: pointer;}
+    .codeLink:hover{filter: brightness(1.15);}
+
     .kv span:last-child{ color: rgba(255,255,255,0.92); }
 
     .emptyState{
@@ -573,6 +579,16 @@
       `;
     }
 
+    function lineKVHtml(k, vHtml, extraClass=""){
+      const cls = ("line kv " + (extraClass || "")).trim();
+      return `
+        <div class="${cls}">
+          <span>${escapeHtml(k)}</span>
+          <span>${vHtml}</span>
+        </div>
+      `;
+    }
+
     // ---- State ----
     let weapons = null;
     let armors  = null;
@@ -757,7 +773,7 @@
         $t.append(lineKV("Durability:", n(w.durability)));
       }
 
-      if (has(w.level)) $t.append(lineKV("Item Level:", n(w.level)));
+      if (has(w.level)) $t.append(lineKV("Quality level:", n(w.level)));
 
       if (nz(w.requiredLevel)) {
         $t.append(lineKV("Required Level:", n(w.requiredLevel), "req"));
@@ -778,7 +794,25 @@ const reqs = [];
         hints.forEach(h => $t.append(`<div class="line dim">${escapeHtml(h)}</div>`));
       }
 
-      $t.append(`<div class="hr"></div>`);$t.append(lineKV("Code:", n(w.code), "dim"));
+      $t.append(`<div class="hr"></div>`);if (has(w.normalItemDisplayName)) {
+        const disp = n(w.normalItemDisplayName);
+        const c = n(w.normalTierCode);
+        const link = c ? `<a href="#" class="codeLink" data-code="${escapeHtml(c)}">${escapeHtml(disp)}</a>` : `<a href="#" class="codeLink" data-name="${escapeHtml(disp)}">${escapeHtml(disp)}</a>`;
+        $t.append(lineKVHtml("Normal tier item:", link, "dim"));
+      }
+if (has(w.exceptionalItemDisplayName)) {
+        const disp = n(w.exceptionalItemDisplayName);
+        const c = n(w.exceptionalTierCode);
+        const link = c ? `<a href="#" class="codeLink" data-code="${escapeHtml(c)}">${escapeHtml(disp)}</a>` : `<a href="#" class="codeLink" data-name="${escapeHtml(disp)}">${escapeHtml(disp)}</a>`;
+        $t.append(lineKVHtml("Exceptional tier item:", link, "dim"));
+      }
+if (has(w.eliteItemDisplayName)) {
+        const disp = n(w.eliteItemDisplayName);
+        const c = n(w.eliteTierCode);
+        const link = c ? `<a href="#" class="codeLink" data-code="${escapeHtml(c)}">${escapeHtml(disp)}</a>` : `<a href="#" class="codeLink" data-name="${escapeHtml(disp)}">${escapeHtml(disp)}</a>`;
+        $t.append(lineKVHtml("Elite tier item:", link, "dim"));
+      }
+      $t.append(lineKV("Code:", n(w.code), "dim"));
     }
 
     function renderArmorTooltip(a){
@@ -810,7 +844,7 @@ const reqs = [];
       }
 
       if (has(a.level)) {
-        $t.append(lineKV("Item Level:", n(a.level)));
+        $t.append(lineKV("Quality level:", n(a.level)));
       }
 
       if (nz(a.requiredLevel)) {
@@ -820,7 +854,25 @@ if (nz(a.requiredStrength)) {
         $t.append(lineKV("Required Strength:", n(a.requiredStrength), "req"));
       }
 
-      $t.append(`<div class="hr"></div>`);$t.append(lineKV("Code:", n(a.code), "dim"));
+      $t.append(`<div class="hr"></div>`);if (has(a.normalItemDisplayName)) {
+        const disp = n(a.normalItemDisplayName);
+        const c = n(a.normalTierCode);
+        const link = c ? `<a href="#" class="codeLink" data-code="${escapeHtml(c)}">${escapeHtml(disp)}</a>` : `<a href="#" class="codeLink" data-name="${escapeHtml(disp)}">${escapeHtml(disp)}</a>`;
+        $t.append(lineKVHtml("Normal tier item:", link, "dim"));
+      }
+if (has(a.exceptionalItemDisplayName)) {
+        const disp = n(a.exceptionalItemDisplayName);
+        const c = n(a.exceptionalTierCode);
+        const link = c ? `<a href="#" class="codeLink" data-code="${escapeHtml(c)}">${escapeHtml(disp)}</a>` : `<a href="#" class="codeLink" data-name="${escapeHtml(disp)}">${escapeHtml(disp)}</a>`;
+        $t.append(lineKVHtml("Exceptional tier item:", link, "dim"));
+      }
+if (has(a.eliteItemDisplayName)) {
+        const disp = n(a.eliteItemDisplayName);
+        const c = n(a.eliteTierCode);
+        const link = c ? `<a href="#" class="codeLink" data-code="${escapeHtml(c)}">${escapeHtml(disp)}</a>` : `<a href="#" class="codeLink" data-name="${escapeHtml(disp)}">${escapeHtml(disp)}</a>`;
+        $t.append(lineKVHtml("Elite tier item:", link, "dim"));
+      }
+      $t.append(lineKV("Code:", n(a.code), "dim"));
     }
 
     // ---- Loading ----
@@ -889,6 +941,47 @@ if (nz(a.requiredStrength)) {
 
     // ---- Boot ----
     $(function(){
+      function jumpToItemByCode(code){
+        const c = (code || "").trim();
+        if (!c) return;
+
+        // Try within current filtered list first
+        let idx = filtered.findIndex(it => (n(it.code) === c));
+        if (idx >= 0) { setActive(idx); return; }
+
+        // If not visible due to filters, clear filters and retry
+        $("#search").val("");
+        $("#typeFilter").val("");
+        $("#tierFilter").val("");
+        $("#socketsFilter").val("");
+        applyFilters();
+        idx = filtered.findIndex(it => (n(it.code) === c));
+        if (idx >= 0) { setActive(idx); }
+      }
+
+      $("#tooltip").on("click", ".codeLink", function(e){
+        e.preventDefault();
+        const code = $(this).data("code");
+        const name = $(this).data("name");
+        if (code) {
+          jumpToItemByCode(code);
+          return;
+        }
+        const nm = (name || "").trim().toLowerCase();
+        if (!nm) return;
+        let idx = filtered.findIndex(it => (n(it.displayName) || n(it.name)).toLowerCase() === nm);
+        if (idx >= 0) { setActive(idx); return; }
+        $("#search").val("");
+        $("#typeFilter").val("");
+        $("#tierFilter").val("");
+        $("#socketsFilter").val("");
+        applyFilters();
+        idx = filtered.findIndex(it => (n(it.displayName) || n(it.name)).toLowerCase() === nm);
+        if (idx >= 0) { setActive(idx); }
+
+      });
+
+
       if (devEnv) {
         $(".dev-only").show();
         $(".dev-hint").show();
