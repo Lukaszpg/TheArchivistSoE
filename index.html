@@ -8,7 +8,7 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script>
-    const devEnv = true; // set true for dev mode
+    const devEnv = false; // set true for dev mode
 /* Tiny $ helper fallback if jQuery CDN is unavailable.
    Supports only methods used by this page. */
 (function(){
@@ -916,7 +916,12 @@ if (has(a.eliteItemDisplayName)) {
         })
         .fail((xhr) => {
           console.warn("Auto-load failed:", xhr);
-          showError(`Auto-load failed for ${path} (CORS/file://). Use the file picker.`);
+          // In prod mode, reveal manual controls so the page is still usable.
+          if (!devEnv) {
+            enableManualLoading(`Auto-load failed for ${path}. If you opened this via file://, browsers block JSON reads. Serve it from the same origin or use the Load buttons.`);
+          } else {
+            showError(`Auto-load failed for ${path} (CORS/file://). Use the file picker.`);
+          }
         });
     }
 
@@ -982,7 +987,18 @@ if (has(a.eliteItemDisplayName)) {
       });
 
 
-      if (devEnv) {
+      
+      function enableManualLoading(msg){
+        // Reveal manual load buttons + hint even in prod mode if auto-load fails
+        $(".dev-only").show();
+        $(".dev-hint").show();
+        if (msg) {
+          showError(msg);
+        } else {
+          showError("Auto-load failed. Use the Load buttons to pick JSON files.");
+        }
+      }
+if (devEnv) {
         $(".dev-only").show();
         $(".dev-hint").show();
       } else {
