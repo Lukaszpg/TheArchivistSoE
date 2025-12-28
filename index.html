@@ -390,7 +390,9 @@
       .tooltip{ position: relative; top:auto; }
       .list{ max-height: 46vh; }
     }
-  </style>
+  
+    /* Force class restriction line styling (wins over .line / inherited tooltip styles) */
+    .tooltip </style>
 </head>
 
 <body>
@@ -738,7 +740,7 @@
       $t.append(`<div class="tipTitle">${escapeHtml(title)}</div>`);
       $t.append(`<div class="tipSubtitle">${escapeHtml(weaponTypeLabel(w))}</div>`);
       if (has(w.onlyClassDisplayText)) {
-        $t.append(`<div class="line onlyClassTop">${escapeHtml(w.onlyClassDisplayText)}</div>`);
+        $t.append(`<div class="line onlyClassTop" style="color:#ff0000;text-align:center;display:block;width:100%;">${escapeHtml(w.onlyClassDisplayText)}</div>`);
       }
       $t.append(`<div class="hr"></div>`);
 
@@ -786,7 +788,7 @@ const reqs = [];
       $t.append(`<div class="tipTitle">${escapeHtml(title)}</div>`);
       $t.append(`<div class="tipSubtitle">${escapeHtml(armorTypeLabel(a))}</div>`);
       if (has(a.onlyClassDisplayText)) {
-        $t.append(`<div class="line onlyClassTop">${escapeHtml(a.onlyClassDisplayText)}</div>`);
+        $t.append(`<div class="line onlyClassTop" style="color:#ff0000;text-align:center;display:block;width:100%;">${escapeHtml(a.onlyClassDisplayText)}</div>`);
       }
       $t.append(`<div class="hr"></div>`);
 
