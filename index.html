@@ -330,7 +330,7 @@
       letter-spacing: 0.6px;
       margin-top: 4px;
       margin-bottom: 8px;
-      color: var(--c-blue);
+      color: var(--c-white);
       text-shadow: 0 2px 0 rgba(0,0,0,0.7);
     }
     .tipSubtitle{
@@ -757,7 +757,12 @@
         $t.append(lineKV("Required Level:", n(w.requiredLevel), "req"));
         }
 
-      const reqs = [];
+      
+      if (has(w.onlyClassDisplayText)) {
+        $t.append(`<div class="hr"></div>`);
+        $t.append(`<div class="line onlyClass">${escapeHtml(w.onlyClassDisplayText)}</div>`);
+      }
+const reqs = [];
       if (nz(w.requiredStrength)) reqs.push({k:"Required Strength", v:n(w.requiredStrength)});
       if (nz(w.requiredDexterity)) reqs.push({k:"Required Dexterity", v:n(w.requiredDexterity)});
 
@@ -810,7 +815,12 @@
         $t.append(lineKV("Required Level:", n(a.requiredLevel), "req"));
         }
 
-      if (nz(a.requiredStrength)) {
+      
+      if (has(a.onlyClassDisplayText)) {
+        $t.append(`<div class="hr"></div>`);
+        $t.append(`<div class="line onlyClass">${escapeHtml(a.onlyClassDisplayText)}</div>`);
+      }
+if (nz(a.requiredStrength)) {
         $t.append(lineKV("Required Strength:", n(a.requiredStrength), "req"));
       }
 
