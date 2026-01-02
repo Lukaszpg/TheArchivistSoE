@@ -153,39 +153,28 @@ function armorDefenseLine(a) {
   return "";
 }
 
-function useJson(url) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+function useJson(fileName) {
+  const [state, setState] = React.useState({
+    loading: true,
+    data: [],
+    error: null,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
+  React.useEffect(() => {
+    const url = `${import.meta.env.BASE_URL}data/${fileName}`;
 
     fetch(url)
       .then((r) => {
-        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
-      .then((json) => {
-        if (cancelled) return;
-        const arr = Array.isArray(json) ? json : [];
-        setData(filterVisible(arr));
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      .then((data) => setState({ loading: false, data, error: null }))
+      .catch((err) =>
+        setState({ loading: false, data: [], error: err.message })
+      );
+  }, [fileName]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [url]);
-
-  return { data, loading, error };
+  return state;
 }
 
 function lineKV(k, v, extraClass = "", tooltipText = "") {
@@ -753,10 +742,10 @@ function TabsBar({ tab, setTab }) {
 }
 
 export default function App() {
-  const weapons = useJson("/data/Weapons.json");
-  const armors = useJson("/data/Armors.json");
-  const uniques = useJson("/data/Uniques.json");
-  const runewords = useJson("/data/Runewords.json");
+  const weapons = useJson("Weapons.json");
+  const armors = useJson("Armors.json");
+  const uniques = useJson("Uniques.json");
+  const runewords = useJson("Runewords.json");
 
   const [tab, setTab] = useState("weapons");
   const dataset =
