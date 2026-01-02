@@ -153,29 +153,40 @@ function armorDefenseLine(a) {
   return "";
 }
 
-function useJson(fileName) {
-  const [state, setState] = React.useState({
-    loading: true,
-    data: [],
-    error: null,
-  });
+function useJson(url) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  React.useEffect(() => {
-    const url = `${import.meta.env.BASE_URL}data/${fileName}`;
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
 
-    fetch(url)
+    fetch(url, { cache: "no-store" })
       .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
         return r.json();
       })
-      .then((data) => setState({ loading: false, data, error: null }))
-      .catch((err) =>
-        setState({ loading: false, data: [], error: err.message })
-      );
-  }, [fileName]);
+      .then((json) => {
+        if (cancelled) return;
+        setData(filterVisible(Array.isArray(json) ? json : []));
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setError(e instanceof Error ? e : new Error(String(e)));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-  return state;
-}
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  return { data, loading, error };
+
 
 function lineKV(k, v, extraClass = "", tooltipText = "") {
   var showTooltip = tooltipText !== null && tooltipText !== "";
