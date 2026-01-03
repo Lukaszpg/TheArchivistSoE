@@ -664,7 +664,7 @@ function UniqueTooltip({ u }) {
   const hasDropSource = dropSource !== null && dropSource !== undefined && String(dropSource).trim() !== "";
   const hasDropRate = dropRate !== null && dropRate !== undefined && String(dropRate).trim() !== "";
   const hasOccurrenceChance = occurrenceChance !== null && occurrenceChance !== undefined && String(occurrenceChance).trim() !== "";
-  const hasDropInfo = hasDropSource || hasDropRate;
+  const hasDropInfo = hasDropSource || hasDropRate || hasOccurrenceChance;
   const itemType = getItemTypeForUnique(u);
   const requiredLevel = getRequiredLevelForUnique(u, itemType);
   const requiredDexterity = getRequiredDexterityForUnique(u, itemType);
