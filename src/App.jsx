@@ -98,7 +98,9 @@ const ARMOR_TYPE_MAP = {
 
 const TOOLTIPS_TEXT_MAP = {
   "qualityLevel": "Quality level is a stat that determines to\n which treasure class the item belongs. \nIt's important for gambling (higher quality\n level means lower chance to upgrade the\n item tier) and unique item drop generation,\n as items with higher quality level tend\n to drop less.",
-  "runes": "Runes here are shown in the exact order you should put them in your item to create a runeword."
+  "runes": "Runes here are shown in the exact order you should put them in your item to create a runeword.",
+  "occurrenceChance": "Occurrence chance is chance for this item to\n drop when the game rolls an unique item on\n base and base has more than one unique item\n attached to it.",
+  "dropRate": "Drop rate is chance for this item to drop from\n specific monster, most likely from Uber Boss."
 };
 
 function armorTypeLabel(a) {
@@ -730,8 +732,8 @@ function UniqueTooltip({ u }) {
           <div className="dropHeader">Drop information</div>
 
           {hasDropSource && lineKV("Drop Source:", String(dropSource), "dim")}
-          {hasDropRate && lineKV("Drop Rate:", String(dropRate), "dim")}
-          {hasOccurrenceChance && lineKV("Occurence chance:", String(occurrenceChance), "dim")}
+          {hasDropRate && lineKV("Drop Rate:", String(dropRate), "dim", TOOLTIPS_TEXT_MAP["dropRate"])}
+          {hasOccurrenceChance && lineKV("Occurence chance:", String(occurrenceChance), "dim", TOOLTIPS_TEXT_MAP["occurrenceChance"])}
         </>
       ) : null}
     </>
