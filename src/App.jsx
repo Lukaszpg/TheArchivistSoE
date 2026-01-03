@@ -7,6 +7,8 @@ const TABS = {
   runewords: "Runewords",
 };
 
+const TAB_KEYS = ["weapons", "armors", "uniques", "runewords"];
+
 // ---- tiny helpers ----
 const n = (v) => (v === null || v === undefined ? "" : String(v).trim());
 const has = (v) => n(v) !== "";
@@ -265,10 +267,12 @@ function FiltersBar({
   showSockets,
   showUber,
   typePlaceholder,
+  searchInputRef
 }) {
   return (
     <div className="filtersPanel">
       <input
+        ref={searchInputRef}
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
@@ -763,6 +767,8 @@ export default function App() {
   const uniques = useJson("Uniques.json");
   const runewords = useJson("Runewords.json");
 
+  const searchInputRef = React.useRef(null);
+
   const [tab, setTab] = useState("weapons");
   const dataset =
   tab === "weapons" ? weapons :
@@ -914,28 +920,58 @@ export default function App() {
 
   useEffect(() => {
     function onKeyDown(e) {
-      // Do not interfere with typing in inputs/selects
-      const tag = e.target.tagName;
+
+      if (e.key === "Escape") {
+        if (document.activeElement === searchInputRef.current) {
+          e.preventDefault();
+          searchInputRef.current.blur();
+          return;
+        }
+      }
+
+      if (e.ctrlKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
+      const tag = e.target?.tagName;
       if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
 
+      // Item navigation
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setActiveIndex((i) =>
-          Math.min(i + 1, filtered.length - 1)
+          Math.min(i + 1, Math.max(filtered.length - 1, 0))
         );
+        return;
       }
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        setActiveIndex((i) =>
-          Math.max(i - 1, 0)
-        );
+        setActiveIndex((i) => Math.max(i - 1, 0));
+        return;
+      }
+
+      // Tab navigation
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        e.preventDefault();
+
+        const idx = TAB_KEYS.indexOf(tab);
+        if (idx === -1) return;
+
+        const dir = e.key === "ArrowRight" ? 1 : -1;
+        const next =
+          (idx + dir + TAB_KEYS.length) % TAB_KEYS.length;
+
+        setTab(TAB_KEYS[next]);
       }
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [filtered.length]);
+  }, [tab, filtered.length]);
 
 
   const subLabel = useMemo(() => {
@@ -1044,6 +1080,7 @@ export default function App() {
         showSockets={showSockets}
         showUber={tab === "uniques"}
         typePlaceholder={typePlaceholder}
+        searchInputRef={searchInputRef}
       />
 
       <ListPanel
