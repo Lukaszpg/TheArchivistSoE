@@ -96,7 +96,7 @@ const ARMOR_TYPE_MAP = {
 
 const TOOLTIPS_TEXT_MAP = {
   "qualityLevel": "Quality level is a stat that determines to\n which treasure class the item belongs. \nIt's important for gambling (higher quality\n level means lower chance to upgrade the\n item tier) and unique item drop generation,\n as items with higher quality level tend\n to drop less.",
-  "runes": "Runes here are shown in the exact order\n you should put them in your item to create\n a runeword."
+  "runes": "Runes here are shown in the exact order you should put them in your item to create a runeword."
 };
 
 function armorTypeLabel(a) {
@@ -606,11 +606,11 @@ function RunewordTooltip({ rw }) {
       {types.length ? <div className="tipSubtitle">{types.join(" / ")}</div> : null}
 
       <div className="hr" />
-      {runes.length ? lineKV("Runes:", runes.join(" · "), "dim", TOOLTIPS_TEXT_MAP["runes"]) : null}
+      {runes.length ? <div class="runesDisplay"><Tip text={String(TOOLTIPS_TEXT_MAP["runes"])}>{runes.join(" · ")}</Tip></div> : null}
 
       <div className="hr" />
       <div className="uniqueHeader">Properties</div>
-      {mods.length ? mods.map((m, i) => <div key={i} className="line">{String(m)}</div>) : <div className="line dim">No properties listed.</div>}
+      {mods.length ? mods.map((m, i) => <div key={i} className="runeModLine">{String(m)}</div>) : <div className="line dim">No properties listed.</div>}
 
       {(shield.length || weapon.length || armor.length) ? (
         <>
@@ -618,19 +618,19 @@ function RunewordTooltip({ rw }) {
           <div className="dropHeader">Additional mods from runes</div>
           {shield.length ? (
             <>
-              {shield.map((s, i) => <div key={`s-${i}`} className="line">{String(s)}</div>)}
+              {shield.map((s, i) => <div key={`s-${i}`} className="runeModLine">{String(s)}</div>)}
             </>
           ) : null}
 
           {weapon.length ? (
             <>
-              {weapon.map((w, i) => <div key={`w-${i}`} className="line">{String(w)}</div>)}
+              {weapon.map((w, i) => <div key={`w-${i}`} className="runeModLine">{String(w)}</div>)}
             </>
           ) : null}
 
           {armor.length ? (
             <>
-              {armor.map((a, i) => <div key={`a-${i}`} className="line">{String(a)}</div>)}
+              {armor.map((a, i) => <div key={`a-${i}`} className="runeModLine">{String(a)}</div>)}
             </>
           ) : null}
         </>

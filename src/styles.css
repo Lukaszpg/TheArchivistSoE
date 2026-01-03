@@ -67,7 +67,7 @@ body{
   background: rgba(0,0,0,0.35);
   border: 1px solid rgba(255,255,255,0.14);
   color: rgba(255,255,255,0.85);
-  font-weight: 800;
+  font-size: 18px;
   letter-spacing: 0.3px;
 }
 .tab.active{
@@ -180,14 +180,14 @@ body{
 .meta{ flex:1; min-width:0; }
 .meta .name{
   color: var(--c-white);
-  font-weight: 900;
+  font-size: 20px;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
 .meta .sub{
   color: var(--muted);
-  font-size: 17px;
+  font-size: 18px;
   margin-top: 2px;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -223,8 +223,7 @@ body{
 }
 .tipTitle{
   text-align:center;
-  font-weight: 900;
-  font-size: 26px;
+  font-size: 28px;
   letter-spacing: 0.6px;
   margin-top: 4px;
   margin-bottom: 8px;
@@ -233,8 +232,7 @@ body{
 }
 .tipUniqueTitle{
   text-align:center;
-  font-weight: 900;
-  font-size: 26px;
+  font-size: 28px;
   letter-spacing: 0.6px;
   margin-top: 4px;
   margin-bottom: 8px;
@@ -244,7 +242,7 @@ body{
 .tipSubtitle{
   text-align:center;
   color: var(--c-gray);
-  font-size: 17px;
+  font-size: 20px;
   margin-top: -4px;
   margin-bottom: 10px;
   opacity: 0.95;
@@ -255,12 +253,22 @@ body{
   margin: 10px 0;
 }
 .line{
-  font-size: 17px;
+  font-size: 20px;
   line-height: 1.35;
   color: var(--text);
   text-shadow: 0 1px 0 rgba(0,0,0,0.7);
   margin: 2px 0;
 }
+
+.runeModLine {
+  font-size: 20px;
+  text-align: center;
+  line-height: 1.35;
+  color: var(--text);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.7);
+  margin: 2px 0;
+}
+
 .line.dim{ color: rgba(217,211,199,0.78); }
 .line.req{ color: rgba(255,255,255,0.90); }
 
@@ -310,23 +318,21 @@ body{
 .uniqueHeader{
   text-align: center;
   color: var(--c-white);
-  font-weight: 900;
-  font-size: 18px;
+  font-size: 22px;
   margin: 2px 0 8px;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.75);
+  /*text-shadow: 0 1px 0 rgba(0,0,0,0.75);*/
 }
 
 .dropHeader{
   text-align: center;
   color: var(--c-white);
-  font-weight: 900;
-  font-size: 18px;
+  font-size: 22px;
   margin: 4px 0 6px;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.75);
+  /*text-shadow: 0 1px 0 rgba(0,0,0,0.75);*/
 }
 
 .uniqueMod{
-  font-size: 17px;
+  font-size: 20px;
   line-height: 1.35;
   color: var(--text);
   text-shadow: 0 1px 0 rgba(0,0,0,0.7);
@@ -388,6 +394,17 @@ button.btn{
   background-repeat: no-repeat;
 }
 
+.filtersPanel option{
+  background-image:
+    linear-gradient(45deg, transparent 50%, #d9d3c7 50%),
+    linear-gradient(135deg, #d9d3c7 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 55%,
+    calc(100% - 16px) 55%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
 .d2linkText{
   color: var(--c-blue);
   font-weight: 900;
@@ -415,18 +432,19 @@ button.btn{
   top: calc(100% + 8px);
   z-index: 999;
   min-width: 220px;
-  max-width: 360px;
+  max-width: 460px;
 
   padding: 10px 12px;
   border-radius: 10px;
 
-  background: rgba(0,0,0,0.88);
+  background: rgba(0,0,0,1);
   border: 1px solid rgba(202,161,74,0.35);
   box-shadow: 0 12px 28px rgba(0,0,0,0.55);
 
   color: rgba(255,255,255,0.92);
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1.35;
+  text-align: left !important;
 
   opacity: 0;
   transform: translateY(-2px);
@@ -448,8 +466,13 @@ button.btn{
   left: 14px;
   width: 10px;
   height: 10px;
-  background: rgba(0,0,0,0.88);
+  background: rgba(0,0,0,1);
   border-left: 1px solid rgba(202,161,74,0.35);
   border-top: 1px solid rgba(202,161,74,0.35);
   transform: rotate(45deg);
+}
+
+.runesDisplay {
+  text-align: center;
+  font-size: 24px;
 }
