@@ -1395,6 +1395,7 @@ export default function App() {
   const sacreds = useJson("Sacreds.json");
   const INFO_OPEN_STORAGE_KEY = "the-archivist-v1";
   const searchInputRef = React.useRef(null);
+  const skipAutoIndexRef = React.useRef(false);
   const [tab, setTab] = useState("weapons");
 
   const [infoOpenByTab, setInfoOpenByTab] = useState(() => ({
@@ -1544,11 +1545,18 @@ export default function App() {
     });
 }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue]);
 
-  // selection
-  const [activeIndex, setActiveIndex] = useState(0);
-  useEffect(() => {
-   setActiveIndex(0);
-  }, [tab, search, tierValue, typeValue, socketsValue, uberValue]);
+    // selection
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    useEffect(() => {
+      if (skipAutoIndexRef.current) {
+        
+        skipAutoIndexRef.current = false;
+        return;
+      }
+
+      setActiveIndex(0);
+    }, [tab, search, tierValue, typeValue, socketsValue, uberValue]);
 
   
   useEffect(() => {
@@ -1596,6 +1604,8 @@ export default function App() {
 
     if (!name && !types.length) return;
 
+    skipAutoIndexRef.current = true; 
+
     setTab("sacreds");
 
     setSearch("");
@@ -1614,6 +1624,8 @@ export default function App() {
     const c = n(code);
     if (!c) return;
 
+    skipAutoIndexRef.current = true; 
+
     setSearch("");
     setTypeValue("");
     setTierValue("");
@@ -1628,6 +1640,8 @@ export default function App() {
   function jumpToUnique(code) {
     const c = n(code);
     if (!c) return;
+
+    skipAutoIndexRef.current = true; 
 
     setTab("uniques");
 
