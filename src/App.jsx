@@ -1,13 +1,191 @@
 import React, { useEffect, useMemo, useState } from "react";
 
+import SwordIcon from "./icons/sword.svg";
+import StaffIcon from "./icons/staff.svg";
+import BowIcon from "./icons/bow.svg";
+import JavelinIcon from "./icons/javelin.svg";
+import SpearIcon from "./icons/spear.svg";
+import AxeIcon from "./icons/axe.svg";
+import MaceIcon from "./icons/mace.svg";
+import KnifeIcon from "./icons/knife.svg";
+import CrossbowIcon from "./icons/crossbow.svg";
+import ClawsIcon from "./icons/claws.svg";
+import PolearmIcon from "./icons/polearm.svg";
+import ScepterIcon from "./icons/scepter.svg";
+import WandIcon from "./icons/wand.svg";
+import ThrowingAxeIcon from "./icons/throwing-axe.svg";
+import ThrowingKnifeIcon from "./icons/throwing-knife.svg";
+import SorceressOrbIcon from "./icons/orb.svg";
+import HammerIcon from "./icons/hammer.svg";
+import ScytheIcon from "./icons/scythe.svg";
+import HelmetIcon from "./icons/helmet.svg";
+import BodyArmorIcon from "./icons/armor.svg";
+import ShieldIcon from "./icons/shield.svg";
+import BootsIcon from "./icons/boots.svg";
+import GlovesIcon from "./icons/gloves.svg";
+import BeltIcon from "./icons/belt.svg";
+import RingIcon from "./icons/ring.svg";
+import AmuletIcon from "./icons/amulet.svg";
+import QuiverIcon from "./icons/quiver.svg";
+import JewelIcon from "./icons/jewel.svg";
+import MapIcon from "./icons/map.svg";
+import MythicJewelIcon from "./icons/mythic.svg";
+import OrnateCharmIcon from "./icons/cm4.svg";
+import RuneIcon from "./icons/rune.svg";
+import SacredIcon from "./icons/sacred.svg";
+
+const APP_VERSION = import.meta.env.VITE_APP_VERSION;
+
 const TABS = {
   weapons: "Weapons",
   armors: "Armors",
   uniques: "Uniques",
   runewords: "Runewords",
+  sacreds: "Sacreds",
+  help: "Help",
 };
 
-const TAB_KEYS = ["weapons", "armors", "uniques", "runewords"];
+const PROP_HIGHLIGHT_RULES = [
+  { test: /corrupted/i, className: "propRed" },
+];
+
+const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "sacreds", "help"];
+
+const WEAPON_ICON_MAP = {
+  sword: SwordIcon,
+  staff: StaffIcon,
+  bow: BowIcon,
+  javelin: JavelinIcon,
+  spear: SpearIcon,
+  axe: AxeIcon,
+  mace: MaceIcon,
+  knife: KnifeIcon,
+  crossbow: CrossbowIcon,
+  claws: ClawsIcon,
+  polearm: PolearmIcon,
+  scepter: ScepterIcon,
+  wand: WandIcon,
+  throwingAxe: ThrowingAxeIcon,
+  throwingKnife: ThrowingKnifeIcon,
+  orb: SorceressOrbIcon,
+  hammer: HammerIcon,
+  scythe: ScytheIcon,
+  quiver: QuiverIcon
+};
+
+const ARMOR_ICON_MAP = {
+  helm: HelmetIcon,
+  pahm: HelmetIcon,
+  phlm: HelmetIcon,
+  pelt: HelmetIcon,
+  circ: HelmetIcon,
+  tors: BodyArmorIcon,
+  shie: ShieldIcon,
+  boot: BootsIcon,
+  glov: GlovesIcon,
+  belt: BeltIcon,
+  bels: BeltIcon,
+  ashd: ShieldIcon,
+  head: ShieldIcon
+};
+
+const JEWELRY_ICON_MAP = {
+  rin: RingIcon,
+  amu: AmuletIcon,
+  ram: AmuletIcon,
+  aqv: QuiverIcon,
+  aqv2: QuiverIcon,
+  aqv3: QuiverIcon,
+  cqv: QuiverIcon,
+  cqv2: QuiverIcon,
+  cqv3: QuiverIcon,
+  jew: JewelIcon,
+  t51: MapIcon,
+  t52: MapIcon,
+  t53: MapIcon,
+  t54: MapIcon,
+  t55: MapIcon,
+  t56: MapIcon,
+  mjw: MythicJewelIcon,
+  cm4: OrnateCharmIcon,
+  cm2: OrnateCharmIcon,
+  cm3: OrnateCharmIcon,
+  cm1: OrnateCharmIcon,
+};
+
+const MOD_EXPANSIONS = [
+  {
+    whenIncludes: "all resistances",
+    implies: [
+      "fire resistance",
+      "cold resistance",
+      "lightning resistance",
+      "poison resistance",
+    ],
+  },
+
+  {
+    whenIncludes: "all attributes",
+    implies: ["strength", "dexterity", "vitality", "energy"],
+  } 
+];
+
+const ARMOR_TYPE_MAP = {
+  helm: "Helm",
+  tors: "Armor",
+  shie: "Shield",
+  glov: "Gloves",
+  boot: "Boots",
+  belt: "Belt",
+  bels: "Belt",
+  pelt: "Druid Pelt",
+  phlm: "Barbarian Helm",
+  ashd: "Paladin Shield",
+  head: "Necromancer Head",
+  circ: "Circlet",
+  pahm: "Paladin Helmet"
+};
+
+const TOOLTIPS_TEXT_MAP = {
+  "qualityLevel": "Quality level is a stat that determines to\n which treasure class the item belongs. \nIt's important for gambling (higher quality\n level means lower chance to upgrade the\n item tier) and unique item drop generation,\n as items with higher quality level tend\n to drop less.",
+  "runes": "Runes here are shown in the exact order you should put them in your item to create a runeword.",
+  "occurrenceChance": "Occurrence chance is chance for this item to\n drop when the game rolls an unique item on\n base and base has more than one unique item\n attached to it.",
+  "dropRate": "Drop rate is chance for this item to drop from\n specific monster, most likely from Uber Boss.",
+  "code": "This code can be used in your loot filter to\n highlight this specific base.",
+  "uniCode": "This code can be used in your loot filter to\n highlight this specific base - remember to add\n UNI modifier.",
+  "sacred": "Additionaly to items mentioned here it is required to use Sacred Orb in the Cube."
+};
+
+  const INFO_BY_TAB = {
+  sacreds: {
+    title: "About Sacred Items",
+    text:
+      "Sacred items system is exclusive to Sanctuary of Exile. It allows to harness the power of a runeword and imprint it to `Unique` or `Crafted` item:\n\n" +
+      "- Making an item sacred requires finding `Sacred Orb` which drops in `T4 Dungeons` or from monsters added by `Terror of Opulence`\n\n" +
+      "- To sacred an item, first use `Sacred Orb` with `Runes` (or additional items - consult appropriate recipe in the list below) used to create a runeword to create `Sacred Orb of X`\n\n"  + 
+      "- Use the created orb with `Unique` or `Crafted` item you wish to make sacred. Please note that added modifiers may vary by item type\n\n" +
+      "- Sacred items can be corrupted with `World Stone Shard`\n\n" +
+      "- Sacred modifiers along with sacred status can be removed from `Unique` items by using `Demonic Cube` as long as it's **not** `Corrupted`\n\n" +
+      "- Sacred modifiers along with sacred status **CANNOT** be removed from `Crafted` items, so choose wisely!\n\n" +
+      "- The additional equipment component mentioned in the recipe can be of any quality and tier"
+  },
+};
+
+function sacredTypes(it) {
+  const a = Array.isArray(it?.itemTypesDisplayNames) ? it.itemTypesDisplayNames : [];
+  return a.map((x) => n(x)).filter(Boolean);
+}
+
+function sacredIngredients(it) {
+  return [
+    n(it?.firstInputDisplayName),
+    n(it?.secondInputDisplayName),
+    n(it?.thirdInputDisplayName),
+    n(it?.fourthInputDisplayName),
+    n(it?.fifthInputDisplayName),
+    n(it?.sixthInputDisplayName),
+  ].filter(Boolean);
+}
 
 // ---- tiny helpers ----
 const n = (v) => (v === null || v === undefined ? "" : String(v).trim());
@@ -19,6 +197,253 @@ const fmtSigned = (v) => {
   if (Number.isNaN(x)) return String(v);
   return (x > 0 ? "+" : "") + x;
 };
+
+function getItemIconUrl(tab, item) {
+  if (tab === "weapons") {
+    const key = weaponIconKeyForItem(item);
+    return key ? WEAPON_ICON_MAP[key] : null;
+  }
+
+  if (tab === "armors") {
+    const key = armorIconKeyForItem(item);
+    return key ? ARMOR_ICON_MAP[key] : null;
+  }
+
+  if (tab === "uniques") {
+    return getUniqueBaseIconUrl(item);
+  }
+
+  if (tab === "runewords") {
+    return RuneIcon;
+  }
+
+  if (tab === "sacreds") {
+    return SacredIcon;
+  }
+
+  return null;
+}
+
+function getUniqueBaseIconUrl(u) {
+  if (u?.jeweleryBase?.code) {
+    const code = String(u.jeweleryBase.code).toLowerCase();
+    if (JEWELRY_ICON_MAP[code]) {
+      return JEWELRY_ICON_MAP[code];
+    }
+  }
+
+  if (u?.armorBase) {
+    const armorBase = u.armorBase;
+    const key = armorIconKeyForItem(armorBase);
+    if (key) {
+      return ARMOR_ICON_MAP[key];
+    }
+
+    if (armorBase.itemType?.code) {
+      const typeCode = String(armorBase.itemType.code).toLowerCase();
+    }
+  }
+
+  if (u?.weaponBase) {
+    const weaponBase = u.weaponBase;
+    const key = weaponIconKeyForItem(weaponBase);
+    if (key) {
+      return WEAPON_ICON_MAP[key];
+    }
+  }
+
+  return null;
+}
+
+function armorIconKeyForItem(a) {
+  const t =
+    n(a?.itemType?.code) ||
+    n(a?.displayType) ||
+    ARMOR_TYPE_MAP[n(a?.type)] ||
+    n(a?.type);
+
+  return t.toLowerCase();
+}
+
+function weaponIconKeyForItem(it) {
+  const type = n(it?.itemType?.itemType || it?.itemType).toLowerCase();
+
+  if (type.includes("scythe")) return "scythe";
+  if (type.includes("hammer")) return "hammer";
+  if (type.includes("orb")) return "orb";
+  if (type.includes("throwing knife")) return "throwingKnife";
+  if (type.includes("throwing axe")) return "throwingAxe";
+  if (type.includes("sword")) return "sword";
+  if (type.includes("staff")) return "staff";
+  if (type.includes("bow")) return "bow";
+  if (type.includes("javelin")) return "javelin";
+  if (type.includes("spear")) return "spear";
+  if (type.includes("axe")) return "axe";
+  if (type.includes("club") || type.includes("mace") || type.includes("hammer")) return "mace";
+  if (type.includes("knife")) return "knife";
+  if (type.includes("crossbow")) return "crossbow";
+  if (type.includes("claws")) return "claws";
+  if (type.includes("scythe") || type.includes("polearm")) return "polearm";
+  if (type.includes("scepter")) return "scepter";
+  if (type.includes("wand")) return "wand";
+
+  return null;
+}
+
+function sacredPropertiesText(s) {
+  const map =
+    s?.propertiesByItemType && typeof s.propertiesByItemType === "object"
+      ? s.propertiesByItemType
+      : {};
+
+  const lines = [];
+  for (const key of Object.keys(map)) {
+    const arr = Array.isArray(map[key]) ? map[key] : [];
+    for (const v of arr) {
+      if (v != null && String(v).trim() !== "") lines.push(String(v));
+    }
+  }
+  return lines.join("\n");
+}
+
+
+function renderInlineMarkdown(text) {
+  const s = String(text ?? "");
+
+  const parts = s.split(/(`[^`]*`)/g);
+
+  return parts.map((part, idx) => {
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code key={idx} className="mdCode">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+
+    const boldSplit = part.split(/(\*\*[^*]+\*\*)/g);
+    return boldSplit.map((b, j) => {
+      if (b.startsWith("**") && b.endsWith("**")) {
+        return (
+          <strong key={`${idx}-${j}`} className="mdStrong">
+            {b.slice(2, -2)}
+          </strong>
+        );
+      }
+
+      const italicSplit = b.split(/(\*[^*]+\*)/g);
+      return italicSplit.map((it, k) => {
+        if (it.startsWith("*") && it.endsWith("*")) {
+          return (
+            <em key={`${idx}-${j}-${k}`} className="mdEm">
+              {it.slice(1, -1)}
+            </em>
+          );
+        }
+        return <React.Fragment key={`${idx}-${j}-${k}`}>{it}</React.Fragment>;
+      });
+    });
+  });
+}
+
+function Markdown({ text }) {
+  const raw = String(text ?? "").replace(/\r\n/g, "\n");
+  const lines = raw.split("\n");
+
+  const blocks = [];
+  let buf = [];
+
+  const flushParagraph = () => {
+    if (!buf.length) return;
+    const joined = buf.join(" ").trim();
+    if (joined) blocks.push({ type: "p", text: joined });
+    buf = [];
+  };
+
+  let listBuf = [];
+  const flushList = () => {
+    if (!listBuf.length) return;
+    blocks.push({ type: "ul", items: listBuf });
+    listBuf = [];
+  };
+
+  for (const line of lines) {
+    const t = line.trimEnd();
+
+    if (!t.trim()) {
+      flushList();
+      flushParagraph();
+      continue;
+    }
+
+    const bullet = t.trim().match(/^[-*]\s+(.+)$/);
+    if (bullet) {
+      flushParagraph();
+      listBuf.push(bullet[1]);
+      continue;
+    }
+
+    flushList();
+    buf.push(t.trim());
+  }
+
+  flushList();
+  flushParagraph();
+
+  return (
+    <div className="md">
+      {blocks.map((b, i) => {
+        if (b.type === "ul") {
+          return (
+            <ul key={i} className="mdUl">
+              {b.items.map((it, j) => (
+                <li key={j} className="mdLi">
+                  {renderInlineMarkdown(it)}
+                </li>
+              ))}
+            </ul>
+          );
+        }
+        return (
+          <p key={i} className="mdP">
+            {renderInlineMarkdown(b.text)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+function classForPropertyLine(line) {
+  const s = String(line || "");
+  for (const rule of PROP_HIGHLIGHT_RULES) {
+    if (rule?.test?.test(s)) return rule.className;
+  }
+  return "";
+}
+
+function parseSearchQuery(input) {
+  const text = input.trim().toLowerCase();
+  if (!text) return { phrases: [], terms: [] };
+
+  const phrases = [];
+  const phraseRegex = /"([^"]+)"/g;
+
+  let rest = text;
+  let m;
+
+  while ((m = phraseRegex.exec(text)) !== null) {
+    phrases.push(m[1]);
+    rest = rest.replace(m[0], " ");
+  }
+
+  const terms = rest
+    .split(/\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  return { phrases, terms };
+}
 
 function isDontDisplay(it) {
   const v = it ? it.dontDisplay : false;
@@ -50,8 +475,51 @@ function Tip({ text, children }) {
   );
 }
 
+function buildSearchTextForItem(tab, it) {
+  const name = (n(it?.displayName) || n(it?.runewordName) || n(it?.name)).toLowerCase();
+
+  if (tab === "uniques" || tab === "runewords") {
+    const props = Array.isArray(it?.displayProperties) ? it.displayProperties : [];
+    const propsText = props
+      .filter((x) => x != null)
+      .map((x) => String(x).toLowerCase())
+      .join("\n");
+
+    return applyModifierExpansions(`${name}\n${propsText}`);
+  }
+
+  if (tab === "sacreds") {
+    const ing = [
+      n(it?.firstInputDisplayName),
+      n(it?.secondInputDisplayName),
+      n(it?.thirdInputDisplayName),
+      n(it?.fourthInputDisplayName),
+      n(it?.fifthInputDisplayName),
+      n(it?.sixthInputDisplayName),
+    ].filter(Boolean).join("\n").toLowerCase();
+
+    const props = sacredPropertiesText(it).toLowerCase();
+    return `${name}\n${ing}\n${props}`;
+  }
+
+  return name;
+}
+
+function applyModifierExpansions(searchText) {
+  let out = searchText;
+
+  for (const rule of MOD_EXPANSIONS) {
+    if (!rule?.whenIncludes || !Array.isArray(rule?.implies)) continue;
+
+    if (out.includes(rule.whenIncludes.toLowerCase())) {
+      out += "\n" + rule.implies.map((s) => s.toLowerCase()).join("\n");
+    }
+  }
+
+  return out;
+}
+
 function runewordTypeForFilter(rw) {
-  // Prefer readable types if available, else fall back to raw itemTypes codes.
   const a = Array.isArray(rw?.displayItemTypes) ? rw.displayItemTypes : [];
   if (a.length) return a[0];
   const b = Array.isArray(rw?.itemTypes) ? rw.itemTypes : [];
@@ -69,7 +537,6 @@ function filterVisible(arr) {
   return arr.filter((it) => !isDontDisplay(it));
 }
 
-// ---- type label logic (mirrors the provided index.html) ----
 function weaponTypeLabel(w) {
   const primary = n(w?.itemType?.displayName) || n(w?.displayType) || n(w?.type);
   const secondary =
@@ -80,28 +547,6 @@ function weaponTypeLabel(w) {
 function weaponTypeForFilter(w) {
   return n(w?.itemType?.itemType) || n(w?.type);
 }
-
-const ARMOR_TYPE_MAP = {
-  helm: "Helm",
-  tors: "Armor",
-  shie: "Shield",
-  glov: "Gloves",
-  boot: "Boots",
-  belt: "Belt",
-  bels: "Belt",
-  pelt: "Druid Pelt",
-  phlm: "Barbarian Helm",
-  ashd: "Paladin Shield",
-  head: "Necromancer Head",
-  circ: "Circlet",
-};
-
-const TOOLTIPS_TEXT_MAP = {
-  "qualityLevel": "Quality level is a stat that determines to\n which treasure class the item belongs. \nIt's important for gambling (higher quality\n level means lower chance to upgrade the\n item tier) and unique item drop generation,\n as items with higher quality level tend\n to drop less.",
-  "runes": "Runes here are shown in the exact order you should put them in your item to create a runeword.",
-  "occurrenceChance": "Occurrence chance is chance for this item to\n drop when the game rolls an unique item on\n base and base has more than one unique item\n attached to it.",
-  "dropRate": "Drop rate is chance for this item to drop from\n specific monster, most likely from Uber Boss."
-};
 
 function armorTypeLabel(a) {
   const dt = n(a?.displayType);
@@ -127,11 +572,6 @@ function uniqueBaseTypeLabel(u) {
 function uniqueBaseTypeLabelPretty(u) {
   const base = uniqueBase(u);
   return n(base?.itemType?.displayName) || n(base?.displayName) || n(base?.displayType) || uniqueBaseTypeLabel(u);
-}
-
-function iconText(it) {
-  const c = n(it?.code).toUpperCase();
-  return c ? c.slice(0, 3) : "ITM";
 }
 
 function weaponDmgLines(w) {
@@ -269,7 +709,8 @@ function FiltersBar({
   showSockets,
   showUber,
   typePlaceholder,
-  searchInputRef
+  searchInputRef,
+  showTier
 }) {
   return (
     <div className="filtersPanel">
@@ -277,6 +718,7 @@ function FiltersBar({
         ref={searchInputRef}
         type="text"
         value={search}
+        className="searchBar"
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search item name…"
       />
@@ -309,18 +751,20 @@ function FiltersBar({
         </select>
       )}
 
-      <select
-        value={tierValue}
-        onChange={(e) => setTierValue(e.target.value)}
-        style={{ maxWidth: 180 }}
-      >
-        <option value="">All tiers</option>
-        {tiers.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
-        ))}
-      </select>
+      {showTier && (
+        <select
+          value={tierValue}
+          onChange={(e) => setTierValue(e.target.value)}
+          style={{ maxWidth: 180 }}
+        >
+          <option value="">All tiers</option>
+          {tiers.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+      )}
 
       {showUber && (
         <select
@@ -334,24 +778,48 @@ function FiltersBar({
         </select>
       )}
 
-      <button
-        type="button"
-        className="btn"
-        onClick={() => {
-          setSearch("");
-          setTypeValue("");
-          setTierValue("");
-          setSocketsValue("");
-          setUberValue("");
-        }}
-      >
-        Reset
-      </button>
+      <div className="filtersActions">
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            setSearch("");
+            setTypeValue("");
+            setTierValue("");
+            setSocketsValue("");
+            setUberValue("");
+          }}
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 }
 
-function ListPanel({ title, countLabel, items, activeIndex, setActiveIndex, subLabel, tinyLabel }) {
+function InfoPanel({ title, markdownText, isOpen, onToggle }) {
+  if (!markdownText) return null;
+
+  return (
+    <div className="infoPanel">
+      <div className="infoHeader">
+        <div className="infoTitle">{title}</div>
+
+        <button type="button" className="infoToggle" onClick={onToggle}>
+          {isOpen ? "Hide" : "Show"}
+        </button>
+      </div>
+
+      {isOpen ? (
+        <div className="infoBody">
+          <Markdown text={markdownText} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ListPanel({ title, countLabel, items, activeIndex, setActiveIndex, subLabel, tinyLabel, tab }) {
   const activeRowRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -369,22 +837,32 @@ function ListPanel({ title, countLabel, items, activeIndex, setActiveIndex, subL
         {items.length === 0 ? (
           <div className="emptyState">No items match your filters.</div>
         ) : (
-          items.map((it, i) => (
-            <div
-              key={`${i}::${n(it?.code)}::${n(it?.displayName) || n(it?.name)}`}
-              ref={i === activeIndex ? activeRowRef : null}
-              className={"row" + (i === activeIndex ? " active" : "")}
-              onClick={() => setActiveIndex(i)}
-              role="listitem"
-            >
-              <div className="ico">{iconText(it)}</div>
-              <div className="meta">
-                <div className="name">{n(it?.displayName) || n(it?.name) || "Unknown"}</div>
-                <div className="sub">{subLabel(it)}</div>
-                <div className="tiny">{tinyLabel(it)}</div>
+          items.map((it, i) => {
+            const iconUrl = getItemIconUrl(tab, it);
+
+            return (
+              <div
+                key={`${i}::${n(it?.code)}::${n(it?.displayName) || n(it?.name)}`}
+                ref={i === activeIndex ? activeRowRef : null}
+                className={"row" + (i === activeIndex ? " active" : "")}
+                onClick={() => setActiveIndex(i)}
+                role="listitem"
+              >
+                <div className="ico">
+                  {iconUrl ? (
+                    <img src={iconUrl} className="icon" alt="" />
+                  ) : null}
+                </div>
+                <div className="meta">
+                  <div className="name">
+                    {n(it?.displayName) || n(it?.name) || "Unknown"}
+                  </div>
+                  <div className="sub">{subLabel(it)}</div>
+                  <div className="tiny">{tinyLabel(it)}</div>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
@@ -442,7 +920,7 @@ function UniquesPanel({ uniques, onGoUnique }) {
         if (!name) return null;
 
         return (
-          <div key={`${idx}::${name}::${code}`} className="line">
+          <div key={`${idx}::${name}::${code}`} className="line goToLink">
             {code ? (
               <a
                 className="d2link"
@@ -462,6 +940,89 @@ function UniquesPanel({ uniques, onGoUnique }) {
         );
       })}
     </>
+  );
+}
+
+function SacredTooltip({ s }) {
+  if (!s) return <div className="emptyState">Select an item.</div>;
+
+  const title = n(s?.displayName) || "Sacred";
+  const types = sacredTypes(s);
+  const ing = sacredIngredients(s);
+
+  const map = s?.propertiesByItemType && typeof s.propertiesByItemType === "object"
+    ? s.propertiesByItemType
+    : {};
+
+  const typeKeys = Object.keys(map);
+
+  return (
+    <>
+      <div className="tipTitle">{title}</div>
+
+      {types.length ? (
+        <div className="tipSubtitle">
+          <span className="dim"></span>
+          {types.join(" / ")}
+        </div>
+      ) : null}
+
+      <div className="hr" />
+
+      {ing.length ? <div className="line dim runesDisplay"><Tip text={String(TOOLTIPS_TEXT_MAP["sacred"])}>{ing.join(" · ")}</Tip></div> : <div className="line dim">No runes listed.</div>}
+
+      <div className="hr" />
+
+      <div className="sacredModsHeader">Mods by item type</div>
+      {typeKeys.length ? (
+        typeKeys.map((k) => {
+          const arr = Array.isArray(map[k]) ? map[k] : [];
+          if (!arr.length) return null;
+
+          return (
+            <div key={k} style={{ marginBottom: 10 }}>
+              <div className="sacredModsItemType">{k}</div>
+              {arr.map((p, i) => (
+                <div key={`${k}-${i}`} className="runeModLine">
+                  {String(p)}
+                </div>
+              ))}
+            </div>
+          );
+        })
+      ) : (
+        <div className="line dim">No properties listed.</div>
+      )}
+    </>
+  );
+}
+
+function HelpPanel() {
+  return (
+    <div className="helpPanel">
+      <div className="helpTitle">Help</div>
+
+      <div className="helpBody">
+        <p><b>Navigation</b></p>
+        <ul>
+          <li><b>← / →</b> switch tabs</li>
+          <li><b>↑ / ↓</b> move selection in the item  list</li>
+          <li><b>Ctrl/Cmd + F</b> hotkey - focus search</li>
+          <li><b>Esc</b> unfocus search (when focused on it)</li>
+        </ul>
+
+        <p><b>Search</b></p>
+        <ul>
+          <li>Use quotes for exact phrases: <code>"faster cast rate"</code></li>
+          <li>In <b>Uniques</b>, <b>Runewords</b> and <b>Sacreds</b> tabs, search also checks modifiers.</li>
+        </ul>
+
+        <p><b>UI</b></p>
+        <ul>
+          <li>Dotted underline under label means that it contains useful hint on hover.</li>
+        </ul>
+      </div>
+    </div>
   );
 }
 
@@ -523,7 +1084,7 @@ function WeaponTooltip({ w, onGoCode, onGoUnique }) {
       <div className="dropHeader">Additional item information</div>
       {has(w?.itemTier) && lineKV("Item Tier:", n(w?.itemTier), "dim")}
       {has(w?.level) && lineKV("Quality Level:", n(w?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
-      {lineKV("Code:", n(w?.code), "dim")}
+      {lineKV("Code:", n(w?.code), "dim", TOOLTIPS_TEXT_MAP["code"])}
       <TierLinks entries={tierEntries} onGo={onGoCode} />
       <UniquesPanel uniques={w?.uniques} onGoUnique={onGoUnique} />
     </>
@@ -577,15 +1138,15 @@ function ArmorTooltip({ a, onGoCode, onGoUnique }) {
       <div className="hr" />
       <div className="dropHeader">Additional item information</div>
       {has(a?.itemTier) && lineKV("Item Tier:", n(a?.itemTier), "dim")}
-      {has(a?.level) && lineKV("Quality Level:", n(a?.level))}
-      {lineKV("Code:", n(a?.code), "dim")}
+      {has(a?.level) && lineKV("Quality Level:", n(a?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
+      {lineKV("Code:", n(a?.code), "dim", TOOLTIPS_TEXT_MAP["code"])}
       <TierLinks label="Tiers:" entries={tierEntries} onGo={onGoCode} />
       <UniquesPanel uniques={a?.uniques} onGoUnique={onGoUnique} />
     </>
   );
 }
 
-function RunewordTooltip({ rw }) {
+function RunewordTooltip({ rw, onGoSacred }) {
   if (!rw) return <div className="emptyState">Select an item.</div>;
 
   const title = n(rw?.displayName) || n(rw?.runewordName) || "Runeword";
@@ -600,45 +1161,87 @@ function RunewordTooltip({ rw }) {
   ].filter(Boolean);
 
   const types = runewordAllTypes(rw);
-  const mods = Array.isArray(rw?.displayProperties) ? rw.displayProperties.filter((x) => x != null && String(x).trim() !== "") : [];
+  const mods = Array.isArray(rw?.displayProperties)
+    ? rw.displayProperties.filter(
+        (x) => x != null && String(x).trim() !== ""
+      )
+    : [];
 
-  const shield = Array.isArray(rw?.shieldProperties) ? rw.shieldProperties.filter(Boolean) : [];
-  const weapon = Array.isArray(rw?.weaponProperties) ? rw.weaponProperties.filter(Boolean) : [];
-  const armor = Array.isArray(rw?.armorProperties) ? rw.armorProperties.filter(Boolean) : [];
+  const shield = Array.isArray(rw?.shieldProperties)
+    ? rw.shieldProperties.filter(Boolean)
+    : [];
+  const weapon = Array.isArray(rw?.weaponProperties)
+    ? rw.weaponProperties.filter(Boolean)
+    : [];
+  const armor = Array.isArray(rw?.armorProperties)
+    ? rw.armorProperties.filter(Boolean)
+    : [];
+
+  const rwSacreds = Array.isArray(rw?.sacreds) ? rw.sacreds : [];
 
   return (
     <>
       <div className="tipTitle">{title}</div>
-      {types.length ? <div className="tipSubtitle">{types.join(" / ")}</div> : null}
+      {types.length ? (
+        <div className="tipSubtitle">{types.join(" / ")}</div>
+      ) : null}
 
       <div className="hr" />
-      {runes.length ? <div class="runesDisplay"><Tip text={String(TOOLTIPS_TEXT_MAP["runes"])}>{runes.join(" · ")}</Tip></div> : null}
+      {runes.length ? (
+        <div className="runesDisplay">
+          <Tip text={String(TOOLTIPS_TEXT_MAP["runes"])}>
+            {runes.join(" · ")}
+          </Tip>
+        </div>
+      ) : null}
 
       <div className="hr" />
       <div className="uniqueHeader">Properties</div>
-      {mods.length ? mods.map((m, i) => <div key={i} className="runeModLine">{String(m)}</div>) : <div className="line dim">No properties listed.</div>}
+      {mods.length ? (
+        mods.map((m, i) => (
+          <div key={i} className="runeModLine">
+            {String(m)}
+          </div>
+        ))
+      ) : (
+        <div className="line dim">No properties listed.</div>
+      )}
 
-      {(shield.length || weapon.length || armor.length) ? (
+
+      {rwSacreds.length ? (
         <>
           <div className="hr" />
-          <div className="dropHeader">Additional mods from runes</div>
-          {shield.length ? (
-            <>
-              {shield.map((s, i) => <div key={`s-${i}`} className="runeModLine">{String(s)}</div>)}
-            </>
-          ) : null}
+          <div className="dropHeader">Sacreds</div>
+          {rwSacreds.map((s, idx) => {
+            const name = n(s?.sacredName);
+            const typesText = Array.isArray(s?.itemTypes)
+              ? s.itemTypes.filter(Boolean).join(" / ")
+              : "";
+            if (!name) return null;
 
-          {weapon.length ? (
-            <>
-              {weapon.map((w, i) => <div key={`w-${i}`} className="runeModLine">{String(w)}</div>)}
-            </>
-          ) : null}
-
-          {armor.length ? (
-            <>
-              {armor.map((a, i) => <div key={`a-${i}`} className="runeModLine">{String(a)}</div>)}
-            </>
-          ) : null}
+            return (
+              <div key={`${idx}::${name}`} className="line goToLink">
+                {onGoSacred ? (
+                  <a
+                    href="#"
+                    className="d2link"
+                    onClick={(ev) => {
+                      ev.preventDefault();
+                      onGoSacred(name, Array.isArray(s?.itemTypes) ? s.itemTypes : []);
+                    }}
+                    title={`Go to sacred: ${name}`}
+                  >
+                    {name} ({typesText})
+                  </a>
+                ) : (
+                  <span className="d2linkText">{name}</span>
+                )}
+                {typesText ? (
+                  <span className="dim"></span>
+                ) : null}
+              </div>
+            );
+          })}
         </>
       ) : null}
     </>
@@ -692,9 +1295,12 @@ function UniqueTooltip({ u }) {
 
       {mods.length ? (
         mods.map((m, idx) => {
-          const parts = String(m).split("\n");
+          const raw = String(m);
+          const parts = raw.split("\n");
+          const cls = classForPropertyLine(raw);
+
           return (
-            <div key={idx} className="uniqueMod">
+            <div key={idx} className={"uniqueMod " + cls}>
               {parts.map((line, i) => (
                 <React.Fragment key={i}>
                   {line}
@@ -722,9 +1328,9 @@ function UniqueTooltip({ u }) {
       <div className="dropHeader">Additional item information</div>
       {has(baseTypePretty) && lineKV("Base type:", n(baseTypePretty), "dim")}
       {has(u?.itemTier) && lineKV("Item Tier:", n(u?.itemTier), "dim")}
-      {has(u?.level) && lineKV("Quality Level:", n(u?.level))}
+      {has(u?.level) && lineKV("Quality Level:", n(u?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
       {nz(u?.requiredLevel) && lineKV("Required Level:", n(u?.requiredLevel), "req")}
-      {has(u?.code) && lineKV("Code:", n(u?.code), "dim")}
+      {has(u?.code) && lineKV("Code:", n(u?.code), "dim", TOOLTIPS_TEXT_MAP["uniCode"])}
 
       {hasDropInfo ? (
         <>
@@ -741,23 +1347,41 @@ function UniqueTooltip({ u }) {
 }
 
 function TabsBar({ tab, setTab }) {
+  const leftKeys = ["weapons", "armors", "uniques", "runewords", "sacreds"];
+
   return (
     <div className="tabsPanel">
-      <div className="tabs">
-        {Object.entries(TABS).map(([key, label]) => (
-          <div
-            key={key}
-            className={"tab" + (tab === key ? " active" : "")}
-            onClick={() => setTab(key)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) =>
-              (e.key === "Enter" || e.key === " ") && setTab(key)
-            }
-          >
-            {label}
-          </div>
-        ))}
+      <div className="tabsLeft">
+        <div className="tabs">
+          {leftKeys.map((key) => (
+            <div
+              key={key}
+              className={"tab" + (tab === key ? " active" : "")}
+              onClick={() => setTab(key)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) =>
+                (e.key === "Enter" || e.key === " ") && setTab(key)
+              }
+            >
+              {TABS[key]}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="tabsRight">
+        <div
+          className={"tab" + (tab === "help" ? " active" : "")}
+          onClick={() => setTab("help")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) =>
+            (e.key === "Enter" || e.key === " ") && setTab("help")
+          }
+        >
+          {TABS.help}
+        </div>
       </div>
     </div>
   );
@@ -768,16 +1392,46 @@ export default function App() {
   const armors = useJson("Armors.json");
   const uniques = useJson("Uniques.json");
   const runewords = useJson("Runewords.json");
-
+  const sacreds = useJson("Sacreds.json");
+  const INFO_OPEN_STORAGE_KEY = "the-archivist-v1";
   const searchInputRef = React.useRef(null);
-
   const [tab, setTab] = useState("weapons");
+
+  const [infoOpenByTab, setInfoOpenByTab] = useState(() => ({
+    weapons: true,
+    armors: true,
+    uniques: true,
+    runewords: true,
+    sacreds: true,
+  }));
+
+  const info = INFO_BY_TAB[tab] || { title: "About", text: "" };
+  const infoOpen = !!infoOpenByTab[tab];
+
   const dataset =
   tab === "weapons" ? weapons :
   tab === "armors" ? armors :
   tab === "uniques" ? uniques :
   tab === "runewords" ? runewords :
+  tab === "sacreds" ? sacreds :
   weapons; // fallback
+
+  useEffect(() => {
+  try {
+    const raw = window.localStorage.getItem(INFO_OPEN_STORAGE_KEY);
+    if (!raw) return;
+
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") {
+      setInfoOpenByTab((prev) => ({
+        ...prev,
+        ...parsed, // merge saved values onto defaults
+      }));
+    }
+  } catch (e) {
+    console.warn("Failed to read info panel state from storage", e);
+  }
+}, []);
 
   // shared controls
   const [search, setSearch] = useState("");
@@ -786,20 +1440,28 @@ export default function App() {
   const [socketsValue, setSocketsValue] = useState("");
   const [uberValue, setUberValue] = useState("");
   const [pendingUniqueCode, setPendingUniqueCode] = useState("");
+  const [pendingSacredMatch, setPendingSacredMatch] = useState(null);
 
   const items = dataset.data;
 
- const typeOptions = useMemo(() => {
-  if (!items.length) return [];
+  const typeOptions = useMemo(() => {
+    if (!items.length) return [];
+
     if (tab === "weapons")
       return Array.from(new Set(items.map(weaponTypeForFilter).filter(Boolean))).sort();
+
     if (tab === "armors")
       return Array.from(new Set(items.map(armorTypeForFilter).filter(Boolean))).sort();
+
     if (tab === "uniques")
       return Array.from(new Set(items.map(uniqueBaseTypeLabel).filter(Boolean))).sort();
 
-    // runewords
-    const all = items.flatMap(runewordAllTypes);
+    if (tab === "runewords") {
+      const all = items.flatMap(runewordAllTypes);
+      return Array.from(new Set(all)).sort();
+    }
+
+    const all = items.flatMap(sacredTypes);
     return Array.from(new Set(all)).sort();
   }, [items, tab]);
 
@@ -826,11 +1488,21 @@ export default function App() {
   }, [tab]);
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const { phrases, terms } = parseSearchQuery(search);
 
     return items.filter((it) => {
       const name = (n(it?.displayName) || n(it?.runewordName) || n(it?.name)).toLowerCase();
-      if (q && !name.includes(q)) return false;
+
+      const searchText = buildSearchTextForItem(tab, it);
+
+      for (const p of phrases) {
+        if (!searchText.includes(p)) return false;
+      }
+
+      for (const t of terms) {
+        if (!searchText.includes(t)) return false;
+      }
+    
 
       if (tierValue && n(it?.itemTier) !== tierValue) return false;
 
@@ -847,9 +1519,6 @@ export default function App() {
       if (tab === "uniques") {
         if (typeValue && uniqueBaseTypeLabel(it) !== typeValue) return false;
 
-        // Uber Boss Unique filter:
-        // Yes  => dropSource is NOT null/undefined
-        // No   => dropSource IS null/undefined
         if (uberValue === "yes") {
           if (it?.dropSource === null || it?.dropSource === undefined) return false;
         } else if (uberValue === "no") {
@@ -860,6 +1529,13 @@ export default function App() {
       if (tab === "runewords") {
         if (typeValue) {
           const types = runewordAllTypes(it);
+          if (!types.includes(typeValue)) return false;
+        }
+      }
+
+      if (tab === "sacreds") {
+        if (typeValue) {
+          const types = sacredTypes(it);
           if (!types.includes(typeValue)) return false;
         }
       }
@@ -883,17 +1559,61 @@ export default function App() {
     const idx = dataset.data.findIndex((it) => n(it?.code) === pendingUniqueCode);
     if (idx >= 0) setActiveIndex(idx);
 
-    setPendingUniqueCode(""); // consume
+    setPendingUniqueCode("");
   }, [pendingUniqueCode, tab, dataset.loading, dataset.data]);
+
+    useEffect(() => {
+    if (!pendingSacredMatch) return;
+    if (tab !== "sacreds") return;
+    if (sacreds.loading) return;
+
+    const { name, types } = pendingSacredMatch;
+
+    const all = sacreds.data;
+    const idx = all.findIndex((s) => {
+      const sName = n(s?.displayName).toLowerCase();
+      if (name && sName !== name) return false;
+
+      const sTypes = sacredTypes(s).map((t) => t.toLowerCase());
+      for (const t of types) {
+        if (!sTypes.includes(t)) return false;
+      }
+      return true;
+    });
+
+    if (idx >= 0) setActiveIndex(idx);
+
+    setPendingSacredMatch(null);
+  }, [pendingSacredMatch, tab, sacreds.loading, sacreds.data, setActiveIndex]);
 
   const activeItem = filtered[activeIndex] ?? null;
 
-  // Jump to an item by code (normalTierCode / exceptionalTierCode / eliteTierCode)
+  function jumpToSacred(sacredName, itemTypes) {
+    const name = n(sacredName);
+    const types = Array.isArray(itemTypes)
+      ? itemTypes.map((t) => n(t).toLowerCase()).filter(Boolean)
+      : [];
+
+    if (!name && !types.length) return;
+
+    setTab("sacreds");
+
+    setSearch("");
+    setTypeValue("");
+    setTierValue("");
+    setSocketsValue("");
+    setUberValue("");
+
+    setPendingSacredMatch({
+      name: name.toLowerCase(),
+      types,
+    });
+  }
+
   function jumpToCode(code) {
     const c = n(code);
     if (!c) return;
 
-    // clear filters so the target is visible
     setSearch("");
     setTypeValue("");
     setTierValue("");
@@ -987,6 +1707,13 @@ export default function App() {
         return bn ? `${bt}` : bt;
       };
     }
+    if (tab === "sacreds") {
+      return (it) => {
+        const types = sacredTypes(it);
+        return types.length ? types.join(" / ") : "Sacred";
+      };
+    }
+
     // runewords
     return (it) => {
       const types = runewordAllTypes(it);
@@ -1040,6 +1767,20 @@ export default function App() {
       };
     }
 
+    if (tab === "sacreds") {
+      return (it) => {
+        const ing = sacredIngredients(it);
+        const map = it?.propertiesByItemType && typeof it.propertiesByItemType === "object"
+          ? it.propertiesByItemType
+          : {};
+        const typeCount = Object.keys(map).length;
+        return [
+          ing.length ? `${ing.length} inputs` : "",
+          typeCount ? `${typeCount} type variants` : "",
+        ].filter(Boolean).join(" • ");
+      };
+    }
+
     return (it) => {
       const parts = [];
       if (nz(it?.requiredLevel)) parts.push(`Req Lvl ${n(it?.requiredLevel)}`);
@@ -1059,62 +1800,101 @@ export default function App() {
   const showSockets = tab === "weapons" || tab === "armors";
   const typePlaceholder =
     tab === "uniques" ? "All base types" :
-    tab === "runewords" ? "All item types" :
+    (tab === "runewords" || tab === "sacreds") ? "All item types" :
     "All types";
 
   return (
-    <div className="wrap">
-      <TabsBar tab={tab} setTab={setTab} />
+    <div className="appRoot">
+      <div className="wrap">
+        <TabsBar tab={tab} setTab={setTab} />
 
-      <FiltersBar
-        search={search}
-        setSearch={setSearch}
-        typeValue={typeValue}
-        setTypeValue={setTypeValue}
-        tierValue={tierValue}
-        setTierValue={setTierValue}
-        socketsValue={socketsValue}
-        setSocketsValue={setSocketsValue}
-        uberValue={uberValue}
-        setUberValue={setUberValue}
-        types={typeOptions}
-        tiers={tierOptions}
-        showSockets={showSockets}
-        showUber={tab === "uniques"}
-        typePlaceholder={typePlaceholder}
-        searchInputRef={searchInputRef}
-      />
 
-      <ListPanel
-        title={title}
-        countLabel={countLabel}
-        items={filtered}
-        activeIndex={activeIndex}
-        setActiveIndex={setActiveIndex}
-        subLabel={subLabel}
-        tinyLabel={tinyLabel}
-      />
-
-      <TooltipShell>
-        {tab === "weapons" && (
-        <WeaponTooltip
-          w={activeItem}
-          onGoCode={jumpToCode}
-          onGoUnique={jumpToUnique}
-        />
-        )}
-
-        {tab === "runewords" && <RunewordTooltip rw={activeItem} />}
-
-        {tab === "armors" && (
-          <ArmorTooltip
-            a={activeItem}
-            onGoCode={jumpToCode}
-            onGoUnique={jumpToUnique}
+        {tab === "help" ? (
+          <HelpPanel />
+        ) : (
+        <>
+          <div className="filtersStack">
+            <FiltersBar
+              search={search}
+              setSearch={setSearch}
+              typeValue={typeValue}
+              setTypeValue={setTypeValue}
+              tierValue={tierValue}
+              setTierValue={setTierValue}
+              socketsValue={socketsValue}
+              setSocketsValue={setSocketsValue}
+              uberValue={uberValue}
+              setUberValue={setUberValue}
+              types={typeOptions}
+              tiers={tierOptions}
+              showSockets={showSockets}
+              showUber={tab === "uniques"}
+              typePlaceholder={typePlaceholder}
+              searchInputRef={searchInputRef}
+              showTier={tab !== "runewords" && tab !== "sacreds"} 
+            />
+              <InfoPanel
+                title={info.title}
+                markdownText={info.text}
+                isOpen={infoOpen}
+                onToggle={() =>
+                  setInfoOpenByTab((prev) => {
+                    const next = { ...prev, [tab]: !prev[tab] };
+                    try {
+                      window.localStorage.setItem(
+                        INFO_OPEN_STORAGE_KEY,
+                        JSON.stringify(next)
+                      );
+                    } catch (e) {
+                      console.warn("Failed to save info panel state", e);
+                    }
+                    return next;
+                  })
+                }
+              />
+          </div>
+          
+          <ListPanel
+            tab={tab}
+            title={title}
+            countLabel={countLabel}
+            items={filtered}
+            activeIndex={activeIndex}
+            setActiveIndex={setActiveIndex}
+            subLabel={subLabel}
+            tinyLabel={tinyLabel}
           />
-        )}
-        {tab === "uniques" && <UniqueTooltip u={activeItem} />}
-      </TooltipShell>
-    </div>
+
+          <TooltipShell>
+            {tab === "weapons" && (
+            <WeaponTooltip
+              w={activeItem}
+              onGoCode={jumpToCode}
+              onGoUnique={jumpToUnique}
+            />
+            )}
+
+            {tab === "runewords" && <RunewordTooltip rw={activeItem} onGoSacred={jumpToSacred} />}
+
+            {tab === "armors" && (
+              <ArmorTooltip
+                a={activeItem}
+                onGoCode={jumpToCode}
+                onGoUnique={jumpToUnique}
+              />
+            )}
+            {tab === "uniques" && <UniqueTooltip u={activeItem} />}
+            {tab === "sacreds" && <SacredTooltip s={activeItem} />}
+          </TooltipShell>
+        </>)}
+      </div>
+
+      <footer className="footer">
+        <div className="footerInner">
+        <span className="footerLeft">by <a className="footerGitLink" target= "_blank" href="https://github.com/Lukaszpg">MindH1ve</a></span>
+        <span className="footerRight">v{APP_VERSION}</span>
+        </div>
+      </footer>
+   </div>
   );
 }
