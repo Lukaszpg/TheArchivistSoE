@@ -171,6 +171,10 @@ const TOOLTIPS_TEXT_MAP = {
   },
 };
 
+function getTitleByTab(tab) {
+  return TABS[tab];
+}
+
 function sacredTypes(it) {
   const a = Array.isArray(it?.itemTypesDisplayNames) ? it.itemTypesDisplayNames : [];
   return a.map((x) => n(x)).filter(Boolean);
@@ -197,6 +201,15 @@ const fmtSigned = (v) => {
   if (Number.isNaN(x)) return String(v);
   return (x > 0 ? "+" : "") + x;
 };
+
+function isHighlightedItem(u) {
+  return u?.highlight;
+}
+
+function isUberUnique(u) {
+  const src = u?.dropSource;
+  return src !== null && src !== undefined && String(src).trim() !== "";
+}
 
 function getItemIconUrl(tab, item) {
   if (tab === "weapons") {
@@ -710,88 +723,110 @@ function FiltersBar({
   showUber,
   typePlaceholder,
   searchInputRef,
-  showTier
+  showTier,
+  highlightOnly,
+  setHighlightOnly,
+  showHighlight,
 }) {
   return (
-    <div className="filtersPanel">
-      <input
-        ref={searchInputRef}
-        type="text"
-        value={search}
-        className="searchBar"
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search item name…"
-      />
+    <div className="filtersRow">
+      <div className="filtersPanel">
+        <input
+          ref={searchInputRef}
+          type="text"
+          value={search}
+          className="searchBar"
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search item name…"
+        />
 
-      <select
-        value={typeValue}
-        onChange={(e) => setTypeValue(e.target.value)}
-        style={{ maxWidth: 260 }}
-      >
-        <option value="">{typePlaceholder}</option>
-        {types.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
-        ))}
-      </select>
-
-      {showSockets && (
         <select
-          value={socketsValue}
-          onChange={(e) => setSocketsValue(e.target.value)}
-          style={{ maxWidth: 180 }}
+          value={typeValue}
+          onChange={(e) => setTypeValue(e.target.value)}
+          style={{ maxWidth: 260 }}
         >
-          <option value="">All sockets</option>
-          {Array.from({ length: 7 }, (_, i) => String(i)).map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      )}
-
-      {showTier && (
-        <select
-          value={tierValue}
-          onChange={(e) => setTierValue(e.target.value)}
-          style={{ maxWidth: 180 }}
-        >
-          <option value="">All tiers</option>
-          {tiers.map((t) => (
+          <option value="">{typePlaceholder}</option>
+          {types.map((t) => (
             <option key={t} value={t}>
               {t}
             </option>
           ))}
         </select>
-      )}
 
-      {showUber && (
-        <select
-          value={uberValue}
-          onChange={(e) => setUberValue(e.target.value)}
-          style={{ maxWidth: 240 }}
-        >
-          <option value="">Uber Boss Unique (All)</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
-        </select>
-      )}
+        {showSockets && (
+          <select
+            value={socketsValue}
+            onChange={(e) => setSocketsValue(e.target.value)}
+            style={{ maxWidth: 180 }}
+          >
+            <option value="">All sockets</option>
+            {Array.from({ length: 7 }, (_, i) => String(i)).map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        )}
 
-      <div className="filtersActions">
-        <button
-          type="button"
-          className="btn"
-          onClick={() => {
-            setSearch("");
-            setTypeValue("");
-            setTierValue("");
-            setSocketsValue("");
-            setUberValue("");
-          }}
-        >
-          Reset
-        </button>
+        {showTier && (
+          <select
+            value={tierValue}
+            onChange={(e) => setTierValue(e.target.value)}
+            style={{ maxWidth: 180 }}
+          >
+            <option value="">All tiers</option>
+            {tiers.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {showUber && (
+          <label className="toggleWrap" title="Show only Uber Boss uniques">
+            <span className="toggleText">Show Uber Boss uniques</span>
+            <div className="toggle">
+              <input
+                type="checkbox"
+                checked={uberValue}
+                onChange={(e) => setUberValue(e.target.checked)}
+              />
+              <span className="toggleSlider" />
+            </div>
+          </label>
+        )}
+
+        {showHighlight && (
+          <label className="toggleWrap" title="Show only highlighted uniques">
+            <span className="toggleText">Show added in SoE</span>
+            <div className="toggle">
+              <input
+                type="checkbox"
+                checked={highlightOnly}
+                onChange={(e) => setHighlightOnly(e.target.checked)}
+              />
+              <span className="toggleSlider" />
+            </div>
+          </label>
+        )}
+        </div>
+
+        <div className="filtersResetPanel">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              setSearch("");
+              setTypeValue("");
+              setTierValue("");
+              setSocketsValue("");
+              setUberValue("");
+              setHighlightOnly(false);  
+            }}
+          >
+            Reset
+          </button>
       </div>
     </div>
   );
@@ -982,11 +1017,22 @@ function SacredTooltip({ s }) {
           return (
             <div key={k} style={{ marginBottom: 10 }}>
               <div className="sacredModsItemType">{k}</div>
-              {arr.map((p, i) => (
-                <div key={`${k}-${i}`} className="runeModLine">
-                  {String(p)}
-                </div>
-              ))}
+              {arr.map((p, i) => {
+                const raw = String(p);
+                const normalized = raw.replace(/\\n/g, "\n");
+                const parts = normalized.split("\n");
+
+                return (
+                  <div key={`${k}-${i}`} className="runeModLine">
+                    {parts.map((line, j) => (
+                      <React.Fragment key={j}>
+                        {line}
+                        {j < parts.length - 1 ? <br /> : null}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           );
         })
@@ -1439,9 +1485,10 @@ export default function App() {
   const [typeValue, setTypeValue] = useState("");
   const [tierValue, setTierValue] = useState("");
   const [socketsValue, setSocketsValue] = useState("");
-  const [uberValue, setUberValue] = useState("");
+  const [uberValue, setUberValue] = useState(false);
   const [pendingUniqueCode, setPendingUniqueCode] = useState("");
   const [pendingSacredMatch, setPendingSacredMatch] = useState(null);
+  const [highlightOnly, setHighlightOnly] = useState(false);
 
   const items = dataset.data;
 
@@ -1482,7 +1529,8 @@ export default function App() {
     setTypeValue("");
     setTierValue("");
     setSocketsValue("");
-    setUberValue("");
+    setUberValue(false);
+    setHighlightOnly(false);  
 
     // optional: reset selection too
     setActiveIndex(0);
@@ -1510,20 +1558,30 @@ export default function App() {
       if (tab === "weapons") {
         if (typeValue && weaponTypeForFilter(it) !== typeValue) return false;
         if (socketsValue && Number(it?.maxSockets) !== Number(socketsValue)) return false;
+
+        if (highlightOnly && !isHighlightedItem(it)) {
+          return false;
+        }
       }
 
       if (tab === "armors") {
         if (typeValue && armorTypeForFilter(it) !== typeValue) return false;
         if (socketsValue && Number(it?.maxSockets) !== Number(socketsValue)) return false;
+
+        if (highlightOnly && !isHighlightedItem(it)) {
+          return false;
+        }
       }
 
       if (tab === "uniques") {
         if (typeValue && uniqueBaseTypeLabel(it) !== typeValue) return false;
 
-        if (uberValue === "yes") {
-          if (it?.dropSource === null || it?.dropSource === undefined) return false;
-        } else if (uberValue === "no") {
-          if (it?.dropSource !== null && it?.dropSource !== undefined) return false;
+        if (uberValue && !isUberUnique(it)) {
+          return false;
+        }
+
+        if (highlightOnly && !isHighlightedItem(it)) {
+          return false;
         }
       }
 
@@ -1531,6 +1589,10 @@ export default function App() {
         if (typeValue) {
           const types = runewordAllTypes(it);
           if (!types.includes(typeValue)) return false;
+        }
+
+        if (highlightOnly && !isHighlightedItem(it)) {
+          return false;
         }
       }
 
@@ -1543,7 +1605,7 @@ export default function App() {
 
       return true;
     });
-}, [items, tab, search, tierValue, typeValue, socketsValue, uberValue]);
+}, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly]);
 
     // selection
     const [activeIndex, setActiveIndex] = useState(0);
@@ -1556,7 +1618,7 @@ export default function App() {
       }
 
       setActiveIndex(0);
-    }, [tab, search, tierValue, typeValue, socketsValue, uberValue]);
+    }, [tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly]);
 
   
   useEffect(() => {
@@ -1612,7 +1674,8 @@ export default function App() {
     setTypeValue("");
     setTierValue("");
     setSocketsValue("");
-    setUberValue("");
+    setUberValue(false);
+    setHighlightOnly(false); 
 
     setPendingSacredMatch({
       name: name.toLowerCase(),
@@ -1630,7 +1693,8 @@ export default function App() {
     setTypeValue("");
     setTierValue("");
     setSocketsValue("");
-    setUberValue("");
+    setUberValue(false);
+    setHighlightOnly(false); 
 
     const all = dataset.data;
     const idx = all.findIndex((it) => n(it?.code) === c);
@@ -1649,7 +1713,8 @@ export default function App() {
     setTypeValue("");
     setTierValue("");
     setSocketsValue("");
-    setUberValue("");
+    setUberValue(false);
+    setHighlightOnly(false); 
 
     setPendingUniqueCode(c);
   }
@@ -1804,7 +1869,7 @@ export default function App() {
     };
   }, [tab]);
 
-  const title = tab === "weapons" ? "Weapons" : tab === "armors" ? "Armors" : "Uniques";
+  const title = getTitleByTab(tab);
   const countLabel = dataset.loading
     ? "Loading…"
     : dataset.error
@@ -1846,6 +1911,9 @@ export default function App() {
               typePlaceholder={typePlaceholder}
               searchInputRef={searchInputRef}
               showTier={tab !== "runewords" && tab !== "sacreds"} 
+              showHighlight={tab === "uniques" || tab === "runewords" || tab === "weapons" || tab === "armors"}
+              highlightOnly={highlightOnly}
+              setHighlightOnly={setHighlightOnly} 
             />
               <InfoPanel
                 title={info.title}
