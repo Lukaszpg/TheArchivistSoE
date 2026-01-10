@@ -147,13 +147,14 @@ const ARMOR_TYPE_MAP = {
 };
 
 const TOOLTIPS_TEXT_MAP = {
-  "qualityLevel": "Quality level is a stat that determines to\n which treasure class the item belongs. \nIt's important for gambling (higher quality\n level means lower chance to upgrade the\n item tier) and unique item drop generation,\n as items with higher quality level tend\n to drop less.",
+  "qualityLevel": "Quality level is a stat that determines to which treasure class the item belongs. It's important for gambling (higher quality level means lower chance to upgrade the item tier) and unique item drop generation, as items with higher quality level tend to drop less.",
   "runes": "Runes here are shown in the exact order you should put them in your item to create a runeword.",
-  "occurrenceChance": "Occurrence chance is chance for this item to\n drop when the game rolls an unique item on\n base and base has more than one unique item\n attached to it.",
-  "dropRate": "Drop rate is chance for this item to drop from\n specific monster, most likely from Uber Boss.",
-  "code": "This code can be used in your loot filter to\n highlight this specific base.",
-  "uniCode": "This code can be used in your loot filter to\n highlight this specific base - remember to add\n UNI modifier.",
-  "sacred": "Additionaly to items mentioned here it is required to use Sacred Orb in the Cube."
+  "occurrenceChance": "Occurrence chance is chance for this item to drop when the game rolls an unique item on base and base has more than one unique item attached to it.",
+  "dropRate": "Drop rate is chance for this item to drop from specific monster, most likely from Uber Boss.",
+  "code": "This code can be used in your loot filter to highlight this specific base.",
+  "uniCode": "This code can be used in your loot filter to highlight this specific base - remember to add UNI modifier.",
+  "sacred": "Additionaly to items mentioned here it is required to use Sacred Orb in the Cube.",
+  "mythicDivineOrb": "In Sanctuary of Exile unique items can be created in the Cube by using base and an currency orb appropiate for item tier - Mythic Orb for normal and exceptional bases and Divine Orb for elite bases."
 };
 
   const INFO_BY_TAB = {
@@ -163,6 +164,7 @@ const TOOLTIPS_TEXT_MAP = {
       "Sacred items system is exclusive to Sanctuary of Exile. It allows to harness the power of a runeword and imprint it to `Unique` or `Crafted` item:\n\n" +
       "- Making an item sacred requires finding `Sacred Orb` which drops in `T4 Dungeons` or from monsters added by `Terror of Opulence`\n\n" +
       "- To sacred an item, first use `Sacred Orb` with `Runes` (or additional items - consult appropriate recipe in the list below) used to create a runeword to create `Sacred Orb of X`\n\n"  + 
+      "- Runes have to be in stacked form, each with the quantity presented in the Sacred tooltip on this page\n\n" +
       "- Use the created orb with `Unique` or `Crafted` item you wish to make sacred. Please note that added modifiers may vary by item type\n\n" +
       "- Sacred items can be corrupted with `World Stone Shard`\n\n" +
       "- Sacred modifiers along with sacred status can be removed from `Unique` items by using `Demonic Cube` as long as it's **not** `Corrupted`\n\n" +
@@ -181,14 +183,16 @@ function sacredTypes(it) {
 }
 
 function sacredIngredients(it) {
-  return [
-    n(it?.firstInputDisplayName),
-    n(it?.secondInputDisplayName),
-    n(it?.thirdInputDisplayName),
-    n(it?.fourthInputDisplayName),
-    n(it?.fifthInputDisplayName),
-    n(it?.sixthInputDisplayName),
-  ].filter(Boolean);
+  const out = [];
+
+  repeatIngredient(it?.firstInputDisplayName,  it?.firstInputQuantity).forEach(v => out.push(v));
+  repeatIngredient(it?.secondInputDisplayName, it?.secondInputQuantity).forEach(v => out.push(v));
+  repeatIngredient(it?.thirdInputDisplayName,  it?.thirdInputQuantity).forEach(v => out.push(v));
+  repeatIngredient(it?.fourthInputDisplayName, it?.fourthInputQuantity).forEach(v => out.push(v));
+  repeatIngredient(it?.fifthInputDisplayName,  it?.fifthInputQuantity).forEach(v => out.push(v));
+  repeatIngredient(it?.sixthInputDisplayName,  it?.sixthInputQuantity).forEach(v => out.push(v));
+
+  return out;
 }
 
 // ---- tiny helpers ----
@@ -201,6 +205,19 @@ const fmtSigned = (v) => {
   if (Number.isNaN(x)) return String(v);
   return (x > 0 ? "+" : "") + x;
 };
+
+function repeatIngredient(name, qtyRaw) {
+  const nameStr = n(name);
+  if (!nameStr) return [];
+
+  const qty = Number(qtyRaw);
+  // quantity 0 or invalid → show once (for things like "Armor", "Any Shield")
+  if (!Number.isFinite(qty) || qty <= 1) {
+    return [nameStr];
+  }
+
+  return Array.from({ length: qty }, () => nameStr);
+}
 
 function isHighlightedItem(u) {
   return u?.highlight;
@@ -502,15 +519,7 @@ function buildSearchTextForItem(tab, it) {
   }
 
   if (tab === "sacreds") {
-    const ing = [
-      n(it?.firstInputDisplayName),
-      n(it?.secondInputDisplayName),
-      n(it?.thirdInputDisplayName),
-      n(it?.fourthInputDisplayName),
-      n(it?.fifthInputDisplayName),
-      n(it?.sixthInputDisplayName),
-    ].filter(Boolean).join("\n").toLowerCase();
-
+    const ing = sacredIngredients(it).join("\n").toLowerCase();
     const props = sacredPropertiesText(it).toLowerCase();
     return `${name}\n${ing}\n${props}`;
   }
@@ -1321,6 +1330,7 @@ function UniqueTooltip({ u }) {
   const requiredDexterity = getRequiredDexterityForUnique(u, itemType);
   const requiredStrength = getRequiredStrengthForUnique(u, itemType);
   const hasRequirements = (requiredLevel > 0 && requiredStrength > 0) || (requiredLevel > 0 && requiredDexterity > 0) || (requiredLevel > 0 && requiredDexterity > 0 && requiredStrength > 0);
+  const creationOrb = u?.itemTier === "Normal" || u?.itemTier === "Exceptional" ? "Mythic Orb" : "Divine Orb";
 
   return (
     <>
@@ -1329,12 +1339,20 @@ function UniqueTooltip({ u }) {
         {baseName}
           
       </div>
+        {has(u?.weaponBase) ? (
+          <>
+            <div className="hr" />
+              {has(u?.displayOneHandDamage) && lineKV("One hand damage:", n(u?.displayOneHandDamage), "")}
+              {has(u?.displayTwoHandDamage) && lineKV("Two hand damage:", n(u?.displayTwoHandDamage), "")}
+          </>
+        ) : null}
 
-
-    {has(u?.weaponBase) ? (
-        <>
-        </>
-      ) : null}
+        {has(u?.armorBase) ? (
+          <>
+            <div className="hr" />
+              {has(u?.displayDefense) && lineKV("Defense:", n(u?.displayDefense), "")}
+          </>
+        ) : null}
 
       <div className="hr" />
       <div className="uniqueHeader">Unique modifiers</div>
@@ -1377,6 +1395,7 @@ function UniqueTooltip({ u }) {
       {has(u?.level) && lineKV("Quality Level:", n(u?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
       {nz(u?.requiredLevel) && lineKV("Required Level:", n(u?.requiredLevel), "req")}
       {has(u?.code) && lineKV("Code:", n(u?.code), "dim", TOOLTIPS_TEXT_MAP["uniCode"])}
+      {!has(u?.dropSource) && lineKV("Can be created with:", n(creationOrb), "dim", TOOLTIPS_TEXT_MAP["mythicDivineOrb"])}
 
       {hasDropInfo ? (
         <>
