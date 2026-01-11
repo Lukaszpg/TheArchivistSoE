@@ -1,0 +1,202 @@
+[
+		{
+		"id":"about",
+		"title":"About cube recipes",
+		"text": 
+		[
+			"- Below cube recipes are specific to Sanctuary of Exile",
+			"- All cube recipes from vanilla Project Diablo 2 work unless stated otherwise on this page",
+			"- Please refer to [Vanilla PD2 Wiki](https://wiki.projectdiablo2.com/wiki/Main_Page) for vanilla cube recipes"
+		]
+	},
+	{
+		"id":"hellfire-torch-desecration",
+		"title":"Hellfire torch desecration",
+		"text": 
+		[
+			"- Lucion has 5% chance to drop `Desecration Orb`",
+			"- Desecration Orb can be used to desecrate your [Hellfire Torch](app:uniques:Hellfire Torch)",
+			"- There is 45% chance that your [Hellfire Torch](app:uniques:Hellfire Torch) will be destroyed to Hellfire Ashes",
+			"- All modifiers have equal weighting",
+			"- Demonic Cube can be used to remove the desecration status",
+			"- Possible mods:",
+			"  - +1 to All Skills",
+			"  - +10% Faster Cast Rate",
+			"  - +10% Faster Run/Walk",
+			"  - +10% Curse Resistance",
+			"  - +[30-40]% Enhanced Damage",
+			"  - Cannot Be Frozen",
+			"  - +2% to ALL Maximum Resistances",
+			"  - All Resistances +[7-10]",
+			"  - Poison Length Reduced by 50%"
+		]
+	},
+	{
+		"id":"outer-void-recipes",
+		"title":"Outer Void map recipes",
+		"text": 
+		[
+			"- [Outer Void](app:uniques:Outer Void) is the only unique map that can be crafted with map currency",
+			"- This map can have two Terrors applied to it",
+			"- This map can have five Glyphs applied to it",
+			"- This map can have three chisels applied to it",
+			"- This map gets monster % HP and % physical damage bonus as it was T4 Dungeon",
+			"- Please mind that applying two times the same Terror does not work and may bug the map!"
+		]
+	},
+	{
+		"id":"map-currency-recipes",
+		"title":"Map currency recipes",
+		"text": 
+		[
+			"- Rare T4 dungeons can be now re-rolled with Infused Horadrim Orb",
+			"- Cube a rare map with glyph to add bonus modifier - check [Glyphs](app:changes:glyphs) for more information",
+			"- Cube a rare map with terror to add bonus modifier - check [Terrors](app:changes:terrors) for more information"
+		]
+	},
+	{
+		"id":"mythic-orb-recipes",
+		"title":"Mythic Orb recipes",
+		"text": 
+		[
+			"- `White/Superior/Magic/Rare normal/exceptional tier item` + `Mythic Orb` = `Unique item on that base`",
+			"- `Magic Grand Charm` + `Mythic Orb` = `Gheed's Fortune`",
+			"- Result item will always be non-ethereal, even if the input item was ethereal",
+			"- Rings and amulets honor the rarity of the resulting unique item (please refer to `Occurence Chance` in `Uniques` tab)",
+			"- Rings can result in: Nagelring, Manald Heal, Raven Frost, Dwarf Star, Carrion Wind",
+			"- Amulets can result in: Nokozan Relic, The Cat's Eye, The Mahim Oak Curio, Saracen's Chance, Crescent Moon, The Eye of Etlich, Atma's Scarab"
+		]
+	},
+	{
+		"id":"divine-orb-recipes",
+		"title":"Divine Orb recipes",
+		"text": 
+		[
+			"- `White/Superior/Magic/Rare elite tier item` + `Divine Orb` = `Unique item on that base`",
+			"- `5x Jewel Fragment` + `Divine Orb` = `Random unique regular jewel`",
+			"- `Magic/Rare Mythical Jewel` + `Divine Orb` = `Random unique mythical jewel`",
+			"- `Magic Ornate Charm` + `3x Divine Orb` = `Random unique ornate charm`",
+			"- Result item will always be non-ethereal, even if the input item was ethereal",
+			"- Rings and amulets honor the rarity of the resulting unique item (please refer to `Occurence Chance` in `Uniques` tab)",
+			"- Rings can result in: The Stone of Jordan, Bul Katho's Wedding Band, Nature's Peace, Constricting Loop, Wisp Projector, Deaths Poise",
+			"- Amulets can result in: The Rising Sun, Highlord's Wrath, Mara's Kaleidoscope, Seraph's Hymn, Metalgrid, Defiance of Destiny, Astramentis",
+			"- You can now create Armageddon Blade in Cube - the recipe is `Phase Blade` + `5x Divine Orb` = `Armageddon Blade`"
+		]
+	},
+	{
+		"id":"exalted-orb-recipes",
+		"title":"Exalted Orb recipes",
+		"text": 
+		[
+			"- `White/Superior/Magic/Rare of any tier item` + `Exalted Orb` = `Set item on that base`",
+			"- Result item will always be non-ethereal, even if the input item was ethereal",
+			"- Rings and amulets honor the rarity of the resulting set item (please refer to `Occurence Chance` in `Set` tab)"
+		]
+	},
+	{
+		"id":"infernal-crucible",
+		"title":"Infernal Crucible recipes",
+		"text": 
+		[
+			"- Infernal Crucible gives three random stacks of three uber materials after cubing twice",
+			"- Infernal Crucible can be influenced to give certain material",
+			"- Example: If you would like to receive more Splinter of the Void, then use the recipe `Infernal Crucible` + `Splinter of The Void` = `Influenced Infernal Crucible`",
+			"- In the above example, one `Splinter of the Void` will be consumed, but you will receive three in return along with other uber crafting materials"
+		]
+	},
+	{
+		"id":"rune-downgrading",
+		"title":"Rune downgrading recipes",
+		"text": 
+		[
+			"- Runes from Eld to Pul can be downgraded with a recipe `Rune in stacked or non-stacked form` + `Key or Skeleton Key` = `3x Lower Rune`",
+			"- Runes from Um to Ist can be downgraded with a recipe `Rune in stacked or non-stacked form` + `Key or Skeleton Key` = `1x Lower Rune`",
+			"- Runes from Zod to Jah can be downgraded with a recipe `Rune in stacked or non-stacked form` + `1x Eternal Coin` = `1x Lower Rune` "
+		]
+	},
+	{
+		"id":"unsocketing",
+		"title":"Unsocketing recipes",
+		"text": 
+		[
+			"- You can now remove any item socket contents while preserving said content using Larzuk's Mallus (item sold by Larzuk in any act for 250k gold)",
+			"- `Larzuk’s Malus` + `Socketed Item` = `Used item with socket contents removed (preserves the contents)`",
+			"- Works with all socketable items, including RUNEWORDS", 
+			"- The item cannot be CORRUPTED"
+		]
+	},
+	{
+		"id":"mythic-recipes",
+		"title":"Mythical Jewel recipes",
+		"text": 
+		[
+			"- `Regular/Mythic Magic jewel` + `Jeweller's Prism` = `Rare Regular/Mythic jewel`",
+			" - Magic/Rare Mythical Jewels can be re-rolled with `3x perfect gem`. Preserves the item level",
+			" - DO NOT USE PERFECT SKULL TO RE-ROLL, AS THIS WILL LOWER THE ILVL OF THE ITEM. IT IS HARDCODED BEHAVIOUR AND CANNOT BE CHANGED",
+			" - `Magic/Rare Mythical Jewel` + `Key` = `5 Jewel Fragments` - Works with up to 10 jewels at one time"
+		]
+	},
+	{
+		"id":"crafting-infusions-recipes",
+		"title":"Crafting infusions recipes",
+		"text": 
+		[
+			"- Crafting infusions can now craft on already crafted bases",
+			"- Crafting infusions can now be created in the Cube",
+			"- `Jewel Fragment` + `Perfect Ruby` + `Thul Rune` = `Blood Crafting Infusion`",
+			"- `Jewel Fragment` + `Perfect Amethyst` + `Ral Rune` = `Caster Crafting Infusion`",
+			"- `Jewel Fragment` + `Perfect Sapphire` + `Ral Rune` = `Hitpower Crafting Infusion`",
+			"- `Jewel Fragment` + `Perfect Emerald` + `Ort Rune` = `Safety Crafting Infusion`",
+			"- `Jewel Fragment` + `Perfect Skull` + `Shael Rune` = `Vampiric Crafting Infusion`",
+			"- `Jewel Fragment` + `Perfect Topaz` + `Hel Rune` = `Bountiful Crafting Infusion`",
+			"- `Jewel Fragment` + `Perfect Diamond` + `Dol Rune` = `Brilliant Crafting Infusion`"
+		]
+	},
+	{
+		"id":"circlet-crafting",
+		"title":"Circlet crafting recipes",
+		"text": 
+		[
+			"- Circlets ([Circlet](app:armors:Circlet), [Coronet](app:armors:Coronet), [Tiara](app:armors:Tiara), [Diadem](app:armors:Diadem)) can now be crafted with crafting infusions",
+			"- Works with white and crafted bases",
+			"- Ehtereal status is preserved on craft"
+		]
+	},
+	{
+		"id":"mini-uber-keys",
+		"title":"Mini uber access",
+		"text": 
+		[
+			"- Now only one ANY key from Key of Destruction, Terror and Hate is required to access mini ubers"
+		]
+	},
+	{
+		"id":"currency-socketing-recipes",
+		"title":"Larzuk Puzzlebox and Larzuk Puzzle piece recipes",
+		"text": 
+		[
+			"- Larzuk Puzzlebox and Larzuk Puzzle piece can be used to re-roll the number of sockets",
+			"- Larzuk PuzzleBox and Larzuk Puzzle piece will now give up to maximum number of sockets on base",
+			"- Rerolling number of sockets with above will DESTROY the contents",
+			"- Larzuk Puzzlebox and Larzuk Puzzle piece can now be used on boots"
+		]
+	},
+	{
+		"id":"cains-wisdom",
+		"title":"Cain's Wisdom recipes",
+		"text": 
+		[
+			"- [Cain's Wisdom](app:uniques:Cain's Wisdom) is created by cubing one of each essence of `Suffering`, `Hatred`, `Terror`, `Destruction` and a `Small Magic Charm`",
+			"- Cain's Wisdom can be cubed with [Annihilus](app:uniques:Annihilus) to fuse the two together and transfer the bonus from Cain's to Annihilus"
+		]
+	},
+	{
+		"id":"liliths-mirror",
+		"title":"Lilith's mirror recipes",
+		"text": 
+		[
+			"- Lilith's Mirror can now be used in the cube with `non-corrupted unique/set armor/weapon/amulet/ring` to create exact copy of it - transfers sockets and ethereal status. Mirrored items can't be mirrored again",
+			"- Lilith's Mirror can now be used with `magic/rare/unique regular/mythic jewels` to create exact copy of it. Mirrored jewels can't be mirrored again"
+		]
+	}
+]

@@ -515,24 +515,24 @@ button.btn {
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* key/value rows */
 .kv {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr); /* fixed label column, flexible value */
+  column-gap: 16px;
+  align-items: baseline;
 }
 
 .kv span:first-child {
-  min-width: 220px;
+  white-space: nowrap; /* keep label on one line */
   color: rgba(255, 255, 255, 0.82);
 }
 
 .kv span:last-child {
-  text-align: left;
+  text-align: right;
   color: rgba(255, 255, 255, 0.92);
   white-space: normal;
   overflow-wrap: anywhere;
-  word-break: break-word;
+  word-break: break-word; /* value can wrap */
 }
 
 /* Ensure tooltip text never causes horizontal overflow */
@@ -669,7 +669,6 @@ button.btn {
   padding-right: 6px;
 }
 
-/* basic markdown-style helpers */
 .mdP {
   margin: 0 0 8px 0;
   color: rgba(255, 255, 255, 0.85);
@@ -687,6 +686,15 @@ button.btn {
   color: rgba(255, 255, 255, 0.85);
   font-size: 18px;
   line-height: 1.45;
+}
+
+.mdUlNested {
+  margin: 4px 0 4px 18px;
+  padding: 0;
+}
+
+.mdLiNested {
+  margin: 2px 0;
 }
 
 .mdCode {
@@ -977,3 +985,53 @@ body::-webkit-scrollbar-thumb:hover {
   }
 }
 
+.helpHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.cubeSearchBox {
+  flex: 0 0 260px;
+}
+
+.cubeInfoBody {
+  max-height: 400px;
+}
+
+.mdLink {
+  color: var(--c-blue);
+  text-decoration: underline;
+}
+
+.mdLink:hover {
+  color: #9fd2ff;
+}
+
+.mdLink {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  font: inherit;
+  color: #caa14a;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+a.mdLink {
+  /* keep anchor default behavior for external links */
+}
+
+.mdLinkInternal {
+  text-decoration-style: dashed;
+  text-underline-offset: 5px;
+}
+
+.carryOne {
+  text-align: center;
+  color: #ffac41;
+  font-size: 18px;
+}

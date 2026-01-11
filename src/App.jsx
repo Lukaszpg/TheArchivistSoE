@@ -42,6 +42,8 @@ const TABS = {
   uniques: "Uniques",
   runewords: "Runewords",
   sacreds: "Sacreds",
+  cube: "Cube Recipes",
+  changes: "SoE changes",
   help: "Help",
 };
 
@@ -49,7 +51,7 @@ const PROP_HIGHLIGHT_RULES = [
   { test: /corrupted/i, className: "propRed" },
 ];
 
-const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "sacreds", "help"];
+const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "sacreds", "cube", "changes", "help"];
 
 const WEAPON_ICON_MAP = {
   sword: SwordIcon,
@@ -337,10 +339,75 @@ function sacredPropertiesText(s) {
 }
 
 
-function renderInlineMarkdown(text) {
+function renderInlineMarkdown(text, onLink) {
   const s = String(text ?? "");
 
   const parts = s.split(/(`[^`]*`)/g);
+
+  // helper: split a plain string into text + link pieces
+  function renderWithLinks(str, keyPrefix) {
+    const linkRe = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const out = [];
+    let last = 0;
+    let m;
+    let idx = 0;
+
+    while ((m = linkRe.exec(str)) !== null) {
+      if (m.index > last) {
+        out.push(
+          <React.Fragment key={`${keyPrefix}-t-${idx}`}>
+            {str.slice(last, m.index)}
+          </React.Fragment>
+        );
+      }
+
+      const label = m[1];
+      const href = m[2];
+
+      if (href.startsWith("app:") && typeof onLink === "function") {
+        const payload = href.slice(4); // remove "app:"
+        const [tabRaw, ...rest] = payload.split(":");
+        const tab = (tabRaw || "").toLowerCase();
+        const name = decodeURIComponent(rest.join(":")).trim();
+
+        out.push(
+          <button
+            key={`${keyPrefix}-app-${idx}`}
+            type="button"
+            className="mdLink mdLinkInternal"
+            onClick={() => onLink({ tab, name })}
+          >
+            {label}
+          </button>
+        );
+      } else {
+        out.push(
+          <a
+            key={`${keyPrefix}-ext-${idx}`}
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="mdLink"
+          >
+            {label}
+          </a>
+        );
+      }
+
+      last = linkRe.lastIndex;
+      idx += 1;
+    }
+
+    if (last < str.length) {
+      out.push(
+        <React.Fragment key={`${keyPrefix}-tail`}>
+          {str.slice(last)}
+        </React.Fragment>
+      );
+    }
+
+    return out;
+  }
 
   return parts.map((part, idx) => {
     if (part.startsWith("`") && part.endsWith("`")) {
@@ -370,14 +437,21 @@ function renderInlineMarkdown(text) {
             </em>
           );
         }
-        return <React.Fragment key={`${idx}-${j}-${k}`}>{it}</React.Fragment>;
+
+        // this is the plain text segment: run link parsing here
+        return (
+          <React.Fragment key={`${idx}-${j}-${k}`}>
+            {renderWithLinks(it, `${idx}-${j}-${k}`)}
+          </React.Fragment>
+        );
       });
     });
   });
 }
 
-function Markdown({ text }) {
-  const raw = String(text ?? "").replace(/\r\n/g, "\n");
+function Markdown({ text, onLink }) {
+  const src = Array.isArray(text) ? text.join("\n") : text;
+  const raw = String(src ?? "").replace(/\r\n/g, "\n");
   const lines = raw.split("\n");
 
   const blocks = [];
@@ -390,6 +464,7 @@ function Markdown({ text }) {
     buf = [];
   };
 
+  // listBuf now stores objects: { text, children: [] }
   let listBuf = [];
   const flushList = () => {
     if (!listBuf.length) return;
@@ -406,10 +481,28 @@ function Markdown({ text }) {
       continue;
     }
 
-    const bullet = t.trim().match(/^[-*]\s+(.+)$/);
+      // capture indent + bullet
+    const bullet = t.match(/^(\s*)[-*]\s+(.+)$/);
     if (bullet) {
+      const indent = bullet[1].length; // number of leading spaces
+      const content = bullet[2].trim();
+
       flushParagraph();
-      listBuf.push(bullet[1]);
+
+      // top-level bullet: no indent
+      if (indent === 0) {
+        listBuf.push({ text: content, children: [] });
+      } else {
+        // second-level bullet: attach to last top-level item
+        const parent = listBuf[listBuf.length - 1];
+        if (parent) {
+          if (!parent.children) parent.children = [];
+          parent.children.push(content);
+        } else {
+          // if somehow no parent exists, fall back to top-level
+          listBuf.push({ text: content, children: [] });
+        }
+      }
       continue;
     }
 
@@ -426,9 +519,18 @@ function Markdown({ text }) {
         if (b.type === "ul") {
           return (
             <ul key={i} className="mdUl">
-              {b.items.map((it, j) => (
+              {b.items.map((item, j) => (
                 <li key={j} className="mdLi">
-                  {renderInlineMarkdown(it)}
+                  {renderInlineMarkdown(item.text, onLink)}
+                  {item.children && item.children.length > 0 && (
+                    <ul className="mdUl mdUlNested">
+                      {item.children.map((child, k) => (
+                        <li key={k} className="mdLi mdLiNested">
+                          {renderInlineMarkdown(child, onLink)}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
             </ul>
@@ -436,13 +538,15 @@ function Markdown({ text }) {
         }
         return (
           <p key={i} className="mdP">
-            {renderInlineMarkdown(b.text)}
+            {renderInlineMarkdown(b.text, onLink)}
           </p>
         );
       })}
     </div>
   );
 }
+
+
 
 function classForPropertyLine(line) {
   const s = String(line || "");
@@ -539,13 +643,6 @@ function applyModifierExpansions(searchText) {
   }
 
   return out;
-}
-
-function runewordTypeForFilter(rw) {
-  const a = Array.isArray(rw?.displayItemTypes) ? rw.displayItemTypes : [];
-  if (a.length) return a[0];
-  const b = Array.isArray(rw?.itemTypes) ? rw.itemTypes : [];
-  return b[0] || "";
 }
 
 function runewordAllTypes(rw) {
@@ -841,7 +938,7 @@ function FiltersBar({
   );
 }
 
-function InfoPanel({ title, markdownText, isOpen, onToggle }) {
+function InfoPanel({ title, markdownText, isOpen, onToggle, onLink }) {
   if (!markdownText) return null;
 
   return (
@@ -856,7 +953,7 @@ function InfoPanel({ title, markdownText, isOpen, onToggle }) {
 
       {isOpen ? (
         <div className="infoBody">
-          <Markdown text={markdownText} />
+          <Markdown text={markdownText} onLink={onLink} />
         </div>
       ) : null}
     </div>
@@ -1075,6 +1172,7 @@ function HelpPanel() {
         <p><b>UI</b></p>
         <ul>
           <li>Dotted underline under label means that it contains useful hint on hover.</li>
+          <li>Dashed underline under label means that it links to an entry on this site and will transfer to it on click.</li>
         </ul>
       </div>
     </div>
@@ -1339,6 +1437,14 @@ function UniqueTooltip({ u }) {
         {baseName}
           
       </div>
+      {u?.carryOne === "1" ? (
+        <>
+        <div className="carryOne">
+          You can have only one in your inventory and stash!
+        </div>
+        </>
+      ) : null}
+          
         {has(u?.weaponBase) ? (
           <>
             <div className="hr" />
@@ -1390,12 +1496,12 @@ function UniqueTooltip({ u }) {
 
       <div className="hr" />
       <div className="dropHeader">Additional item information</div>
-      {has(baseTypePretty) && lineKV("Base type:", n(baseTypePretty), "dim")}
+      {has(baseTypePretty) && has(u?.weaponBase) && lineKV("Base type:", n(baseTypePretty), "dim")}
       {has(u?.itemTier) && lineKV("Item Tier:", n(u?.itemTier), "dim")}
       {has(u?.level) && lineKV("Quality Level:", n(u?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
       {nz(u?.requiredLevel) && lineKV("Required Level:", n(u?.requiredLevel), "req")}
       {has(u?.code) && lineKV("Code:", n(u?.code), "dim", TOOLTIPS_TEXT_MAP["uniCode"])}
-      {!has(u?.dropSource) && lineKV("Can be created with:", n(creationOrb), "dim", TOOLTIPS_TEXT_MAP["mythicDivineOrb"])}
+      {!has(u?.dropSource) && u?.showCanBeCreatedWith && lineKV("Can be created with:", n(creationOrb), "dim", TOOLTIPS_TEXT_MAP["mythicDivineOrb"])}
 
       {hasDropInfo ? (
         <>
@@ -1411,8 +1517,119 @@ function UniqueTooltip({ u }) {
   );
 }
 
+function StaticDataPanel({ data, loading, error, search, onLink }) {
+  const [openMap, setOpenMap] = React.useState({});
+
+  const toggle = (id) => {
+    setOpenMap((m) => {
+      const current = m[id] ?? true;
+      return { ...m, [id]: !current };
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="helpPanel">
+        <div className="helpTitle">Cube Recipes</div>
+        <div className="helpBody">Loading cube data…</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="helpPanel">
+        <div className="helpTitle">Cube Recipes</div>
+        <div className="helpBody">
+          Failed to load <code>Cube.json</code>:{" "}
+          {String(error.message || error)}
+        </div>
+      </div>
+    );
+  }
+
+  const all = Array.isArray(data) ? data : [];
+
+  const filtered = React.useMemo(() => {
+    const q = (search || "").trim().toLowerCase();
+    if (!q) return all;
+
+    return all.filter((r) => {
+      const title = (n(r?.title) || "").toLowerCase();
+
+      const textArr = Array.isArray(r?.text) ? r.text : [r?.text];
+      const textJoined = textArr
+        .filter(Boolean)
+        .join("\n")
+        .toLowerCase();
+
+      return title.includes(q) || textJoined.includes(q);
+    });
+  }, [all, search]);
+
+  if (!filtered.length) {
+    return (
+      <div className="helpPanel">
+        <div className="helpTitle">Cube Recipes</div>
+        <div className="helpBody">
+          <div className="emptyState">No cube recipes match your search.</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {filtered.map((r, idx) => {
+        const id = r.id || `${r.type || "recipe"}-${idx}`;
+        const isOpen = openMap[id] ?? true;
+        const title = n(r.title) || `Recipe ${idx + 1}`;
+        const kind = n(r.type);
+
+        return (
+          <div key={id} className="infoPanel" style={{ marginBottom: 10 }}>
+            <div className="infoHeader">
+              <div className="infoTitle" style={{ fontSize: 18 }}>
+                {title}
+                {kind && (
+                  <span
+                    style={{
+                      fontSize: 14,
+                      marginLeft: 8,
+                      color: "var(--muted)",
+                      textTransform: "none",
+                      letterSpacing: 0,
+                      fontWeight: 400,
+                    }}
+                  >
+                    · {kind}
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="infoToggle"
+                onClick={() => toggle(id)}
+              >
+                {isOpen ? "Hide" : "Show"}
+              </button>
+            </div>
+
+            {isOpen && (
+              <div className="infoBody cubeInfoBody">
+                <Markdown text={r.text} onLink={onLink} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function TabsBar({ tab, setTab }) {
-  const leftKeys = ["weapons", "armors", "uniques", "runewords", "sacreds"];
+  const leftKeys = ["weapons", "armors", "uniques", "runewords", "sacreds", "cube", "changes"];
 
   return (
     <div className="tabsPanel">
@@ -1458,9 +1675,16 @@ export default function App() {
   const uniques = useJson("Uniques.json");
   const runewords = useJson("Runewords.json");
   const sacreds = useJson("Sacreds.json");
+  const cube = useJson("Cube.json");
+  const changes = useJson("Changes.json");
+
   const INFO_OPEN_STORAGE_KEY = "the-archivist-v1";
   const searchInputRef = React.useRef(null);
   const skipAutoIndexRef = React.useRef(false);
+  const cubeSearchInputRef = React.useRef(null);
+  const changesSearchInputRef = React.useRef(null); 
+  const skipFilterResetRef = React.useRef(false);
+  const [pendingLinkTarget, setPendingLinkTarget] = useState(null);
   const [tab, setTab] = useState("weapons");
 
   const [infoOpenByTab, setInfoOpenByTab] = useState(() => ({
@@ -1483,6 +1707,18 @@ export default function App() {
   weapons; // fallback
 
   useEffect(() => {
+    if (tab !== "cube") {
+      setCubeSearch("");
+    }
+  }, [tab]);
+
+  useEffect(() => {
+    if (tab !== "changes") {
+      setChangesSearch("");
+    }
+  }, [tab]);
+
+  useEffect(() => {
   try {
     const raw = window.localStorage.getItem(INFO_OPEN_STORAGE_KEY);
     if (!raw) return;
@@ -1491,7 +1727,7 @@ export default function App() {
     if (parsed && typeof parsed === "object") {
       setInfoOpenByTab((prev) => ({
         ...prev,
-        ...parsed, // merge saved values onto defaults
+        ...parsed,
       }));
     }
   } catch (e) {
@@ -1499,17 +1735,75 @@ export default function App() {
   }
 }, []);
 
-  // shared controls
   const [search, setSearch] = useState("");
   const [typeValue, setTypeValue] = useState("");
   const [tierValue, setTierValue] = useState("");
   const [socketsValue, setSocketsValue] = useState("");
+  const [cubeSearch, setCubeSearch] = useState("");
+  const [changesSearch, setChangesSearch] = useState("");
   const [uberValue, setUberValue] = useState(false);
   const [pendingUniqueCode, setPendingUniqueCode] = useState("");
   const [pendingSacredMatch, setPendingSacredMatch] = useState(null);
   const [highlightOnly, setHighlightOnly] = useState(false);
 
   const items = dataset.data;
+
+  const handleMarkdownAppLink = React.useCallback(
+    ({ tab: targetTab, name }) => {
+      const t = (targetTab || "").toLowerCase();
+      const label = (name || "").trim();
+      const hasName = !!label;
+      const needle = label.toLowerCase();
+
+      // --- Cube Recipes tab ---
+      if (t === "cube") {
+        setTab("cube");
+        if (hasName) {
+          setCubeSearch(needle);
+          if (cubeSearchInputRef.current) {
+            cubeSearchInputRef.current.focus();
+            cubeSearchInputRef.current.select();
+          }
+        }
+        // if no name → just jump to tab, keep existing cubeSearch as-is
+        return;
+      }
+
+      // --- SoE changes tab ---
+      if (t === "changes") {
+        setTab("changes");
+        if (hasName) {
+          setChangesSearch(needle);
+          if (changesSearchInputRef.current) {
+            changesSearchInputRef.current.focus();
+            changesSearchInputRef.current.select();
+          }
+        }
+        return;
+      }
+
+      // --- item tabs (weapons / armors / uniques / runewords / sacreds) ---
+      if (!TAB_KEYS.includes(t)) return;
+
+      // If there's no name part, just jump to the tab and let normal
+      // "tab change" behavior reset filters etc.
+      if (!hasName) {
+        setTab(t);
+        return;
+      }
+
+      // Name present → full "go-to-item" behavior
+      skipFilterResetRef.current = true;
+      skipAutoIndexRef.current = true;
+
+      setTab(t);
+      setSearch(needle);
+      setPendingLinkTarget({ tab: t, name: needle });
+    },
+    []
+  );
+
+
 
   const typeOptions = useMemo(() => {
     if (!items.length) return [];
@@ -1543,15 +1837,20 @@ export default function App() {
   }, [items]);
 
   useEffect(() => {
-    // reset all filters on tab switch
+    // If we just switched tabs via an internal Markdown app: link,
+    // skip resetting filters once.
+    if (skipFilterResetRef.current) {
+      skipFilterResetRef.current = false;
+      return;
+    }
+
     setSearch("");
     setTypeValue("");
     setTierValue("");
     setSocketsValue("");
     setUberValue(false);
-    setHighlightOnly(false);  
+    setHighlightOnly(false);
 
-    // optional: reset selection too
     setActiveIndex(0);
   }, [tab]);
 
@@ -1626,20 +1925,44 @@ export default function App() {
     });
 }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly]);
 
-    // selection
-    const [activeIndex, setActiveIndex] = useState(0);
+  useEffect(() => {
+    if (!pendingLinkTarget) return;
+    if (tab !== pendingLinkTarget.tab) return;
+    if (dataset.loading) return;
 
-    useEffect(() => {
-      if (skipAutoIndexRef.current) {
-        
-        skipAutoIndexRef.current = false;
-        return;
-      }
+    const targetName = pendingLinkTarget.name;
 
+    const idx = filtered.findIndex((it) => {
+      const nm = (
+        n(it?.displayName) ||
+        n(it?.runewordName) ||
+        n(it?.name)
+      ).toLowerCase();
+
+      return nm === targetName;
+    });
+
+    if (idx >= 0) {
+      setActiveIndex(idx);
+    } else if (filtered.length) {
       setActiveIndex(0);
-    }, [tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly]);
+    }
 
-  
+    setPendingLinkTarget(null);
+  }, [pendingLinkTarget, tab, dataset.loading, filtered]);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (skipAutoIndexRef.current) {
+      
+      skipAutoIndexRef.current = false;
+      return;
+    }
+
+    setActiveIndex(0);
+  }, [tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly]);
+
   useEffect(() => {
     if (!pendingUniqueCode) return;
     if (tab !== "uniques") return;
@@ -1742,24 +2065,38 @@ export default function App() {
     function onKeyDown(e) {
 
       if (e.key === "Escape") {
-        if (document.activeElement === searchInputRef.current) {
-          e.preventDefault();
-          searchInputRef.current.blur();
-          return;
+        if (tab === "cube") {
+          cubeSearchInputRef.current?.blur();
+        } else if (tab === "changes") {
+          changesSearchInputRef.current?.blur();
+        } else {
+          searchInputRef.current?.blur();
         }
       }
 
-      if (e.ctrlKey && e.key.toLowerCase() === "f") {
+      if (e.ctrlKey && e.key === "f") {
         e.preventDefault();
-        searchInputRef.current?.focus();
-        searchInputRef.current?.select();
-        return;
+        if (tab === "cube") {
+          if (cubeSearchInputRef.current) {
+            cubeSearchInputRef.current.focus();
+            cubeSearchInputRef.current.select();
+          }
+        } else if (tab === "changes") {
+          if (changesSearchInputRef.current) {
+            changesSearchInputRef.current.focus();
+            changesSearchInputRef.current.select();
+          }
+        } else {
+          if (searchInputRef.current) {
+            searchInputRef.current.focus();
+            searchInputRef.current.select();
+          }
+        }
       }
 
       const tag = e.target?.tagName;
       if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
 
-      // Item navigation
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setActiveIndex((i) =>
@@ -1774,7 +2111,6 @@ export default function App() {
         return;
       }
 
-      // Tab navigation
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
         e.preventDefault();
 
@@ -1812,7 +2148,6 @@ export default function App() {
       };
     }
 
-    // runewords
     return (it) => {
       const types = runewordAllTypes(it);
       return types.length ? types.join(" / ") : "Runeword";
@@ -1907,8 +2242,52 @@ export default function App() {
         <TabsBar tab={tab} setTab={setTab} />
 
 
-        {tab === "help" ? (
-          <HelpPanel />
+       {tab === "help" ? (
+        <HelpPanel />
+        ) : tab === "cube" ? (
+        <>
+          <div className="filtersStack">
+            <div className="filtersPanel">
+              <input
+                type="text"
+                ref={cubeSearchInputRef}
+                value={cubeSearch}
+                onChange={(e) => setCubeSearch(e.target.value)}
+                className="searchBar"
+                placeholder="Search cube recipes…"
+              />
+            </div>
+          </div>
+          <StaticDataPanel
+            data={cube.data}
+            loading={cube.loading}
+            error={cube.error}
+            search={cubeSearch}
+            onLink={handleMarkdownAppLink}
+          />
+        </>
+        ) : tab === "changes" ? (
+        <>
+          <div className="filtersStack">
+            <div className="filtersPanel">
+              <input
+                type="text"
+                ref={changesSearchInputRef}
+                value={changesSearch}
+                onChange={(e) => setChangesSearch(e.target.value)}
+                className="searchBar"
+                placeholder="Search SoE changes…"
+              />
+            </div>
+          </div>
+          <StaticDataPanel
+            data={changes.data}
+            loading={changes.loading}
+            error={changes.error}
+            search={changesSearch}
+            onLink={handleMarkdownAppLink}
+          />
+        </>
         ) : (
         <>
           <div className="filtersStack">
@@ -1938,6 +2317,7 @@ export default function App() {
                 title={info.title}
                 markdownText={info.text}
                 isOpen={infoOpen}
+                onLink={handleMarkdownAppLink}
                 onToggle={() =>
                   setInfoOpenByTab((prev) => {
                     const next = { ...prev, [tab]: !prev[tab] };
