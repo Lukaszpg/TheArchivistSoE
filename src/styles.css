@@ -699,7 +699,7 @@ button.btn {
 
 .mdCode {
   background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 1px 6px;
   border-radius: 6px;
   font-size: 16px;
@@ -947,8 +947,10 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .footerRight {
-  color: rgba(255, 255, 255, 0.75);
-  font-weight: 800;
+  color: var(--c-gold);
+  text-decoration: underline;
+  text-decoration-style: solid;
+  text-underline-offset: 3px;
 }
 
 .footerGitLink,
