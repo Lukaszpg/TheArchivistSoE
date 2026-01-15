@@ -71,6 +71,7 @@ body {
   --c-green: #6cff6c;
   --c-gray: #bcb6ad;
   --c-red: #ff6b6b;
+  --c-orange: #caa14a;
 
   --app-max: 1200px;
   --app-pad: 16px;
@@ -154,6 +155,22 @@ body {
   position: sticky;
   top: 18px;
   overflow: visible;
+}
+
+.highlightName {
+  font-size: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--c-orange);
+}
+
+.uniqueName {
+  font-size: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--c-gold);
 }
 
 /* Scrollable list inside left panel */
