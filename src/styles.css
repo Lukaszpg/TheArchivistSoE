@@ -1,49 +1,53 @@
 /* -------------------------------------------------------------------------- */
-/* Global reset & base                                                        */
+/* Global layout                                                              */
 /* -------------------------------------------------------------------------- */
 
 html {
-  height: 100%;
-  scrollbar-gutter: stable;
+    height: 100%;
+    scrollbar-gutter: stable;
 }
 
-html,
-body,
-#root {
-  height: 100%;
-}
-
+/* Body: top-level flex column that fills the viewport */
 body {
-  margin: 0;
-  min-height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  color: var(--text);
-  font-family: "ExocetBlizzard", system-ui, -apple-system, "Segoe UI", Roboto,
+    margin: 0;
+    min-height: 100vh;          /* fill viewport height */
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    color: var(--text);
+    font-family: "ExocetBlizzard", system-ui, -apple-system, "Segoe UI", Roboto,
     Arial, sans-serif;
-  letter-spacing: 0.2px;
+    letter-spacing: 0.2px;
+}
+
+/* React root fills the body flex column */
+#root {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 /* Ensure padding/borders don’t cause overflow surprises */
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
-/* Avoid any horizontal overflow on the root flex container as well */
+/* App root is also a flex column inside #root */
 .appRoot {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
 
-  background:
-    radial-gradient(
-      ellipse at bottom,
-      rgba(255, 255, 255, 0.09) 0,
-      rgba(255, 255, 255, 0.02) 30%,
-      rgba(0, 0, 0, 1) 70%
+    background: radial-gradient(
+            ellipse at bottom,
+            rgba(255, 255, 255, 0.09) 0,
+            rgba(255, 255, 255, 0.02) 30%,
+            rgba(0, 0, 0, 1) 70%
     ),
     #050608;
 }
@@ -53,28 +57,28 @@ body {
 /* -------------------------------------------------------------------------- */
 
 @font-face {
-  font-family: "ExocetBlizzard";
-  src: url("/ExocetBlizzardMixedCaps-Medium-CeveHi9Z.otf") format("opentype");
-  font-weight: normal;
-  font-style: normal;
+    font-family: "ExocetBlizzard";
+    src: url("/ExocetBlizzardMixedCaps-Medium-CeveHi9Z.otf") format("opentype");
+    font-weight: normal;
+    font-style: normal;
 }
 
 :root {
-  --bg: #0b0b0c;
-  --gold2: #6b4b16;
-  --text: #d9d3c7;
-  --muted: #9a948a;
+    --bg: #0b0b0c;
+    --gold2: #6b4b16;
+    --text: #d9d3c7;
+    --muted: #9a948a;
 
-  --c-white: #f3f3f3;
-  --c-blue: #6fb6ff;
-  --c-gold: #c7b790;
-  --c-green: #6cff6c;
-  --c-gray: #bcb6ad;
-  --c-red: #ff6b6b;
-  --c-orange: #caa14a;
+    --c-white: #f3f3f3;
+    --c-blue: #6fb6ff;
+    --c-gold: #c7b790;
+    --c-green: #6cff6c;
+    --c-gray: #bcb6ad;
+    --c-red: #ff6b6b;
+    --c-orange: #caa14a;
 
-  --app-max: 1200px;
-  --app-pad: 16px;
+    --app-max: 1200px;
+    --app-pad: 16px;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -82,24 +86,24 @@ body {
 /* -------------------------------------------------------------------------- */
 
 #root {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
 }
 
 .wrap {
-  width: min(var(--app-max), calc(100% - (var(--app-pad) * 2)));
-  max-width: var(--app-max);
-  margin: 24px auto;
-  padding: var(--app-pad);
+    width: min(var(--app-max), calc(100% - (var(--app-pad) * 2)));
+    max-width: var(--app-max);
+    margin: 24px auto;
+    padding: var(--app-pad);
 
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
-  position: relative;
-  z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    position: relative;
+    z-index: 1;
 }
 
 .tabsPanel,
@@ -107,76 +111,74 @@ body {
 .filtersStack,
 .infoPanel,
 .helpPanel {
-  grid-column: 1 / -1;
+    grid-column: 1 / -1;
 }
 
 /* List + tooltip columns */
 .listPanel,
 .tooltipShell,
 .tooltip {
-  min-width: 0;
+    min-width: 0;
 }
 
 /* Left column: list */
 .listPanel {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35));
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
-  overflow: hidden;
-  grid-column: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 380px;
-  max-height: 900px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35));
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 12px;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 380px;
+    max-height: 900px;
 }
 
 /* Right column: tooltip */
 .tooltipShell {
-  grid-column: 2;
-  display: block;
+    grid-column: 2;
+    display: block;
 }
 
 .tooltip {
-  width: min(560px, 100%);
-  padding: 14px 14px 12px;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.55)),
+    width: min(560px, 100%);
+    padding: 14px 14px 12px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.55)),
     radial-gradient(
-      900px 500px at 60% 10%,
-      rgba(202, 161, 74, 0.07),
-      rgba(0, 0, 0, 0) 55%
+            900px 500px at 60% 10%,
+            rgba(202, 161, 74, 0.07),
+            rgba(0, 0, 0, 0) 55%
     );
-  border: 2px solid var(--gold2);
-  border-radius: 14px;
-  box-shadow:
-    0 0 0 2px rgba(202, 161, 74, 0.18) inset,
+    border: 2px solid var(--gold2);
+    border-radius: 14px;
+    box-shadow: 0 0 0 2px rgba(202, 161, 74, 0.18) inset,
     0 18px 50px rgba(0, 0, 0, 0.6);
-  position: sticky;
-  top: 18px;
-  overflow: visible;
+    position: sticky;
+    top: 18px;
+    overflow: visible;
 }
 
 .highlightName {
-  font-size: 20px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--c-orange);
+    font-size: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--c-orange);
 }
 
 .uniqueName {
-  font-size: 20px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--c-gold);
+    font-size: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--c-gold);
 }
 
 /* Scrollable list inside left panel */
 .list {
-  flex: 1 1 auto;
-  overflow: auto;
+    flex: 1 1 auto;
+    overflow: auto;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -185,143 +187,140 @@ body {
 
 .tabsPanel,
 .filtersPanel {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 12px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
-  flex-wrap: wrap;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+    flex-wrap: wrap;
 }
 
 .filtersPanel {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .tabsPanel {
-  justify-content: space-between;
-  gap: 12px;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .tabsLeft {
-  flex: 1 1 auto;
-  min-width: 0;
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .tabsRight {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
 }
 
 /* Tabs */
 .tabs {
-  display: flex;
-  gap: 8px;
-  flex: 0 0 auto;
-  padding-right: 6px;
+    display: flex;
+    gap: 8px;
+    flex: 0 0 auto;
+    padding-right: 6px;
 }
 
 .tab {
-  cursor: pointer;
-  user-select: none;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 18px;
-  letter-spacing: 0.3px;
+    cursor: pointer;
+    user-select: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 18px;
+    letter-spacing: 0.3px;
 }
 
 .tab.active {
-  background: linear-gradient(
-    180deg,
-    rgba(202, 161, 74, 0.3),
-    rgba(107, 75, 22, 0.25)
-  );
-  border-color: rgba(202, 161, 74, 0.55);
-  color: var(--c-white);
+    background: linear-gradient(
+            180deg,
+            rgba(202, 161, 74, 0.3),
+            rgba(107, 75, 22, 0.25)
+    );
+    border-color: rgba(202, 161, 74, 0.55);
+    color: var(--c-white);
 }
 
 /* Filters bar + reset panel */
 .filtersStack {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.filtersResetPanel{
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 6px 10px;
-  margin-left: auto;
+.filtersResetPanel {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 6px 10px;
+    margin-left: auto;
 }
 
 .filtersRow {
-  flex: 1 1 100%;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 10px;
-  justify-content: flex-start;
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    justify-content: flex-start;
 }
 
-.filtersBar{
-  flex: 1 1 auto; 
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap; 
+.filtersBar {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .filtersResetPanel .btn {
-  padding-inline: 16px;
+    padding-inline: 16px;
 }
 
-/* Inputs/selects in top panels */
 .tabsPanel input[type="text"],
 .tabsPanel select,
 .filtersPanel input[type="text"],
 .filtersPanel select {
-  background: rgba(0, 0, 0, 0.4);
-  color: var(--text);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
-  padding: 10px 12px;
-  outline: none;
-  width: 100%;
-  min-width: 220px;
-  flex: 1 1 260px;
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 10px 12px;
+    outline: none;
+    width: 100%;
+    min-width: 0; /* allow shrinking on small screens */
+    flex: 1 1 220px; /* nicer default width on desktop */
 }
 
 .filtersPanel input[type="text"]::placeholder {
-  color: rgba(217, 211, 199, 0.55);
+    color: rgba(217, 211, 199, 0.55);
 }
 
 /* Select dropdown caret */
 .filtersPanel select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding: 10px 36px 10px 12px;
-  background-image:
-    linear-gradient(45deg, transparent 50%, #d9d3c7 50%),
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 10px 36px 10px 12px;
+    background-image: linear-gradient(45deg, transparent 50%, #d9d3c7 50%),
     linear-gradient(135deg, #d9d3c7 50%, transparent 50%);
-  background-position:
-    calc(100% - 22px) 55%,
+    background-position: calc(100% - 22px) 55%,
     calc(100% - 16px) 55%;
-  background-size: 6px 6px;
-  background-repeat: no-repeat;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -329,30 +328,30 @@ body {
 /* -------------------------------------------------------------------------- */
 
 .btn {
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  background: linear-gradient(
-    180deg,
-    rgba(202, 161, 74, 0.3),
-    rgba(107, 75, 22, 0.25)
-  );
-  border: 1px solid rgba(202, 161, 74, 0.45);
-  color: var(--c-white);
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    background: linear-gradient(
+            180deg,
+            rgba(202, 161, 74, 0.3),
+            rgba(107, 75, 22, 0.25)
+    );
+    border: 1px solid rgba(202, 161, 74, 0.45);
+    color: var(--c-white);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-weight: 800;
 }
 
 .btn:hover {
-  filter: brightness(1.08);
+    filter: brightness(1.08);
 }
 
 /* Remove default button quirks */
 button.btn {
-  appearance: none;
-  -webkit-appearance: none;
-  font: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -360,104 +359,104 @@ button.btn {
 /* -------------------------------------------------------------------------- */
 
 .listHeader {
-  padding: 12px 14px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
+    padding: 12px 14px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
 }
 
 .listHeader .title {
-  font-weight: 800;
-  color: var(--c-white);
+    font-weight: 800;
+    color: var(--c-white);
 }
 
 .listHeader .count {
-  color: var(--muted);
-  font-size: 17px;
+    color: var(--muted);
+    font-size: 17px;
 }
 
 .row {
-  display: flex;
-  gap: 10px;
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  cursor: pointer;
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
 }
 
 .row:hover {
-  background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .row.active {
-  background: rgba(255, 255, 255, 0.08);
-  outline: 1px solid rgba(111, 182, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    outline: 1px solid rgba(111, 182, 255, 0.25);
 }
 
 /* Icon cell */
 .ico {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  background: linear-gradient(
-    180deg,
-    rgba(202, 161, 74, 0.2),
-    rgba(0, 0, 0, 0.25)
-  );
-  border: 1px solid rgba(202, 161, 74, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 17px;
-  font-weight: 900;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: linear-gradient(
+            180deg,
+            rgba(202, 161, 74, 0.2),
+            rgba(0, 0, 0, 0.25)
+    );
+    border: 1px solid rgba(202, 161, 74, 0.2);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 17px;
+    font-weight: 900;
 }
 
 .icon {
-  fill: white;
-  stroke: white;
-  opacity: 0.9;
+    fill: white;
+    stroke: white;
+    opacity: 0.9;
 }
 
 /* Text in rows */
 .meta {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .meta .name {
-  color: var(--c-white);
-  font-size: 20px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    color: var(--c-white);
+    font-size: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .meta .sub {
-  color: var(--muted);
-  font-size: 18px;
-  margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    color: var(--muted);
+    font-size: 18px;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .meta .tiny {
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 17px;
-  margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 17px;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .emptyState {
-  color: rgba(255, 255, 255, 0.75);
-  text-align: center;
-  padding: 28px 14px;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: center;
+    padding: 28px 14px;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -466,90 +465,90 @@ button.btn {
 
 .tipTitle,
 .tipUniqueTitle {
-  text-align: center;
-  font-size: 28px;
-  letter-spacing: 0.6px;
-  margin-top: 4px;
-  margin-bottom: 8px;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.7);
+    text-align: center;
+    font-size: 28px;
+    letter-spacing: 0.6px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.7);
 }
 
 .tipTitle {
-  color: var(--c-white);
+    color: var(--c-white);
 }
 
 .tipUniqueTitle {
-  color: var(--c-gold);
+    color: var(--c-gold);
 }
 
-.uniqueMod{
-  font-size: 20px;
-  line-height: 1.35;
-  color: var(--text);
-  text-shadow: 0 1px 0 rgba(0,0,0,0.7);
-  margin: 2px 0;
-  text-align: center;
+.uniqueMod {
+    font-size: 20px;
+    line-height: 1.35;
+    color: var(--text);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+    margin: 2px 0;
+    text-align: center;
 }
 
 .tipSubtitle {
-  text-align: center;
-  color: var(--c-gray);
-  font-size: 20px;
-  margin-top: -4px;
-  margin-bottom: 10px;
-  opacity: 0.95;
+    text-align: center;
+    color: var(--c-gray);
+    font-size: 20px;
+    margin-top: -4px;
+    margin-bottom: 10px;
+    opacity: 0.95;
 }
 
 .hr {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0),
-    rgba(202, 161, 74, 0.45),
-    rgba(0, 0, 0, 0)
-  );
-  margin: 10px 0;
+    height: 1px;
+    background: linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0),
+            rgba(202, 161, 74, 0.45),
+            rgba(0, 0, 0, 0)
+    );
+    margin: 10px 0;
 }
 
 .line,
 .runeModLine {
-  font-size: 20px;
-  line-height: 1.35;
-  color: var(--text);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
-  margin: 2px 0;
+    font-size: 20px;
+    line-height: 1.35;
+    color: var(--text);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+    margin: 2px 0;
 }
 
 .runeModLine {
-  text-align: center;
+    text-align: center;
 }
 
 .line.dim {
-  color: rgba(217, 211, 199, 0.78);
+    color: rgba(217, 211, 199, 0.78);
 }
 
 .line.req {
-  color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .kv {
-  display: grid;
-  grid-template-columns: 210px minmax(0, 1fr); /* fixed label column, flexible value */
-  column-gap: 16px;
-  align-items: baseline;
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr); /* fixed label column, flexible value */
+    column-gap: 16px;
+    align-items: baseline;
 }
 
 .kv span:first-child {
-  white-space: nowrap; /* keep label on one line */
-  color: rgba(255, 255, 255, 0.82);
+    white-space: nowrap; /* keep label on one line */
+    color: rgba(255, 255, 255, 0.82);
 }
 
 .kv span:last-child {
-  text-align: right;
-  color: rgba(255, 255, 255, 0.92);
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word; /* value can wrap */
+    text-align: right;
+    color: rgba(255, 255, 255, 0.92);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word; /* value can wrap */
 }
 
 /* Ensure tooltip text never causes horizontal overflow */
@@ -559,8 +558,8 @@ button.btn {
 .tipSubtitle,
 .tiny,
 .name {
-  overflow-wrap: anywhere;
-  word-break: break-word;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -568,35 +567,34 @@ button.btn {
 /* -------------------------------------------------------------------------- */
 
 .d2link {
-  color: #6fb6ff;
-  text-decoration: underline;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  text-shadow: none;
+    color: #6fb6ff;
+    text-decoration: underline;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-shadow: none;
 }
 
 .d2link:hover {
-  color: #9fd2ff;
-  text-shadow: none;
+    color: #9fd2ff;
+    text-shadow: none;
 }
 
 .d2linkText {
-  color: var(--c-blue);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.9),
+    color: var(--c-blue);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.9),
     0 0 6px rgba(111, 182, 255, 0.35);
 }
 
 .runesDisplay {
-  text-align: center;
-  font-size: 24px;
+    text-align: center;
+    font-size: 24px;
 }
 
 .goToLink {
-  text-align: center;
+    text-align: center;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -605,35 +603,39 @@ button.btn {
 
 .uniqueHeader,
 .sacredModsHeader {
-  text-align: center;
-  color: var(--c-white);
-  font-size: 22px;
-  margin: 2px 0 8px;
+    text-align: center;
+    color: var(--c-white);
+    font-size: 22px;
+    margin: 2px 0 8px;
 }
 
 .dropHeader,
 .sacredModsItemType {
-  text-align: center;
-  color: var(--c-white);
-  font-size: 20px;
-  margin: 4px 0 6px;
+    text-align: center;
+    color: var(--c-white);
+    font-size: 20px;
+    margin: 4px 0 6px;
 }
 
 /* colored property text */
 .propGold {
-  color: var(--c-gold);
+    color: var(--c-gold);
 }
+
 .propBlue {
-  color: #6fb6ff;
+    color: #6fb6ff;
 }
+
 .propGreen {
-  color: #7cff7c;
+    color: #7cff7c;
 }
+
 .propPurple {
-  color: #c79bff;
+    color: #c79bff;
 }
+
 .propRed {
-  color: #ff0000;
+    color: #ff0000;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -641,125 +643,125 @@ button.btn {
 /* -------------------------------------------------------------------------- */
 
 .infoPanel {
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .infoHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .infoTitle {
-  font-weight: 900;
-  font-size: 21px;
-  color: var(--c-gold);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+    font-weight: 900;
+    font-size: 21px;
+    color: var(--c-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
 }
 
 .infoToggle {
-  appearance: none;
-  -webkit-appearance: none;
-  font: inherit;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(202, 161, 74, 0.45);
-  background: rgba(202, 161, 74, 0.18);
-  color: rgba(255, 255, 255, 0.85);
-  font-weight: 800;
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(202, 161, 74, 0.45);
+    background: rgba(202, 161, 74, 0.18);
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 800;
 }
 
 .infoToggle:hover {
-  filter: brightness(1.08);
+    filter: brightness(1.08);
 }
 
 .infoBody {
-  margin-top: 10px;
-  max-height: 300px;
-  overflow: auto;
-  padding-right: 6px;
+    margin-top: 10px;
+    max-height: 300px;
+    overflow: auto;
+    padding-right: 6px;
 }
 
 .mdP {
-  margin: 0 0 8px 0;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 18px;
-  line-height: 1.45;
+    margin: 0 0 8px 0;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 18px;
+    line-height: 1.45;
 }
 
 .mdUl {
-  margin: 0 0 8px 18px;
-  padding: 0;
+    margin: 0 0 8px 18px;
+    padding: 0;
 }
 
 .mdLi {
-  margin: 4px 0;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 18px;
-  line-height: 1.45;
+    margin: 4px 0;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 18px;
+    line-height: 1.45;
 }
 
 .mdUlNested {
-  margin: 4px 0 4px 18px;
-  padding: 0;
+    margin: 4px 0 4px 18px;
+    padding: 0;
 }
 
 .mdLiNested {
-  margin: 2px 0;
+    margin: 2px 0;
 }
 
 .mdCode {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 1px 6px;
-  border-radius: 6px;
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.92);
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.92);
 }
 
 .mdStrong {
-  font-weight: 900;
+    font-weight: 900;
 }
 
 .mdEm {
-  font-style: italic;
+    font-style: italic;
 }
 
 /* Help tab panel */
 .helpPanel {
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .helpTitle {
-  color: var(--c-gold);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin-bottom: 10px;
-  font-size: 24px;
+    color: var(--c-gold);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 10px;
+    font-size: 24px;
 }
 
 .helpBody {
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 18px;
-  line-height: 1.5;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 18px;
+    line-height: 1.5;
 }
 
 .helpBody code {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1px 6px;
-  border-radius: 6px;
-  font-size: 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 12px;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -767,62 +769,62 @@ button.btn {
 /* -------------------------------------------------------------------------- */
 
 .tipWrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 5px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 5px;
 }
 
 .tipBubble {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 8px);
-  z-index: 999;
-  min-width: 300px;
-  max-width: 460px;
-  padding: 10px 12px;
-  border-radius: 10px;
+    position: absolute;
+    left: 0;
+    top: calc(100% + 8px);
+    z-index: 999;
+    min-width: 300px;
+    max-width: 460px;
+    padding: 10px 12px;
+    border-radius: 10px;
 
-  background: rgba(0, 0, 0, 1);
-  border: 1px solid rgba(202, 161, 74, 0.35);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 1);
+    border: 1px solid rgba(202, 161, 74, 0.35);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
 
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 18px;
-  line-height: 1.35;
-  text-align: left !important;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 18px;
+    line-height: 1.35;
+    text-align: left !important;
 
-  opacity: 0;
-  transform: translateY(-2px);
-  pointer-events: none;
-  transition: opacity 120ms ease, transform 120ms ease;
+    opacity: 0;
+    transform: translateY(-2px);
+    pointer-events: none;
+    transition: opacity 120ms ease, transform 120ms ease;
 
-  display: block;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+    display: block;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .tipWrap:hover .tipBubble {
-  opacity: 1;
-  transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* little arrow */
 .tipBubble::before {
-  content: "";
-  position: absolute;
-  top: -6px;
-  left: 14px;
-  width: 10px;
-  height: 10px;
-  background: rgba(0, 0, 0, 1);
-  border-left: 1px solid rgba(202, 161, 74, 0.35);
-  border-top: 1px solid rgba(202, 161, 74, 0.35);
-  transform: rotate(45deg);
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: 14px;
+    width: 10px;
+    height: 10px;
+    background: rgba(0, 0, 0, 1);
+    border-left: 1px solid rgba(202, 161, 74, 0.35);
+    border-top: 1px solid rgba(202, 161, 74, 0.35);
+    transform: rotate(45deg);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -830,67 +832,67 @@ button.btn {
 /* -------------------------------------------------------------------------- */
 
 .toggleWrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--muted);
-  white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap; /* keep for desktop */
 }
 
 .toggleText {
-  letter-spacing: 0.03em;
-  font-size: 15px;
+    letter-spacing: 0.03em;
+    font-size: 15px;
 }
 
 .toggle {
-  position: relative;
-  width: 34px;
-  height: 18px;
+    position: relative;
+    width: 34px;
+    height: 18px;
 }
 
 .toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
 }
 
 .toggleSlider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  transition: background 160ms ease, box-shadow 160ms ease;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    transition: background 160ms ease, box-shadow 160ms ease;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
 
 .toggleSlider::before {
-  content: "";
-  position: absolute;
-  height: 14px;
-  width: 14px;
-  left: 2px;
-  top: 2px;
-  border-radius: 50%;
-  background: rgba(5, 5, 5, 0.95);
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
-  transition: transform 160ms ease, background 160ms ease;
+    content: "";
+    position: absolute;
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    top: 2px;
+    border-radius: 50%;
+    background: rgba(5, 5, 5, 0.95);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+    transition: transform 160ms ease, background 160ms ease;
 }
 
 .toggle input:checked + .toggleSlider {
-  background: rgba(202, 161, 74, 0.9);
-  box-shadow: 0 0 10px rgba(202, 161, 74, 0.7);
+    background: rgba(202, 161, 74, 0.9);
+    box-shadow: 0 0 10px rgba(202, 161, 74, 0.7);
 }
 
 .toggle input:checked + .toggleSlider::before {
-  transform: translateX(16px);
-  background: #fff;
+    transform: translateX(16px);
+    background: #fff;
 }
 
 .toggleWrap:hover .toggleSlider {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.32);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.32);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -899,43 +901,43 @@ button.btn {
 
 .list::-webkit-scrollbar,
 .infoBody::-webkit-scrollbar {
-  width: 8px;
+    width: 8px;
 }
 
 .list::-webkit-scrollbar-thumb,
 .infoBody::-webkit-scrollbar-thumb {
-  background: rgba(202, 161, 74, 0.22);
-  border: 2px solid rgba(0, 0, 0, 0.55);
-  border-radius: 10px;
+    background: rgba(202, 161, 74, 0.22);
+    border: 2px solid rgba(0, 0, 0, 0.55);
+    border-radius: 10px;
 }
 
 .list::-webkit-scrollbar-track,
 .infoBody::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.25);
 }
 
 
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-  width: 12px;
+    width: 12px;
 }
 
 html::-webkit-scrollbar-track,
 body::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.25);
-  border-radius: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
 }
 
 html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb {
-  background: rgba(202, 161, 74, 0.22);
-  border: 2px solid rgba(0, 0, 0, 0.55);
-  border-radius: 10px;
+    background: rgba(202, 161, 74, 0.22);
+    border: 2px solid rgba(0, 0, 0, 0.55);
+    border-radius: 10px;
 }
 
 html::-webkit-scrollbar-thumb:hover,
 body::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.25);
 }
 
 
@@ -944,35 +946,34 @@ body::-webkit-scrollbar-thumb:hover {
 /* -------------------------------------------------------------------------- */
 
 .footer {
-  margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.35);
-  position: relative;
-  z-index: 1;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.35);
+    position: relative;   /* default stacking; no explicit z-index */
 }
 
 .footerInner {
-  margin: 0 auto;
-  padding: 10px 16px;
+    margin: 0 auto;
+    padding: 10px 16px;
 
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 13px;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 13px;
 }
 
 .footerRight {
-  color: var(--c-gold);
-  text-decoration: underline;
-  text-decoration-style: solid;
-  text-underline-offset: 3px;
+    color: var(--c-gold);
+    text-decoration: underline;
+    text-decoration-style: solid;
+    text-underline-offset: 3px;
 }
 
 .footerGitLink,
 .footerGitLink:visited {
-  color: var(--c-gold);
+    color: var(--c-gold);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -980,77 +981,327 @@ body::-webkit-scrollbar-thumb:hover {
 /* -------------------------------------------------------------------------- */
 
 @media (max-width: 980px) {
-  .wrap {
-    grid-template-columns: 1fr;
-  }
+    .wrap {
+        grid-template-columns: 1fr;
+    }
 
-  .tooltip {
-    position: relative;
-    top: auto;
-  }
+    .tooltip {
+        position: relative;
+        top: auto;
+    }
 
-  .list {
-    max-height: 46vh;
-  }
+    .list {
+        max-height: 46vh;
+    }
 
-  .listPanel,
-  .tooltipShell {
-    height: auto;
-    max-height: none;
-  }
+    .listPanel,
+    .tooltipShell {
+        height: auto;
+        max-height: none;
+    }
 
-  .watermark {
-    display: none;
-  }
+    .watermark {
+        display: none;
+    }
 }
 
 .helpHeaderRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
 }
 
 .cubeSearchBox {
-  flex: 0 0 260px;
+    flex: 0 0 260px;
 }
 
 .cubeInfoBody {
-  max-height: 400px;
+    max-height: 400px;
 }
 
 .mdLink {
-  color: var(--c-blue);
-  text-decoration: underline;
+    color: var(--c-blue);
+    text-decoration: underline;
 }
 
 .mdLink:hover {
-  color: #9fd2ff;
+    color: #9fd2ff;
 }
 
 .mdLink {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  background: none;
-  font: inherit;
-  color: #caa14a;
-  text-decoration: underline;
-  cursor: pointer;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: none;
+    font: inherit;
+    color: #caa14a;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 a.mdLink {
-  /* keep anchor default behavior for external links */
+    /* keep anchor default behavior for external links */
 }
 
 .mdLinkInternal {
-  text-decoration-style: dashed;
-  text-underline-offset: 5px;
+    text-decoration-style: dashed;
+    text-underline-offset: 5px;
 }
 
 .carryOne {
-  text-align: center;
-  color: #ffac41;
-  font-size: 18px;
+    text-align: center;
+    color: #ffac41;
+    font-size: 18px;
 }
+
+.uniqueSOEAsterisk {
+    color: orange;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile layout tweaks                                                       */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+    /* One column: list on top, tooltip below */
+    .wrap {
+        grid-template-columns: 1fr;
+    }
+
+    .listPanel,
+    .tooltipShell {
+        grid-column: 1 / -1;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Tooltip should behave like a normal block here, not sticky */
+    .tooltip {
+        position: static;
+        top: auto;
+        width: 100%;
+        margin-top: 8px;
+    }
+}
+
+@media (max-width: 720px) {
+
+    html {
+        scrollbar-gutter: auto; /* or simply: unset; */
+    }
+
+    :root {
+        --app-max: 100%;
+        --app-pad: 8px;
+    }
+
+    .wrap {
+        grid-template-columns: 1fr;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 6px 0 10px; /* no horizontal padding, panels touch edges */
+        gap: 6px;
+    }
+
+    /* NEW: make each “card” panel span the full mobile width */
+    .tabsPanel,
+    .filtersPanel,
+    .listPanel,
+    .tooltipShell,
+    .tooltip {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        border-radius: 0; /* optional: remove rounding so it looks more “edge to edge” */
+    }
+
+    /* Tooltip: drop desktop width limit entirely on mobile */
+    .tooltip {
+        position: static; /* already there in your block */
+        top: auto;
+        margin-top: 4px;
+    }
+
+    /* Tabs + filters compact padding */
+    .tabsPanel,
+    .filtersPanel {
+        padding: 6px 8px;
+    }
+
+    .tab {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+
+    /* Tabs can scroll horizontally if they overflow */
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Filters: stacked, full width */
+    .filtersPanel {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 6px;
+    }
+
+    .filtersStack,
+    .filtersRow,
+    .filtersBar {
+        width: 100%;
+    }
+
+    .filtersRow {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    .filtersBar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .filtersPanel input[type="text"],
+    .filtersPanel select {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 14px;
+        padding: 6px 10px;
+        max-width: 100% !important;
+        width: 100%;
+    }
+
+    .tabsPanel input[type="text"],
+    .tabsPanel select {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+
+    .filtersResetPanel {
+        width: 100%;
+        justify-content: flex-end;
+        padding-top: 4px;
+        margin-left: 0;
+    }
+
+    /* List + tooltip stacked */
+    .listPanel {
+        min-height: 220px;
+        max-height: none;
+    }
+
+    .list {
+        max-height: 45vh;
+    }
+
+    .tooltipShell {
+        grid-column: 1 / -1;
+    }
+
+    .tooltip {
+        position: static; /* no sticky on phones */
+        top: auto;
+        width: 100%;
+        margin-top: 4px;
+    }
+
+    .kv {
+        grid-template-columns: 170px minmax(0, 1fr);
+    }
+
+    /* Let toggle labels wrap on small screens (for all phones up to 720px) */
+    .toggleWrap {
+        white-space: normal;
+        align-items: flex-start;
+    }
+
+    .reset {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --app-pad: 0;
+    }
+
+    html {
+        scrollbar-gutter: auto;
+    }
+
+    /* Wrap: full viewport width, no outer margins */
+    .wrap {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Panels hug the viewport edges */
+    .tabsPanel,
+    .filtersPanel,
+    .listPanel,
+    .tooltipShell,
+    .tooltip,
+    .helpPanel,
+    .infoPanel {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Tabs: no horizontal scroll, allow wrapping */
+    .tabs {
+        display: flex;
+        flex-wrap: wrap; /* 🔑 allow multiple rows */
+        gap: 4px;
+        padding-right: 0;
+        overflow-x: visible; /* override the 720px rule */
+    }
+
+    .tabsPanel {
+        padding: 4px 4px;
+    }
+
+    .tab {
+        flex: 1 1 auto;
+        padding: 4px 8px;
+    }
+
+    /* Optional: small font / padding tweaks */
+    .line {
+        font-size: 15px;
+    }
+
+    .reset {
+        width: 100%;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile footer: always at the bottom of the screen                          */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 720px) {
+    /* Put the extra space on the main scrollable area instead of appRoot */
+    .wrap {
+        padding-bottom: 80px;      /* adjust if your footer is taller/shorter */
+    }
+
+    /* Make sure appRoot itself isn't also adding padding */
+    .appRoot {
+        padding-bottom: 0;
+    }
+}
+
+
+

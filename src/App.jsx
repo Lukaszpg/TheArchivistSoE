@@ -35,6 +35,7 @@ import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
+const PARSER_VERSION = "1.0.1";
 
 const TABS = {
     weapons: "Weapons",
@@ -156,8 +157,8 @@ const TOOLTIPS_TEXT_MAP = {
     "dropRate": "Drop rate is chance for this item to drop from specific monster, most likely from Uber Boss.",
     "code": "This code can be used in your loot filter to highlight this specific base.",
     "uniCode": "This code can be used in your loot filter to highlight this specific base - remember to add UNI modifier.",
-    "sacred": "Additionaly to items mentioned here it is required to use Sacred Orb in the Cube.",
-    "mythicDivineOrb": "In Sanctuary of Exile unique items can be created in the Cube by using base and an currency orb appropiate for item tier - Mythic Orb for normal and exceptional bases and Divine Orb for elite bases."
+    "sacred": "Additionally to items mentioned here it is required to use Sacred Orb in the Cube.",
+    "mythicDivineOrb": "In Sanctuary of Exile unique items can be created in the Cube by using base and an currency orb appropriate for item tier - Mythic Orb for normal and exceptional bases and Divine Orb for elite bases."
 };
 
 const INFO_BY_TAB = {
@@ -223,7 +224,7 @@ function repeatIngredient(name, qtyRaw) {
 }
 
 function isHighlightedItem(u) {
-    return u?.highlight;
+    return u?.highlight === true;
 }
 
 function isUberUnique(u) {
@@ -921,7 +922,7 @@ function FiltersBar({
             <div className="filtersResetPanel">
                 <button
                     type="button"
-                    className="btn"
+                    className="btn reset"
                     onClick={() => {
                         setSearch("");
                         setTypeValue("");
@@ -995,8 +996,8 @@ function ListPanel({title, countLabel, items, activeIndex, setActiveIndex, subLa
                                     ) : null}
                                 </div>
                                 <div className="meta">
-                                    <div className="name">
-                                        {n(it?.displayName) || n(it?.name) || "Unknown"}
+                                    <div className={tab === "uniques" ? "uniqueName" : "name"}>
+                                        {n(it?.displayName) || n(it?.name) || "Unknown"} {isHighlightedItem(it) && (tab === "uniques" || tab === "armors" || tab === "weapons" || tab === "runewords") ? <span className="uniqueSOEAsterisk">*</span> : null}
                                     </div>
                                     <div className="sub">{subLabel(it)}</div>
                                     <div className="tiny">{tinyLabel(it)}</div>
@@ -1178,6 +1179,7 @@ function HelpPanel() {
                         it on click.
                     </li>
                     <li>Click the version on the right side of the footer to see <code>The Archivist</code> changelog</li>
+                    <li>Orange asterisk next to a name of the unique item means it was added in Sanctuary of Exile</li>
                 </ul>
             </div>
         </div>
@@ -1308,6 +1310,7 @@ function RunewordTooltip({rw, onGoSacred}) {
     if (!rw) return <div className="emptyState">Select an item.</div>;
 
     const title = n(rw?.displayName) || n(rw?.runewordName) || "Runeword";
+    const hasRequirements = rw?.requiredlevel > 0;
 
     const runes = [
         n(rw?.firstRuneDisplayName),
@@ -1364,6 +1367,14 @@ function RunewordTooltip({rw, onGoSacred}) {
             ) : (
                 <div className="line dim">No properties listed.</div>
             )}
+
+            {hasRequirements ? (
+                <>
+                    <div className="hr"/>
+                    <div className="dropHeader">Requirements</div>
+                    {nz(rw?.requiredlevel) && lineKV("Required Level:", n(rw?.requiredlevel), "req")}
+                </>
+            ) : null}
 
 
             {rwSacreds.length ? (
@@ -2391,11 +2402,18 @@ export default function App() {
                 <div className="footerInner">
                     <span className="footerLeft">by <a className="footerGitLink" target="_blank"
                                                        href="https://github.com/Lukaszpg">MindH1ve</a></span>
+
                     <span
                         className="footerRight"
                         onClick={handleVersionClick}
                         style={{cursor: "pointer"}}
-                    >v{APP_VERSION}</span>
+                    >Parser version: v{PARSER_VERSION}</span>
+
+                    <span
+                        className="footerRight"
+                        onClick={handleVersionClick}
+                        style={{cursor: "pointer"}}
+                    >UI version: v{APP_VERSION}</span>
                 </div>
             </footer>
         </div>
