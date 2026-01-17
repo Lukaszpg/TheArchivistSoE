@@ -1227,6 +1227,10 @@ a.mdLink {
     .reset {
         width: 100%;
     }
+
+    .listHeader {
+        height: 90px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1284,6 +1288,10 @@ a.mdLink {
 
     .reset {
         width: 100%;
+    }
+
+    .listHeader {
+        height: 70px;
     }
 }
 
