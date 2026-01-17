@@ -1065,25 +1065,148 @@ a.mdLink {
 /* -------------------------------------------------------------------------- */
 
 @media (max-width: 980px) {
-    /* One column: list on top, tooltip below */
-    .wrap {
-        grid-template-columns: 1fr;
+
+    html {
+        scrollbar-gutter: auto; /* or simply: unset; */
     }
 
+    :root {
+        --app-max: 100%;
+        --app-pad: 8px;
+    }
+
+    .wrap {
+        grid-template-columns: 1fr;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 6px 0 10px; /* no horizontal padding, panels touch edges */
+        gap: 6px;
+    }
+
+    /* NEW: make each “card” panel span the full mobile width */
+    .tabsPanel,
+    .filtersPanel,
     .listPanel,
-    .tooltipShell {
-        grid-column: 1 / -1;
+    .tooltipShell,
+    .tooltip {
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
+        border-radius: 0; /* optional: remove rounding so it looks more “edge to edge” */
     }
 
-    /* Tooltip should behave like a normal block here, not sticky */
+    /* Tooltip: drop desktop width limit entirely on mobile */
     .tooltip {
-        position: static;
+        position: static; /* already there in your block */
+        top: auto;
+        margin-top: 4px;
+    }
+
+    /* Tabs + filters compact padding */
+    .tabsPanel,
+    .filtersPanel {
+        padding: 6px 8px;
+    }
+
+    .tab {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+
+    /* Tabs can scroll horizontally if they overflow */
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Filters: stacked, full width */
+    .filtersPanel {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 6px;
+    }
+
+    .filtersStack,
+    .filtersRow,
+    .filtersBar {
+        width: 100%;
+    }
+
+    .filtersRow {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    .filtersBar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .filtersPanel input[type="text"],
+    .filtersPanel select {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 14px;
+        padding: 6px 10px;
+        max-width: 100% !important;
+        width: 100%;
+    }
+
+    .tabsPanel input[type="text"],
+    .tabsPanel select {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+
+    .filtersResetPanel {
+        width: 100%;
+        justify-content: flex-end;
+        padding-top: 4px;
+        margin-left: 0;
+    }
+
+    /* List + tooltip stacked */
+    .listPanel {
+        min-height: 220px;
+        max-height: none;
+    }
+
+    .list {
+        max-height: 45vh;
+    }
+
+    .tooltipShell {
+        grid-column: 1 / -1;
+    }
+
+    .tooltip {
+        position: static; /* no sticky on phones */
         top: auto;
         width: 100%;
-        margin-top: 8px;
+        margin-top: 4px;
+    }
+
+    .kv {
+        grid-template-columns: 170px minmax(0, 1fr);
+    }
+
+    /* Let toggle labels wrap on small screens (for all phones up to 720px) */
+    .toggleWrap {
+        white-space: normal;
+        align-items: flex-start;
+    }
+
+    .reset {
+        width: 100%;
+    }
+
+    .listHeader {
+        height: 90px;
     }
 }
 
@@ -1298,6 +1421,18 @@ a.mdLink {
 /* -------------------------------------------------------------------------- */
 /* Mobile footer: always at the bottom of the screen                          */
 /* -------------------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+    /* Put the extra space on the main scrollable area instead of appRoot */
+    .wrap {
+        padding-bottom: 80px;      /* adjust if your footer is taller/shorter */
+    }
+
+    /* Make sure appRoot itself isn't also adding padding */
+    .appRoot {
+        padding-bottom: 0;
+    }
+}
 
 @media (max-width: 720px) {
     /* Put the extra space on the main scrollable area instead of appRoot */
