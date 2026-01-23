@@ -35,7 +35,7 @@ import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
-const PARSER_VERSION = "1.1.0";
+const PARSER_VERSION = "1.1.1";
 
 const TABS = {
     weapons: "Weapons",
@@ -55,7 +55,7 @@ const PROP_HIGHLIGHT_RULES = [
     {test: /corrupted/i, className: "propRed"},
 ];
 
-const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "affixes", "sacreds", "skills", "cube", "changes", "help"];
+const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds", "cube", "changes", "help"];
 
 const WEAPON_ICON_MAP = {
     sword: SwordIcon,
@@ -1319,16 +1319,17 @@ function UniquesPanel({uniques, onGoUnique}) {
     );
 }
 
-function SacredTooltip({s}) {
+function SacredTooltip({s, onLink}) {
     if (!s) return <div className="emptyState">Select an item.</div>;
 
     const title = n(s?.displayName) || "Sacred";
     const types = sacredTypes(s);
     const ing = sacredIngredients(s);
 
-    const map = s?.propertiesByItemType && typeof s.propertiesByItemType === "object"
-        ? s.propertiesByItemType
-        : {};
+    const map =
+        s?.propertiesByItemType && typeof s.propertiesByItemType === "object"
+            ? s.propertiesByItemType
+            : {};
 
     const typeKeys = Object.keys(map);
 
@@ -1345,9 +1346,15 @@ function SacredTooltip({s}) {
 
             <div className="hr"/>
 
-            {ing.length ? <div className="line dim runesDisplay"><Tip
-                    text={String(TOOLTIPS_TEXT_MAP["sacred"])}>{ing.join(" · ")}</Tip></div> :
-                <div className="line dim">No runes listed.</div>}
+            {ing.length ? (
+                <div className="line dim runesDisplay">
+                    <Tip text={String(TOOLTIPS_TEXT_MAP["sacred"])}>
+                        {ing.join(" · ")}
+                    </Tip>
+                </div>
+            ) : (
+                <div className="line dim">No runes listed.</div>
+            )}
 
             <div className="hr"/>
 
@@ -1360,27 +1367,28 @@ function SacredTooltip({s}) {
                     return (
                         <div key={k} style={{marginBottom: 10}}>
                             <div className="sacredModsItemType">{k}</div>
-                            {arr.map((p, i) => {
-                                const raw = String(p);
+                            {arr.flatMap((p, i) => {
+                                const raw = String(p ?? "");
                                 const normalized = raw.replace(/\\n/g, "\n");
-                                const parts = normalized.split("\n");
+                                const lines = normalized
+                                    .split("\n")
+                                    .map((l) => l.trim())
+                                    .filter(Boolean);
 
-                                return (
-                                    <div key={`${k}-${i}`} className="runeModLine">
-                                        {parts.map((line, j) => (
-                                            <React.Fragment key={j}>
-                                                {line}
-                                                {j < parts.length - 1 ? <br/> : null}
-                                            </React.Fragment>
-                                        ))}
+                                return lines.map((line, j) => (
+                                    <div
+                                        key={`${k}-${i}-${j}`}
+                                        className="runeModLine"
+                                    >
+                                        {renderInlineMarkdown(line, onLink)}
                                     </div>
-                                );
+                                ));
                             })}
                         </div>
                     );
                 })
             ) : (
-                <div className="line dim">No properties listed.</div>
+                <div className="line dim">No modifiers listed.</div>
             )}
         </>
     );
@@ -1543,7 +1551,7 @@ function ArmorTooltip({a, onGoCode, onGoUnique}) {
     );
 }
 
-function RunewordTooltip({rw, onGoSacred}) {
+function RunewordTooltip({rw, onGoSacred, onLink}) {
     if (!rw) return <div className="emptyState">Select an item.</div>;
 
     const title = n(rw?.displayName) || n(rw?.runewordName) || "Runeword";
@@ -1586,11 +1594,24 @@ function RunewordTooltip({rw, onGoSacred}) {
             <div className="hr"/>
             <div className="uniqueHeader">Properties</div>
             {mods.length ? (
-                mods.map((m, i) => (
-                    <div key={i} className="runeModLine">
-                        {String(m)}
-                    </div>
-                ))
+                mods.flatMap((m, i) => {
+                    const raw = String(m ?? "");
+                    const normalized = raw.replace(/\\n/g, "\n");
+                    const lines = normalized
+                        .split("\n")
+                        .map((l) => l.trim())
+                        .filter(Boolean);
+
+                    return lines.map((line, j) => {
+                        const cls = classForPropertyLine(line);
+                        const key = `${i}-${j}`;
+                        return (
+                            <div key={key} className={"runeModLine " + cls}>
+                                {renderInlineMarkdown(line, onLink)}
+                            </div>
+                        );
+                    });
+                })
             ) : (
                 <div className="line dim">No properties listed.</div>
             )}
@@ -1599,10 +1620,10 @@ function RunewordTooltip({rw, onGoSacred}) {
                 <>
                     <div className="hr"/>
                     <div className="dropHeader">Requirements</div>
-                    {nz(rw?.requiredlevel) && lineKV("Required Level:", n(rw?.requiredlevel), "req")}
+                    {nz(rw?.requiredlevel) &&
+                        lineKV("Required Level:", n(rw?.requiredlevel), "req")}
                 </>
             ) : null}
-
 
             {rwSacreds.length ? (
                 <>
@@ -1623,18 +1644,18 @@ function RunewordTooltip({rw, onGoSacred}) {
                                         className="d2link"
                                         onClick={(ev) => {
                                             ev.preventDefault();
-                                            onGoSacred(name, Array.isArray(s?.itemTypes) ? s.itemTypes : []);
+                                            onGoSacred(
+                                                name,
+                                                Array.isArray(s?.itemTypes) ? s.itemTypes : []
+                                            );
                                         }}
                                         title={`Go to sacred: ${name}`}
                                     >
-                                        {name} ({typesText})
+                                        {name} {typesText ? `(${typesText})` : ""}
                                     </a>
                                 ) : (
                                     <span className="d2linkText">{name}</span>
                                 )}
-                                {typesText ? (
-                                    <span className="dim"></span>
-                                ) : null}
                             </div>
                         );
                     })}
@@ -1984,7 +2005,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
     );
 }
 
-function UniqueTooltip({u}) {
+function UniqueTooltip({u, onLink}) {
     if (!u) return <div className="emptyState">Select an item.</div>;
 
     const title = n(u?.displayName) || "Unknown Unique";
@@ -1997,49 +2018,68 @@ function UniqueTooltip({u}) {
         ? u.displayProperties.filter((x) => x != null && String(x).trim() !== "")
         : [];
 
-
     const dropSource = u?.dropSource;
     const dropRate = u?.dropRate;
     const occurrenceChance = u?.occurrenceChance;
 
-    const hasDropSource = dropSource !== null && dropSource !== undefined && String(dropSource).trim() !== "";
-    const hasDropRate = dropRate !== null && dropRate !== undefined && String(dropRate).trim() !== "";
-    const hasOccurrenceChance = occurrenceChance !== null && occurrenceChance !== undefined && String(occurrenceChance).trim() !== "";
+    const hasDropSource =
+        dropSource !== null &&
+        dropSource !== undefined &&
+        String(dropSource).trim() !== "";
+    const hasDropRate =
+        dropRate !== null &&
+        dropRate !== undefined &&
+        String(dropRate).trim() !== "";
+    const hasOccurrenceChance =
+        occurrenceChance !== null &&
+        occurrenceChance !== undefined &&
+        String(occurrenceChance).trim() !== "";
     const hasDropInfo = hasDropSource || hasDropRate || hasOccurrenceChance;
+
     const itemType = getItemTypeForUnique(u);
     const requiredLevel = getRequiredLevelForUnique(u, itemType);
     const requiredDexterity = getRequiredDexterityForUnique(u, itemType);
     const requiredStrength = getRequiredStrengthForUnique(u, itemType);
-    const hasRequirements = (requiredLevel > 0 && requiredStrength > 0) || (requiredLevel > 0 && requiredDexterity > 0) || (requiredLevel > 0 && requiredDexterity > 0 && requiredStrength > 0);
-    const creationOrb = u?.itemTier === "Normal" || u?.itemTier === "Exceptional" ? "Mythic Orb" : "Divine Orb";
+    const hasRequirements =
+        (requiredLevel > 0 && requiredStrength > 0) ||
+        (requiredLevel > 0 && requiredDexterity > 0) ||
+        (requiredLevel > 0 &&
+            requiredDexterity > 0 &&
+            requiredStrength > 0);
+
+    const creationOrb =
+        u?.itemTier === "Normal" || u?.itemTier === "Exceptional"
+            ? "Mythic Orb"
+            : "Divine Orb";
 
     return (
         <>
             <div className="tipUniqueTitle">{title}</div>
             <div className="tipSubtitle">
                 {baseName}
-
             </div>
+
             {u?.carryOne === "1" ? (
-                <>
-                    <div className="carryOne">
-                        You can have only one in your inventory and stash!
-                    </div>
-                </>
+                <div className="carryOne">
+                    You can have only one in your inventory and stash!
+                </div>
             ) : null}
 
             {has(u?.weaponBase) ? (
                 <>
                     <div className="hr"/>
-                    {has(u?.displayOneHandDamage) && lineKV("One hand damage:", n(u?.displayOneHandDamage), "")}
-                    {has(u?.displayTwoHandDamage) && lineKV("Two hand damage:", n(u?.displayTwoHandDamage), "")}
+                    {has(u?.displayOneHandDamage) &&
+                        lineKV("One hand damage:", n(u?.displayOneHandDamage), "")}
+                    {has(u?.displayTwoHandDamage) &&
+                        lineKV("Two hand damage:", n(u?.displayTwoHandDamage), "")}
                 </>
             ) : null}
 
             {has(u?.armorBase) ? (
                 <>
                     <div className="hr"/>
-                    {has(u?.displayDefense) && lineKV("Defense:", n(u?.displayDefense), "")}
+                    {has(u?.displayDefense) &&
+                        lineKV("Defense:", n(u?.displayDefense), "")}
                 </>
             ) : null}
 
@@ -2047,55 +2087,62 @@ function UniqueTooltip({u}) {
             <div className="uniqueHeader">Unique modifiers</div>
 
             {mods.length ? (
-                mods.map((m, idx) => {
-                    const raw = String(m);
-                    const parts = raw.split("\n");
-                    const cls = classForPropertyLine(raw);
+                mods.flatMap((m, idx) => {
+                    const raw = String(m ?? "");
+                    // support both "\n" and actual newlines
+                    const normalized = raw.replace(/\\n/g, "\n");
+                    const lines = normalized
+                        .split("\n")
+                        .map((l) => l.trim())
+                        .filter(Boolean);
 
-                    return (
-                        <div key={idx} className={"uniqueMod " + cls}>
-                            {parts.map((line, i) => (
-                                <React.Fragment key={i}>
-                                    {line}
-                                    {i < parts.length - 1 ? <br/> : null}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    );
+                    return lines.map((line, j) => {
+                        const cls = classForPropertyLine(line);
+                        const key = `${idx}-${j}`;
+
+                        return (
+                            <div key={key} className={"uniqueMod " + cls}>
+                                {renderInlineMarkdown(line, onLink)}
+                            </div>
+                        );
+                    });
                 })
             ) : (
                 <div className="line dim">No modifiers listed.</div>
             )}
 
-            {hasRequirements ? (
-                <>
-                    <div className="hr"/>
-                    <div className="dropHeader">Requirements</div>
-                    {nz(requiredLevel) && lineKV("Required Level:", n(requiredLevel), "req")}
-                    {nz(requiredStrength) && lineKV("Required Strength:", n(requiredStrength), "req")}
-                    {nz(requiredDexterity) && lineKV("Required Dexterity:", n(requiredDexterity), "req")}
-                </>
-            ) : null}
-
-            <div className="hr"/>
-            <div className="dropHeader">Additional item information</div>
-            {has(baseTypePretty) && has(u?.weaponBase) && lineKV("Base type:", n(baseTypePretty), "dim")}
-            {has(u?.itemTier) && lineKV("Item Tier:", n(u?.itemTier), "dim")}
-            {has(u?.level) && lineKV("Quality Level:", n(u?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
-            {nz(u?.requiredLevel) && lineKV("Required Level:", n(u?.requiredLevel), "req")}
-            {has(u?.code) && lineKV("Code:", n(u?.code), "dim", TOOLTIPS_TEXT_MAP["uniCode"])}
-            {!has(u?.dropSource) && u?.showCanBeCreatedWith && lineKV("Can be created with:", n(creationOrb), "dim", TOOLTIPS_TEXT_MAP["mythicDivineOrb"])}
-
             {hasDropInfo ? (
                 <>
                     <div className="hr"/>
                     <div className="dropHeader">Drop information</div>
-
-                    {hasDropSource && lineKV("Drop Source:", String(dropSource), "dim")}
-                    {hasDropRate && lineKV("Drop Rate:", String(dropRate), "dim", TOOLTIPS_TEXT_MAP["dropRate"])}
-                    {hasOccurrenceChance && lineKV("Occurence chance:", String(occurrenceChance), "dim", TOOLTIPS_TEXT_MAP["occurrenceChance"])}
+                    {hasDropSource &&
+                        lineKV("Drop source:", String(dropSource), "")}
+                    {hasDropRate &&
+                        lineKV("Drop rate:", String(dropRate), "")}
+                    {hasOccurrenceChance &&
+                        lineKV("Occurrence chance:", String(occurrenceChance), "")}
                 </>
             ) : null}
+
+            {hasRequirements ? (
+                <>
+                    <div className="hr"/>
+                    <div className="dropHeader">Requirements</div>
+                    {nz(requiredLevel) &&
+                        lineKV("Required Level:", n(requiredLevel), "req")}
+                    {nz(requiredStrength) &&
+                        lineKV("Required Strength:", n(requiredStrength), "req")}
+                    {nz(requiredDexterity) &&
+                        lineKV("Required Dexterity:", n(requiredDexterity), "req")}
+                </>
+            ) : null}
+
+            <div className="hr"/>
+            <div className="dropHeader">Crafting</div>
+            <div className="line dim">
+                You can create this unique with a{" "}
+                <span className="highlight">{creationOrb}</span> on its base item.
+            </div>
         </>
     );
 }
@@ -2411,6 +2458,20 @@ export default function App() {
                         changesSearchInputRef.current.select();
                     }
                 }
+                return;
+            }
+
+            // --- Skills tab ---
+            if (t === "skills") {
+                setTab("skills");
+                if (hasName) {
+                    setSkillsSearch(needle);
+                    if (skillsSearchInputRef.current) {
+                        skillsSearchInputRef.current.focus();
+                        skillsSearchInputRef.current.select();
+                    }
+                }
+                // if no name → just jump to tab, keep existing skillsSearch as-is
                 return;
             }
 
@@ -2967,9 +3028,9 @@ export default function App() {
                                     type="text"
                                     ref={skillsSearchInputRef}
                                     value={skillsSearch}
-                                    onChange={(e) => setCubeSearch(e.target.value)}
+                                    onChange={(e) => setSkillsSearch(e.target.value)}
                                     className="searchBar"
-                                    placeholder="Search cube recipes…"
+                                    placeholder="Search skills…"
                                 />
                             </div>
                         </div>
@@ -3135,7 +3196,8 @@ export default function App() {
                                 />
                             )}
 
-                            {tab === "runewords" && <RunewordTooltip rw={activeItem} onGoSacred={jumpToSacred}/>}
+                            {tab === "runewords" && <RunewordTooltip rw={activeItem} onGoSacred={jumpToSacred}
+                                                                     onLink={handleMarkdownAppLink}/>}
 
                             {tab === "armors" && (
                                 <ArmorTooltip
@@ -3144,8 +3206,8 @@ export default function App() {
                                     onGoUnique={jumpToUnique}
                                 />
                             )}
-                            {tab === "uniques" && <UniqueTooltip u={activeItem}/>}
-                            {tab === "sacreds" && <SacredTooltip s={activeItem}/>}
+                            {tab === "uniques" && <UniqueTooltip u={activeItem} onLink={handleMarkdownAppLink}/>}
+                            {tab === "sacreds" && <SacredTooltip s={activeItem} onLink={handleMarkdownAppLink}/>}
                         </TooltipShell>
                     </>)}
             </div>

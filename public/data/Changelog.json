@@ -1,5 +1,12 @@
 [
   {
+    "id": "1.1.1",
+    "title": "v1.1.1",
+    "text": [
+      "- Added dynamic links to SoE custom skills in skill descriptions"
+    ]
+  },
+  {
     "id": "1.1.0",
     "title": "v1.1.0",
     "text": [
