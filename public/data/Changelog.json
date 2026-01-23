@@ -1,5 +1,13 @@
 [
   {
+    "id": "1.1.0",
+    "title": "v1.1.0",
+    "text": [
+      "- Added Affixes table with sorting and filtering capabilities",
+      "- Added Skills tab with non-class skills descriptions added in SoE"
+    ]
+  },
+  {
     "id": "1.0.1",
     "title": "v1.0.1",
     "text": [

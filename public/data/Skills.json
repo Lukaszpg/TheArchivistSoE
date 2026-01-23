@@ -1,0 +1,67 @@
+[
+		{
+		"id":"about",
+		"title":"About skills",
+		"text": 
+		[
+			"- Here you can find non-class skills added in Sanctuary of Exile",
+			"- For vanilla skills, please refer to [Vanilla PD2 Wiki](https://wiki.projectdiablo2.com/wiki/Main_Page)"
+		]
+	},
+	{
+		"id":"skill-frailty",
+		"title":"Frailty",
+		"text": 
+		[
+		 "Frailty is a new aura that reduces enemy physical resistance: ",
+		 "- Reduces enemy physical resistance - starts at 10% and receives 1% additional reduction per level",
+		 "- Reduces enemy defense - min. 25%, max 90%",
+		 "- Can break immunities"
+		]
+	},
+	{
+		"id":"skill-rimefall",
+		"title":"Rimefall",
+		"text": 
+		[
+		"Shoot forth cold enchanted arrow that leave a wave of rimefall behind, dealing cold damage to enemies:",
+		"- Deals 100% weapon damage",
+		"- Converts 50% physical damage to elemental damage",
+		"- Adds +% to attack rating",
+		"- Scales with +skills",
+		"- Freezes enemies for 0.2 seconds",
+		"- Deals cold damage per level:",
+		"  - On level 1 deals 28-40 damage",
+		"  - On levels 2-8 deals additional 8-16 damage",
+		"  - On levels 9-16 deals additional 20-24 damage",
+		"  - On levels 17-22 deals additional 60-64 damage",
+		"  - On levels 23-28 deals additional 120-128 damage",
+		"  - On levels 29+ deals additional 180-192 damage"
+		]
+	},
+	{
+		"id":"skill-reinforce",
+		"title":"Reinforce",
+		"text": 
+		[
+			"New defensive skill that allows scaling of %PDR, flat PDR and MDR with base defence:",
+			"- scales of BASE defense from items + bonus from dexterity - this means that any % enhanced defense is not taken into account",
+			"- Gain 2 physical damage reduction per base defense according to formula",
+			"  - 1000 - 34 * base skill level",
+			"- Gain 1% physical damage reduction per base defense according to formula",
+			"  - 1000 - 34 * base skill level",
+			"- Gain 2 magic damage reduction per base defense according to formula",
+			"  - 1000 - 34 * base skill level",
+			"- For example, at level 15, to achieve each breakpoint:",
+			"  - Base defense: 4000",
+			"  - Skill level: 15",
+			"  - 1000 - 34 * 15 = 1000 - 510 = 490 - breakpoint every 490 defence",
+			"  - pdr - (4000 / 490 ) * 2 = ~8 * 2 = 16",
+			"  - pdr% - 4000 / 490 = ~8%",
+			"  - mdr - (4000 / 490) * 2 = ~8 * 2 = 16",
+			"- Duration: 6 seconds",
+			"- Affects also your allies",
+			"- Scales only with hard points"
+		]
+	}
+]

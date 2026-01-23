@@ -534,6 +534,24 @@
 			"  - No longer requires two weapons to work",
 			"  - Synergy changed from Perforate to Bash"
 		]
+	},
+	{
+		"id":"cube-recipe-changes",
+		"title":"Cube recipe changes",
+		"text": [
+			"- Due to lower gems being sold by vendors, cubing from normal to flawless is no longer possible"
+		]
+	},
+	{
+		"id":"vendor-changes",
+		"title":"NPC changes",
+		"text": [
+			"- Akara now sells Token of Absolution for 1 gold. Finally we may rejoice!",
+			"- Due to technical reasons, the chipped, flawed and normal gems no longer drop and are sold by:",
+			"  - Chipped are sold by Akara in Act 1",
+			"  - Flawed are sold by Fara in Act 2",
+			"  - Normal are sold by Akara in Act 3"
+		]
 	}
 ]
 

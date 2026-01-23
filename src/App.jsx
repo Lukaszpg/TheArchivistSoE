@@ -35,14 +35,16 @@ import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
-const PARSER_VERSION = "1.0.1";
+const PARSER_VERSION = "1.1.0";
 
 const TABS = {
     weapons: "Weapons",
     armors: "Armors",
     uniques: "Uniques",
     runewords: "Runewords",
+    affixes: "Affixes",
     sacreds: "Sacreds",
+    skills: "Skills",
     cube: "Cube Recipes",
     changes: "SoE changes",
     help: "Help",
@@ -53,7 +55,7 @@ const PROP_HIGHLIGHT_RULES = [
     {test: /corrupted/i, className: "propRed"},
 ];
 
-const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "sacreds", "cube", "changes", "help"];
+const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "affixes", "sacreds", "skills", "cube", "changes", "help"];
 
 const WEAPON_ICON_MAP = {
     sword: SwordIcon,
@@ -158,7 +160,10 @@ const TOOLTIPS_TEXT_MAP = {
     "code": "This code can be used in your loot filter to highlight this specific base.",
     "uniCode": "This code can be used in your loot filter to highlight this specific base - remember to add UNI modifier.",
     "sacred": "Additionally to items mentioned here it is required to use Sacred Orb in the Cube.",
-    "mythicDivineOrb": "In Sanctuary of Exile unique items can be created in the Cube by using base and an currency orb appropriate for item tier - Mythic Orb for normal and exceptional bases and Divine Orb for elite bases."
+    "mythicDivineOrb": "In Sanctuary of Exile unique items can be created in the Cube by using base and an currency orb appropriate for item tier - Mythic Orb for normal and exceptional bases and Divine Orb for elite bases.",
+    "affixMaxLevel": "If the item level is high enough, then some affixes will not be eligible to roll on it, making it more likely for better affixes to appear on the item.",
+    "affixFrequency": "Frequency parameter determines how often will you roll this modifier on an item.",
+    "affixRares": "If true, then this modifier can occur on rare items."
 };
 
 const INFO_BY_TAB = {
@@ -209,6 +214,86 @@ const fmtSigned = (v) => {
     if (Number.isNaN(x)) return String(v);
     return (x > 0 ? "+" : "") + x;
 };
+
+// ----- Affix helpers -----
+
+function affixPrimaryPropertyAndMax(affix) {
+    const dp = affix?.displayProperties;
+    if (!dp) return {property: "", max: 0};
+
+    // Pick the first object from displayProperties
+    let first = null;
+
+    if (Array.isArray(dp)) {
+        first = dp.find((p) => p && typeof p === "object") || dp[0];
+    } else if (typeof dp === "object") {
+        first = dp;
+    }
+
+    if (first && typeof first === "object") {
+        const prop =
+            (first.property != null ? String(first.property) :
+                    first.prop != null ? String(first.prop) : ""
+            ).trim();
+
+        const maxRaw = first.max != null ? Number(first.max) : 0;
+        const max = Number.isFinite(maxRaw) ? maxRaw : 0;
+
+        return {property: prop, max};
+    }
+
+    return {property: "", max: 0};
+}
+
+function affixDisplayString(affix) {
+    const dp = affix?.displayProperties;
+    if (!dp) return "";
+
+    // If it's an array
+    if (Array.isArray(dp)) {
+        // Array of objects: use displayString
+        if (dp.length && typeof dp[0] === "object") {
+            return dp
+                .map((p) => p && p.displayString)
+                .filter(Boolean)
+                .join(" / ");
+        }
+        // Array of strings (old format) – keep supporting it
+        return dp.filter(Boolean).join(" / ");
+    }
+
+    // Single object
+    if (typeof dp === "object") {
+        return dp.displayString || "";
+    }
+
+    // Fallback – if someone ever makes it a raw string
+    return String(dp);
+}
+
+function affixMaxValue(affix) {
+    const dp = affix?.displayProperties;
+    if (!dp) return 0;
+
+    // Array case
+    if (Array.isArray(dp)) {
+        if (dp.length && typeof dp[0] === "object") {
+            return dp.reduce(
+                (max, p) => Math.max(max, Number(p?.max ?? 0)),
+                0
+            );
+        }
+        // Old pure-string format – nothing numeric to sort on
+        return 0;
+    }
+
+    // Single object
+    if (typeof dp === "object") {
+        return Number(dp.max ?? 0);
+    }
+
+    return 0;
+}
 
 function repeatIngredient(name, qtyRaw) {
     const nameStr = n(name);
@@ -629,6 +714,32 @@ function buildSearchTextForItem(tab, it) {
         return `${name}\n${ing}\n${props}`;
     }
 
+    if (tab === "affixes") {
+        const dp = it?.displayProperties;
+        let attrsText = "";
+
+        if (Array.isArray(dp)) {
+            if (dp.length && typeof dp[0] === "object") {
+                // Array of { displayString, max, ... }
+                attrsText = dp
+                    .map((p) => p && p.displayString)
+                    .filter(Boolean)
+                    .join("\n")
+                    .toLowerCase();
+            } else {
+                // Backwards-compat: array of strings
+                attrsText = dp
+                    .filter(Boolean)
+                    .map((x) => String(x).toLowerCase())
+                    .join("\n");
+            }
+        } else if (dp && typeof dp === "object") {
+            attrsText = String(dp.displayString || "").toLowerCase();
+        }
+
+        return applyModifierExpansions(`${name}\n${attrsText}`);
+    }
+
     return name;
 }
 
@@ -644,6 +755,13 @@ function applyModifierExpansions(searchText) {
     }
 
     return out;
+}
+
+function affixTypes(it) {
+    const a = Array.isArray(it?.displayItemTypeNames)
+        ? it.displayItemTypeNames
+        : [];
+    return a.map((x) => n(x)).filter(Boolean);
 }
 
 function runewordAllTypes(rw) {
@@ -813,6 +931,107 @@ function getRequiredDexterityForUnique(u) {
     return u?.weaponBase?.requiredDexterity;
 }
 
+function SearchableSelect({
+                              value,
+                              onChange,
+                              options,
+                              placeholder = "Select…",
+                              style,
+                              className = "",
+                          }) {
+    const [open, setOpen] = React.useState(false);
+    const [query, setQuery] = React.useState("");
+    const wrapRef = React.useRef(null);
+    const inputRef = React.useRef(null);
+
+    const currentLabel =
+        options.find((o) => String(o.value) === String(value))?.label || "";
+
+    const filteredOptions = React.useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return options;
+        return options.filter((opt) =>
+            (opt.label || "").toLowerCase().includes(q)
+        );
+    }, [options, query]);
+
+    // Close on outside click
+    React.useEffect(() => {
+        if (!open) return;
+
+        function handleClick(e) {
+            if (!wrapRef.current) return;
+            if (!wrapRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClick);
+        return () => document.removeEventListener("mousedown", handleClick);
+    }, [open]);
+
+    // Auto-focus search input when dropdown opens
+    React.useEffect(() => {
+        if (open && inputRef.current) {
+            inputRef.current.focus();
+            inputRef.current.select();
+        }
+    }, [open]);
+
+    const handleSelect = (val) => {
+        onChange(val);
+        setOpen(false);
+        setQuery("");
+    };
+
+    return (
+        <div
+            ref={wrapRef}
+            className={`selSearchWrap ${className}`}
+            style={style}
+        >
+            <button
+                type="button"
+                className="selTrigger"
+                onClick={() => setOpen((o) => !o)}
+            >
+        <span className={currentLabel ? "" : "placeholder"}>
+          {currentLabel || placeholder}
+        </span>
+                <span className="selArrow">▾</span>
+            </button>
+
+            {open && (
+                <div className="selDropdown">
+                    <input
+                        ref={inputRef}
+                        className="selSearchInput"
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Filter options…"
+                    />
+                    <div className="selOptions">
+                        {filteredOptions.length === 0 ? (
+                            <div className="selOption selEmpty">No matches</div>
+                        ) : (
+                            filteredOptions.map((opt) => (
+                                <div
+                                    key={String(opt.value) || opt.label}
+                                    className="selOption"
+                                    onClick={() => handleSelect(opt.value)}
+                                >
+                                    {opt.label}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 function FiltersBar({
                         search,
                         setSearch,
@@ -830,14 +1049,44 @@ function FiltersBar({
                         showUber,
                         typePlaceholder,
                         searchInputRef,
-                        showTier,
+                        showTier = true,
+                        showHighlight = false,
                         highlightOnly,
                         setHighlightOnly,
-                        showHighlight,
+                        showAffixType = false,
+                        affixTypeValue = "",
+                        setAffixTypeValue = () => {
+                        },
                     }) {
+    // Build option lists once per render
+    const typeOptions = [
+        {value: "", label: typePlaceholder},
+        ...types.map((t) => ({value: t, label: t})),
+    ];
+
+    const socketsOptions = [
+        {value: "", label: "All sockets"},
+        ...Array.from({length: 7}, (_, i) => String(i)).map((s) => ({
+            value: s,
+            label: s,
+        })),
+    ];
+
+    const tierOptions = [
+        {value: "", label: "All tiers"},
+        ...tiers.map((t) => ({value: t, label: t})),
+    ];
+
+    const affixTypeOptions = [
+        {value: "", label: "All affix types"},
+        {value: "Prefix", label: "Prefix"},
+        {value: "Suffix", label: "Suffix"},
+    ];
+
     return (
         <div className="filtersRow">
             <div className="filtersPanel">
+                {/* Search input (same as before) */}
                 <input
                     ref={searchInputRef}
                     type="text"
@@ -847,93 +1096,77 @@ function FiltersBar({
                     placeholder="Search item name…"
                 />
 
-                <select
+                {/* Type (searchable) */}
+                <SearchableSelect
                     value={typeValue}
-                    onChange={(e) => setTypeValue(e.target.value)}
+                    onChange={setTypeValue}
+                    options={typeOptions}
+                    placeholder={typePlaceholder}
                     style={{maxWidth: 260}}
-                >
-                    <option value="">{typePlaceholder}</option>
-                    {types.map((t) => (
-                        <option key={t} value={t}>
-                            {t}
-                        </option>
-                    ))}
-                </select>
+                />
 
+                {/* Sockets (also searchable, even though it’s small) */}
                 {showSockets && (
-                    <select
+                    <SearchableSelect
                         value={socketsValue}
-                        onChange={(e) => setSocketsValue(e.target.value)}
+                        onChange={setSocketsValue}
+                        options={socketsOptions}
+                        placeholder="All sockets"
                         style={{maxWidth: 180}}
-                    >
-                        <option value="">All sockets</option>
-                        {Array.from({length: 7}, (_, i) => String(i)).map((s) => (
-                            <option key={s} value={s}>
-                                {s}
-                            </option>
-                        ))}
-                    </select>
+                    />
                 )}
 
+                {/* Tier (searchable) */}
                 {showTier && (
-                    <select
+                    <SearchableSelect
                         value={tierValue}
-                        onChange={(e) => setTierValue(e.target.value)}
+                        onChange={setTierValue}
+                        options={tierOptions}
+                        placeholder="All tiers"
                         style={{maxWidth: 180}}
-                    >
-                        <option value="">All tiers</option>
-                        {tiers.map((t) => (
-                            <option key={t} value={t}>
-                                {t}
-                            </option>
-                        ))}
-                    </select>
+                    />
                 )}
 
+                {/* Affix type (Prefix / Suffix) – affixes tab only */}
+                {showAffixType && (
+                    <SearchableSelect
+                        value={affixTypeValue}
+                        onChange={setAffixTypeValue}
+                        options={affixTypeOptions}
+                        placeholder="All affix types"
+                        style={{maxWidth: 200}}
+                    />
+                )}
+
+                {/* Uber boss toggle (unchanged) */}
                 {showUber && (
-                    <label className="toggleWrap" title="Show only Uber Boss uniques">
-                        <span className="toggleText">Show Uber Boss uniques</span>
+                    <label className="toggleWrap">
+                        <span className="toggleLabel">Uber boss unique</span>
                         <div className="toggle">
                             <input
                                 type="checkbox"
-                                checked={uberValue}
-                                onChange={(e) => setUberValue(e.target.checked)}
+                                checked={!!uberValue}
+                                onChange={(e) => setUberValue(e.target.checked ? "yes" : "")}
                             />
                             <span className="toggleSlider"/>
                         </div>
                     </label>
                 )}
 
+                {/* Highlight toggle (unchanged) */}
                 {showHighlight && (
-                    <label className="toggleWrap" title="Show only highlighted uniques">
-                        <span className="toggleText">Show added in SoE</span>
+                    <label className="toggleWrap">
+                        <span className="toggleLabel">SoE exclusive</span>
                         <div className="toggle">
                             <input
                                 type="checkbox"
-                                checked={highlightOnly}
+                                checked={!!highlightOnly}
                                 onChange={(e) => setHighlightOnly(e.target.checked)}
                             />
                             <span className="toggleSlider"/>
                         </div>
                     </label>
                 )}
-            </div>
-
-            <div className="filtersResetPanel">
-                <button
-                    type="button"
-                    className="btn reset"
-                    onClick={() => {
-                        setSearch("");
-                        setTypeValue("");
-                        setTierValue("");
-                        setSocketsValue("");
-                        setUberValue("");
-                        setHighlightOnly(false);
-                    }}
-                >
-                    Reset
-                </button>
             </div>
         </div>
     );
@@ -997,7 +1230,8 @@ function ListPanel({title, countLabel, items, activeIndex, setActiveIndex, subLa
                                 </div>
                                 <div className="meta">
                                     <div className={tab === "uniques" ? "uniqueName" : "name"}>
-                                        {n(it?.displayName) || n(it?.name) || "Unknown"} {isHighlightedItem(it) && (tab === "uniques" || tab === "armors" || tab === "weapons" || tab === "runewords") ? <span className="uniqueSOEAsterisk">*</span> : null}
+                                        {n(it?.displayName) || n(it?.name) || "Unknown"} {isHighlightedItem(it) && (tab === "uniques" || tab === "armors" || tab === "weapons" || tab === "runewords") ?
+                                        <span className="uniqueSOEAsterisk">*</span> : null}
                                     </div>
                                     <div className="sub">{subLabel(it)}</div>
                                     <div className="tiny">{tinyLabel(it)}</div>
@@ -1169,7 +1403,9 @@ function HelpPanel() {
                 <p><b>Search</b></p>
                 <ul>
                     <li>Use quotes for exact phrases: <code>"faster cast rate"</code></li>
-                    <li>In <b>Uniques</b>, <b>Runewords</b> and <b>Sacreds</b> tabs, search also checks modifiers.</li>
+                    <li>In <b>Uniques</b>, <b>Runewords</b>, <b>Sacreds</b> and <b>Affixes</b> tabs, search also checks
+                        modifiers.
+                    </li>
                 </ul>
 
                 <p><b>UI</b></p>
@@ -1178,7 +1414,8 @@ function HelpPanel() {
                     <li>Dashed underline under label means that it links to an entry on this site and will transfer to
                         it on click.
                     </li>
-                    <li>Click the version on the right side of the footer to see <code>The Archivist</code> changelog</li>
+                    <li>Click the version on the right side of the footer to see <code>The Archivist</code> changelog
+                    </li>
                     <li>Orange asterisk next to a name of the unique item means it was added in Sanctuary of Exile</li>
                 </ul>
             </div>
@@ -1328,16 +1565,6 @@ function RunewordTooltip({rw, onGoSacred}) {
         )
         : [];
 
-    const shield = Array.isArray(rw?.shieldProperties)
-        ? rw.shieldProperties.filter(Boolean)
-        : [];
-    const weapon = Array.isArray(rw?.weaponProperties)
-        ? rw.weaponProperties.filter(Boolean)
-        : [];
-    const armor = Array.isArray(rw?.armorProperties)
-        ? rw.armorProperties.filter(Boolean)
-        : [];
-
     const rwSacreds = Array.isArray(rw?.sacreds) ? rw.sacreds : [];
 
     return (
@@ -1414,6 +1641,346 @@ function RunewordTooltip({rw, onGoSacred}) {
                 </>
             ) : null}
         </>
+    );
+}
+
+function useIsMobile(maxWidth = 980) {
+    const [isMobile, setIsMobile] = React.useState(
+        typeof window !== "undefined" ? window.innerWidth <= maxWidth : false
+    );
+
+    React.useEffect(() => {
+        const handler = () => setIsMobile(window.innerWidth <= maxWidth);
+        window.addEventListener("resize", handler);
+        return () => window.removeEventListener("resize", handler);
+    }, [maxWidth]);
+
+    return isMobile;
+}
+
+function AffixesPanel({data, loading, error, sort, onChangeSort}) {
+    const [page, setPage] = React.useState(0);
+    const isMobile = useIsMobile(895);
+    const pageSize = 50;
+
+    // Local state
+
+    // Normalised data coming from global filters/search
+    const all = React.useMemo(
+        () => (Array.isArray(data) ? data : []),
+        [data]
+    );
+
+    // Whenever the underlying data changes (global filters / search),
+    // reset to page 0 so we don't end up on an invalid page.
+    React.useEffect(() => {
+        setPage(0);
+    }, [data]);
+
+    const sortKey = sort?.key || "attrs";
+    const sortDir = sort?.dir || "asc";
+
+    const sorted = React.useMemo(() => {
+        const arr = [...all];
+        if (!sortKey) return arr;
+
+        // Special case: Attributes column
+        if (sortKey === "attrs") {
+            arr.sort((a, b) => {
+                const aa = affixPrimaryPropertyAndMax(a);
+                const bb = affixPrimaryPropertyAndMax(b);
+
+                // 1) group by property
+                const propCmp = aa.property.localeCompare(bb.property);
+                if (propCmp !== 0) {
+                    return sortDir === "asc" ? propCmp : -propCmp;
+                }
+
+                // 2) within same property, sort by max
+                const diff = aa.max - bb.max;
+                return sortDir === "asc" ? diff : -diff;
+            });
+            return arr;
+        }
+
+        // All other columns use the generic logic
+        const getValue = (it) => {
+            switch (sortKey) {
+                case "name":
+                    return n(it?.name);
+                case "types":
+                    return (it?.displayItemTypeNames || []).join(", ");
+                case "excluded":
+                    return (it?.displayExcludedItemTypeNames || []).join(", ");
+                case "class":
+                    return n(it?.classDisplayName);
+                case "rare":
+                    return Number(it?.rare || 0);
+                case "maxLevel":
+                    return Number(it?.maxLevel || 0);
+                case "reqLevel":
+                    return Number(it?.requiredLevel || 0);
+                case "freq":
+                    return Number(it?.frequency || 0);
+                default:
+                    return "";
+            }
+        };
+
+        arr.sort((a, b) => {
+            const va = getValue(a);
+            const vb = getValue(b);
+
+            const bothNumbers =
+                typeof va === "number" && !Number.isNaN(va) &&
+                typeof vb === "number" && !Number.isNaN(vb);
+
+            if (bothNumbers) {
+                return sortDir === "asc" ? va - vb : vb - va;
+            }
+
+            return sortDir === "asc"
+                ? String(va).localeCompare(String(vb))
+                : String(vb).localeCompare(String(va));
+        });
+
+        return arr;
+    }, [all, sortKey, sortDir]);
+
+    const handleSort = (key) => {
+        onChangeSort((prev) => {
+            if (prev && prev.key === key) {
+                return {key, dir: prev.dir === "asc" ? "desc" : "asc"};
+            }
+            return {key, dir: "asc"};
+        });
+    };
+
+    const sortArrowFor = (key) => {
+        if (sortKey !== key) return null;
+        return <span className="sortArrow">{sortDir === "asc" ? "▲" : "▼"}</span>;
+    };
+
+    // --- Loading / empty / mobile -------------------------------------------
+
+    if (loading) {
+        return (
+            <div className="infoPanel">
+                <div className="infoHeader">
+                    <div className="infoTitle">Affixes</div>
+                </div>
+                <div className="meta">Loading affixes…</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="infoPanel">
+                <div className="infoHeader">
+                    <div className="infoTitle">Affixes</div>
+                </div>
+                <div className="meta">
+                    Failed to load affixes: {String(error.message || error)}
+                </div>
+            </div>
+        );
+    }
+
+    if (isMobile) {
+        return (
+            <div className="infoPanel">
+                <div className="infoHeader">
+                    <div className="infoTitle">Affixes</div>
+                </div>
+                <div
+                    className="emptyState"
+                    style={{padding: "16px", textAlign: "center"}}
+                >
+                    The Affixes table is not viewable on mobile.
+                    <br/>
+                    Please use a device with larger screen.
+                </div>
+            </div>
+        );
+    }
+
+    const total = sorted.length;
+    if (!total) {
+        return (
+            <div className="infoPanel">
+                <div className="infoHeader">
+                    <div className="infoTitle">Affixes</div>
+                </div>
+                <div className="emptyState">No affixes match your filters.</div>
+            </div>
+        );
+    }
+
+    // --- Pagination (on *sorted* data) ---------------------------------------
+
+    const pageCount = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Math.min(page, pageCount - 1);
+    const start = safePage * pageSize;
+    const end = start + pageSize;
+    const current = sorted.slice(start, end);
+
+    const goPrev = () => setPage((p) => Math.max(0, p - 1));
+    const goNext = () => setPage((p) => Math.min(pageCount - 1, p + 1));
+
+    // --- Render table --------------------------------------------------------
+
+    return (
+        <div className="infoPanel">
+            <div className="infoHeader">
+                <div className="infoTitle">Affixes</div>
+            </div>
+
+            <div className="affixTableWrapper">
+                {/* Pager above table */}
+                <div className="affixPager">
+                    <div className="affixPagerLeft">
+            <span>
+              Showing {start + 1}–{Math.min(end, total)} of {total}
+            </span>
+                    </div>
+                    <div className="affixPagerRight">
+                        <button
+                            type="button"
+                            className="btn ghost affixPagerBtn"
+                            onClick={goPrev}
+                            disabled={safePage === 0}
+                        >
+                            ‹ Prev
+                        </button>
+                        <span className="affixPagerInfo">
+              Page {safePage + 1} / {pageCount}
+            </span>
+                        <button
+                            type="button"
+                            className="btn ghost affixPagerBtn"
+                            onClick={goNext}
+                            disabled={safePage === pageCount - 1}
+                        >
+                            Next ›
+                        </button>
+                    </div>
+                </div>
+
+                {/* Scrollable table */}
+                <div className="affixTableScroll">
+                    <table className="affixTable">
+                        <thead>
+                        <tr>
+                            <th
+                                className="sortable"
+                                onClick={() => handleSort("name")}
+                            >
+                  <span className="thLabel">
+                    Name {sortArrowFor("name")}
+                  </span>
+                            </th>
+
+                            <th
+                                className="sortable"
+                                onClick={() => handleSort("attrs")}
+                            >
+                  <span className="thLabel">
+                    Attributes {sortArrowFor("attrs")}
+                  </span>
+                            </th>
+
+                            <th
+                                className="sortable"
+                                onClick={() => handleSort("rare")}
+                            >
+                  <span className="thLabel">
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixRares"])}>Rares {sortArrowFor("rare")}</Tip>
+                  </span>
+
+                            </th>
+
+                            <th
+                                className="sortable"
+                                onClick={() => handleSort("maxLevel")}
+                            >
+                  <span className="thLabel">
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixMaxLevel"])}>Max level</Tip> {sortArrowFor("maxLevel")}
+                  </span>
+                            </th>
+
+                            <th
+                                className="sortable"
+                                onClick={() => handleSort("freq")}
+                            >
+                  <span className="thLabel">
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixFrequency"])}>Frequency</Tip> {sortArrowFor("freq")}
+                  </span>
+                            </th>
+
+                            <th
+                                className="sortable"
+                                onClick={() => handleSort("types")}
+                            >
+                  <span className="thLabel">
+                    Item types {sortArrowFor("types")}
+                  </span>
+                            </th>
+
+                            <th
+                                className="sortable"
+                                onClick={() => handleSort("excluded")}
+                            >
+                  <span className="thLabel">
+                    Excluded item types {sortArrowFor("excluded")}
+                  </span>
+                            </th>
+
+                            <th
+                                className="sortable"
+                                onClick={() => handleSort("class")}
+                            >
+                  <span className="thLabel">
+                    Class {sortArrowFor("class")}
+                  </span>
+                            </th>
+
+                            <th
+                                className="sortable"
+                                onClick={() => handleSort("reqLevel")}
+                            >
+                  <span className="thLabel">
+                    Required level {sortArrowFor("reqLevel")}
+                  </span>
+                            </th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {current.map((it, idx) => (
+                            <tr key={`${safePage}-${idx}-${it.id || it.name}`}>
+                                <td>{n(it?.name)}</td>
+                                <td>{affixDisplayString(it)}</td>
+                                <td>{it?.rare ? "Yes" : "No"}</td>
+                                <td>{has(it?.frequency) ? it.frequency : ""}</td>
+                                <td>{has(it?.maxLevel) ? it.maxLevel : ""}</td>
+                                <td>
+                                    {(it?.displayItemTypeNames || []).join(", ")}
+                                </td>
+                                <td>
+                                    {(it?.displayExcludedItemTypeNames || []).join(", ")}
+                                </td>
+                                <td>{n(it?.classDisplayName)}</td>
+                                <td>
+                                    {has(it?.requiredLevel) ? it.requiredLevel : ""}
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     );
 }
 
@@ -1546,8 +2113,7 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
     if (loading) {
         return (
             <div className="helpPanel">
-                <div className="helpTitle">Cube Recipes</div>
-                <div className="helpBody">Loading cube data…</div>
+                <div className="helpBody">Loading data…</div>
             </div>
         );
     }
@@ -1555,9 +2121,8 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
     if (error) {
         return (
             <div className="helpPanel">
-                <div className="helpTitle">Cube Recipes</div>
                 <div className="helpBody">
-                    Failed to load <code>Cube.json</code>:{" "}
+                    Failed to load <code>data</code>:{" "}
                     {String(error.message || error)}
                 </div>
             </div>
@@ -1586,7 +2151,6 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
     if (!filtered.length) {
         return (
             <div className="helpPanel">
-                <div className="helpTitle">Cube Recipes</div>
                 <div className="helpBody">
                     <div className="emptyState">No cube recipes match your search.</div>
                 </div>
@@ -1645,45 +2209,74 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
 }
 
 function TabsBar({tab, setTab}) {
-    const leftKeys = ["weapons", "armors", "uniques", "runewords", "sacreds", "cube", "changes"];
+    const mainKeys = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds"];
+    const secondaryKeys = ["cube", "changes"];
 
     return (
-        <div className="tabsPanel">
-            <div className="tabsLeft">
-                <div className="tabs">
-                    {leftKeys.map((key) => (
-                        <div
-                            key={key}
-                            className={"tab" + (tab === key ? " active" : "")}
-                            onClick={() => setTab(key)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) =>
-                                (e.key === "Enter" || e.key === " ") && setTab(key)
-                            }
-                        >
-                            {TABS[key]}
-                        </div>
-                    ))}
+        <>
+            {/* Top row: main content tabs */}
+            <div className="tabsPanel">
+                <div className="tabsLeft">
+                    <div className="tabs">
+                        {mainKeys.map((key) => (
+                            <div
+                                key={key}
+                                className={"tab" + (tab === key ? " active" : "")}
+                                onClick={() => setTab(key)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) =>
+                                    (e.key === "Enter" || e.key === " ") && setTab(key)
+                                }
+                            >
+                                {TABS[key]}
+                            </div>
+                        ))}
+                    </div>
                 </div>
+                {/* keep an empty right side so layout matches existing styles */}
+                <div className="tabsRight"/>
             </div>
 
-            <div className="tabsRight">
-                <div
-                    className={"tab" + (tab === "help" ? " active" : "")}
-                    onClick={() => setTab("help")}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) =>
-                        (e.key === "Enter" || e.key === " ") && setTab("help")
-                    }
-                >
-                    {TABS.help}
+            {/* Second row: cube + changes on the left, help on the right */}
+            <div className="tabsPanel">
+                <div className="tabsLeft">
+                    <div className="tabs">
+                        {secondaryKeys.map((key) => (
+                            <div
+                                key={key}
+                                className={"tab" + (tab === key ? " active" : "")}
+                                onClick={() => setTab(key)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) =>
+                                    (e.key === "Enter" || e.key === " ") && setTab(key)
+                                }
+                            >
+                                {TABS[key]}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="tabsRight">
+                    <div
+                        className={"tab" + (tab === "help" ? " active" : "")}
+                        onClick={() => setTab("help")}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) =>
+                            (e.key === "Enter" || e.key === " ") && setTab("help")
+                        }
+                    >
+                        {TABS.help}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
+
 
 export default function App() {
     const weapons = useJson("Weapons.json");
@@ -1694,15 +2287,23 @@ export default function App() {
     const cube = useJson("Cube.json");
     const changes = useJson("Changes.json");
     const changelog = useJson("Changelog.json");
+    const affixes = useJson("Affixes.json");
+    const skills = useJson("Skills.json");
 
     const INFO_OPEN_STORAGE_KEY = "the-archivist-v1";
     const searchInputRef = React.useRef(null);
     const skipAutoIndexRef = React.useRef(false);
     const cubeSearchInputRef = React.useRef(null);
+    const skillsSearchInputRef = React.useRef(null);
     const changesSearchInputRef = React.useRef(null);
     const skipFilterResetRef = React.useRef(false);
     const [pendingLinkTarget, setPendingLinkTarget] = useState(null);
     const [tab, setTab] = useState("weapons");
+
+    const [affixSort, setAffixSort] = useState({
+        key: "attrs",   // default column
+        dir: "asc",     // or "desc" if you prefer
+    });
 
     const [infoOpenByTab, setInfoOpenByTab] = useState(() => ({
         weapons: true,
@@ -1721,7 +2322,9 @@ export default function App() {
                 tab === "uniques" ? uniques :
                     tab === "runewords" ? runewords :
                         tab === "sacreds" ? sacreds :
-                            weapons; // fallback
+                            tab === "affixes" ? affixes :
+                                tab === "skills" ? skills :
+                                    weapons; // fallback
 
     useEffect(() => {
         if (tab !== "cube") {
@@ -1732,6 +2335,12 @@ export default function App() {
     useEffect(() => {
         if (tab !== "changes") {
             setChangesSearch("");
+        }
+    }, [tab]);
+
+    useEffect(() => {
+        if (tab !== "skills") {
+            setSkillsSearch("");
         }
     }, [tab]);
 
@@ -1758,10 +2367,12 @@ export default function App() {
     const [socketsValue, setSocketsValue] = useState("");
     const [cubeSearch, setCubeSearch] = useState("");
     const [changesSearch, setChangesSearch] = useState("");
+    const [skillsSearch, setSkillsSearch] = useState("");
     const [uberValue, setUberValue] = useState(false);
     const [pendingUniqueCode, setPendingUniqueCode] = useState("");
     const [pendingSacredMatch, setPendingSacredMatch] = useState(null);
     const [highlightOnly, setHighlightOnly] = useState(false);
+    const [affixTypeValue, setAffixTypeValue] = useState("");
 
     const items = dataset.data;
 
@@ -1842,6 +2453,11 @@ export default function App() {
             return Array.from(new Set(all)).sort();
         }
 
+        if (tab === "affixes") {
+            const all = items.flatMap(affixTypes);
+            return Array.from(new Set(all)).sort();
+        }
+
         const all = items.flatMap(sacredTypes);
         return Array.from(new Set(all)).sort();
     }, [items, tab]);
@@ -1870,6 +2486,7 @@ export default function App() {
         setSocketsValue("");
         setUberValue(false);
         setHighlightOnly(false);
+        setAffixTypeValue("");
 
         setActiveIndex(0);
     }, [tab]);
@@ -1877,8 +2494,13 @@ export default function App() {
     const filtered = useMemo(() => {
         const {phrases, terms} = parseSearchQuery(search);
 
-        return items.filter((it) => {
-            const name = (n(it?.displayName) || n(it?.runewordName) || n(it?.name)).toLowerCase();
+        // 1) Apply all existing filters first
+        const base = items.filter((it) => {
+            const name = (
+                n(it?.displayName) ||
+                n(it?.runewordName) ||
+                n(it?.name)
+            ).toLowerCase();
 
             const searchText = buildSearchTextForItem(tab, it);
 
@@ -1889,7 +2511,6 @@ export default function App() {
             for (const t of terms) {
                 if (!searchText.includes(t)) return false;
             }
-
 
             if (tierValue && n(it?.itemTier) !== tierValue) return false;
 
@@ -1941,9 +2562,61 @@ export default function App() {
                 }
             }
 
+            if (tab === "affixes") {
+                if (typeValue) {
+                    const types = affixTypes(it);
+                    if (!types.includes(typeValue)) return false;
+                }
+
+                if (affixTypeValue === "Suffix") {
+                    if (!it?.suffix) return false;
+                } else if (affixTypeValue === "Prefix") {
+                    if (it?.suffix) return false;
+                }
+            }
+
             return true;
         });
-    }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly]);
+
+        // 2) Extra sort for Affixes tab: sort by item type, then by name
+        if (tab === "affixes") {
+            const typeFilterNorm = typeValue ? typeValue.toLowerCase() : "";
+
+            const sorted = [...base].sort((a, b) => {
+                // Build a textual key from all item types (e.g. "Amulets, Rings")
+                const aTypes = affixTypes(a);
+                const bTypes = affixTypes(b);
+
+                const aKeyAll = aTypes.join(", ").toLowerCase();
+                const bKeyAll = bTypes.join(", ").toLowerCase();
+
+                // If a specific type is selected, you could prioritize it here,
+                // but since the global filter already ensures it’s present,
+                // we just sort alphabetically by the combined type string.
+                const typeCmp = aKeyAll.localeCompare(bKeyAll);
+                if (typeCmp !== 0) return typeCmp;
+
+                // Tie-break by name for stable ordering
+                const aName = (
+                    n(a?.name) ||
+                    n(a?.displayName) ||
+                    ""
+                ).toLowerCase();
+                const bName = (
+                    n(b?.name) ||
+                    n(b?.displayName) ||
+                    ""
+                ).toLowerCase();
+
+                return aName.localeCompare(bName);
+            });
+
+            return sorted;
+        }
+
+        // 3) Other tabs: just return filtered list as before
+        return base;
+    }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly, affixTypeValue]);
 
     useEffect(() => {
         if (!pendingLinkTarget) return;
@@ -2284,6 +2957,85 @@ export default function App() {
                             error={cube.error}
                             search={cubeSearch}
                             onLink={handleMarkdownAppLink}
+                        />
+                    </>
+                ) : tab === "skills" ? (
+                    <>
+                        <div className="filtersStack">
+                            <div className="filtersPanel">
+                                <input
+                                    type="text"
+                                    ref={skillsSearchInputRef}
+                                    value={skillsSearch}
+                                    onChange={(e) => setCubeSearch(e.target.value)}
+                                    className="searchBar"
+                                    placeholder="Search cube recipes…"
+                                />
+                            </div>
+                        </div>
+                        <StaticDataPanel
+                            data={skills.data}
+                            loading={skills.loading}
+                            error={skills.error}
+                            search={skillsSearch}
+                            onLink={handleMarkdownAppLink}
+                        />
+                    </>
+                ) : tab === "affixes" ? (
+                    <>
+                        <div className="filtersStack">
+                            <FiltersBar
+                                search={search}
+                                setSearch={setSearch}
+                                typeValue={typeValue}
+                                setTypeValue={setTypeValue}
+                                tierValue={tierValue}
+                                setTierValue={setTierValue}
+                                socketsValue={socketsValue}
+                                setSocketsValue={setSocketsValue}
+                                uberValue={uberValue}
+                                setUberValue={setUberValue}
+                                types={typeOptions}
+                                tiers={tierOptions}
+                                showSockets={showSockets}
+                                showUber={tab === "uniques"}
+                                typePlaceholder={typePlaceholder}
+                                searchInputRef={searchInputRef}
+                                showTier={tab !== "runewords" && tab !== "sacreds" && tab !== "affixes"}
+                                showHighlight={tab === "uniques" || tab === "runewords" || tab === "weapons" || tab === "armors"}
+                                highlightOnly={highlightOnly}
+                                setHighlightOnly={setHighlightOnly}
+                                showAffixType={tab === "affixes"}
+                                affixTypeValue={affixTypeValue}
+                                setAffixTypeValue={setAffixTypeValue}
+                            />
+                            <InfoPanel
+                                title={info.title}
+                                markdownText={info.text}
+                                isOpen={infoOpen}
+                                onLink={handleMarkdownAppLink}
+                                onToggle={() =>
+                                    setInfoOpenByTab((prev) => {
+                                        const next = {...prev, [tab]: !prev[tab]};
+                                        try {
+                                            window.localStorage.setItem(
+                                                INFO_OPEN_STORAGE_KEY,
+                                                JSON.stringify(next)
+                                            );
+                                        } catch (e) {
+                                            console.warn("Failed to save info panel state", e);
+                                        }
+                                        return next;
+                                    })
+                                }
+                            />
+                        </div>
+                        <AffixesPanel
+                            data={filtered}
+                            loading={affixes.loading}
+                            error={affixes.error}
+                            sort={affixSort}
+                            onChangeSort={setAffixSort}
                         />
                     </>
                 ) : tab === "changes" ? (
