@@ -1902,19 +1902,19 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
 
                             <th
                                 className="sortable"
-                                onClick={() => handleSort("maxLevel")}
+                                onClick={() => handleSort("freq")}
                             >
                   <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixMaxLevel"])}>Max level</Tip> {sortArrowFor("maxLevel")}
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixFrequency"])}>Frequency</Tip> {sortArrowFor("freq")}
                   </span>
                             </th>
 
                             <th
                                 className="sortable"
-                                onClick={() => handleSort("freq")}
+                                onClick={() => handleSort("maxLevel")}
                             >
                   <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixFrequency"])}>Frequency</Tip> {sortArrowFor("freq")}
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixMaxLevel"])}>Max level</Tip> {sortArrowFor("maxLevel")}
                   </span>
                             </th>
 
