@@ -35,7 +35,7 @@ import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
-const PARSER_VERSION = "1.1.1";
+const PARSER_VERSION = "1.1.2";
 
 const TABS = {
     weapons: "Weapons",
@@ -2137,12 +2137,16 @@ function UniqueTooltip({u, onLink}) {
                 </>
             ) : null}
 
-            <div className="hr"/>
-            <div className="dropHeader">Crafting</div>
-            <div className="line dim">
-                You can create this unique with a{" "}
-                <span className="highlight">{creationOrb}</span> on its base item.
-            </div>
+            {u?.showCanBeCreatedWith === true ? (
+                <>
+                    <div className="hr"/>
+                    <div className="dropHeader">Crafting</div>
+                    <div className="line dim">
+                        You can create this unique with a{" "}
+                        <span className="highlight">{creationOrb}</span> on its base item.
+                    </div>
+                </>
+            ) : null}
         </>
     );
 }
