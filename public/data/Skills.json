@@ -61,6 +61,17 @@
     ]
   },
   {
+    "id": "skill-gale-force",
+    "title": "Gale Force",
+    "text": [
+      "- Gale Force increases [action speed](app:changes:action speed) by 1% per 1 stack",
+      "- 1 cast is equivalent of gaining 1 stack",
+      "- 1 stack lasts 4 seconds",
+      "- The duration is refreshed when a stack is gained",
+      "- Maximum 10 stacks of Gale Force"
+    ]
+  },
+  {
     "id": "necromancer-class-changes",
     "title": "Necromancer class changes",
     "text": [
