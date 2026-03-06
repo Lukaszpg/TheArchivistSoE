@@ -10,11 +10,52 @@
 		]
 	},
 	{
+		"id":"infernal-kiln-recipes",
+		"title":"Infernal Kiln recipes",
+		"text": 
+		[
+			"- Uber Material conversion recipe for the same boss:",
+			"  - 15x Crystallised Cindersoul + Any uber material from:",
+			"  - Black Soulstone",
+			"  - Pure Demonic Essence",
+			"  - Prime Evil Soul",
+			"  - Demonic Insignia",
+			"  - Talisman of Transgression",
+			"  - Flesh of Malic",
+			"  - Pandemonium Key 1-3",
+			"  - Trang-oul Jawbone",
+			"  - Splinter of the Void",
+			"  - Hellfire Ashes",
+			"  - Sigil of Madawc",
+			"  - Sigil of Talic",
+			"  - Sigil of Korlic",
+			"  - Can only convert for the materials for the same boss",
+			"  - Has 90% chance to convert to any other material from the same boss",
+			"  - Has 10% chance for conversion to not result  in any change",
+			"- Gem multiplication recipe:",
+			"  - Any perfect gem in non-stacked form + 10x Crystallised Cindersoul = 50x of that gem",
+			"  - Crafting infusion creation recipe:",
+			"  - 15x Crystallised Cindersoul + 5x Jewel Fragment + 5x Perfect Gem (check below) = 5x Crafting Infusion:",
+			"  - Perfect Ruby = Blood Crafting Infusion",
+			"  - Perfect Amethyst = Caster Crafting Infusion",
+			"  - Perfect Emerald = Safety Crafting Infusion",
+			"  - Perfect Sapphire = Hitpower Crafting Infusion",
+			"  - Perfect Skull = Vampiric Crafting Infusion",
+			"  - Perfect Topaz = Bountiful Crafting Infusion",
+			"  - Perfect Diamond = Prismatic Crafting Infusion",
+			"- Obtain random Hellforged Unique:",
+			"  - 35x Crystallised Cindersoul + 5xMythic Orb = Random Hellforged Unique",
+			"  - Please mind that the roll outcomes are weighted",
+			"- Obtain targeted Hellforged Unique:",
+			"  - 50x Crystallised Cindersoul + Divine Orb + Unique you want to convert = Unique converted to Hellforged part, if it exists"
+		]
+	},
+	{
 		"id":"hellfire-torch-desecration",
 		"title":"Hellfire torch desecration",
 		"text": 
 		[
-			"- Lucion has 5% chance to drop `Desecration Orb`",
+			"- Lucion has 25% chance to drop `Desecration Orb`",
 			"- Desecration Orb can be used to desecrate your [Hellfire Torch](app:uniques:Hellfire Torch)",
 			"- There is 45% chance that your [Hellfire Torch](app:uniques:Hellfire Torch) will be destroyed to Hellfire Ashes",
 			"- All modifiers have equal weighting",
@@ -29,19 +70,6 @@
 			"  - +2% to ALL Maximum Resistances",
 			"  - All Resistances +[7-10]",
 			"  - Poison Length Reduced by 50%"
-		]
-	},
-	{
-		"id":"outer-void-recipes",
-		"title":"Outer Void map recipes",
-		"text": 
-		[
-			"- [Outer Void](app:uniques:Outer Void) is the only unique map that can be crafted with map currency",
-			"- This map can have two Terrors applied to it",
-			"- This map can have five Glyphs applied to it",
-			"- This map can have three chisels applied to it",
-			"- This map gets monster % HP and % physical damage bonus as it was T4 Dungeon",
-			"- Please mind that applying two times the same Terror does not work and may bug the map!"
 		]
 	},
 	{
@@ -119,10 +147,14 @@
 		"title":"Unsocketing recipes",
 		"text": 
 		[
-			"- You can now remove any item socket contents while preserving said content using Larzuk's Mallus (item sold by Larzuk in any act for 250k gold)",
-			"- `Larzuk’s Malus` + `Socketed Item` = `Used item with socket contents removed (preserves the contents)`",
+			"- You can now remove any item socket contents while preserving said content using Orb of Extraction",
+			"- `Orb of Extraction` + `Socketed Item` = `Used item with socket contents removed (preserves the contents)`",
 			"- Works with all socketable items, including RUNEWORDS", 
-			"- The item cannot be CORRUPTED"
+			"- The item cannot be CORRUPTED",
+			"- Drop rates for “Orb of Extraction” are as follows:",
+			"  - In Normal, 1:20000 from all mobs",
+			"  - In Nightmare, 1:10000 from all mob",
+			"  - In Hell, 1:4000 from all mobs"
 		]
 	},
 	{
@@ -164,13 +196,13 @@
 	},
 	{
 		"id":"currency-socketing-recipes",
-		"title":"Larzuk Puzzlebox and Larzuk Puzzle piece recipes",
+		"title":"Larzuk Puzzlebox recipes",
 		"text": 
 		[
-			"- Larzuk Puzzlebox and Larzuk Puzzle piece can be used to re-roll the number of sockets",
-			"- Larzuk PuzzleBox and Larzuk Puzzle piece will now give up to maximum number of sockets on base",
+			"- Larzuk Puzzlebox can be used to re-roll the number of sockets",
+			"- Larzuk PuzzleBox will now give up to maximum number of sockets on base",
 			"- Rerolling number of sockets with above will DESTROY the contents",
-			"- Larzuk Puzzlebox and Larzuk Puzzle piece can now be used on boots"
+			"- Larzuk Puzzlebox can now be used on boots"
 		]
 	},
 	{

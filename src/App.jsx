@@ -35,7 +35,7 @@ import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
-const PARSER_VERSION = "1.1.2";
+const PARSER_VERSION = "1.1.4";
 
 const TABS = {
     weapons: "Weapons",
@@ -46,9 +46,11 @@ const TABS = {
     sacreds: "Sacreds",
     skills: "Skills",
     cube: "Cube Recipes",
-    changes: "SoE changes",
+    changes: "Standard mode",
     help: "Help",
     changelog: "Changelog",
+    calculators: "Calculators",
+    damnation: "Damnation Mode"
 };
 
 const PROP_HIGHLIGHT_RULES = [
@@ -1394,6 +1396,344 @@ function SacredTooltip({s, onLink}) {
     );
 }
 
+function CurseEffectCalculator() {
+    const [baseValue, setBaseValue] = React.useState("");
+    const [bonusValue, setBonusValue] = React.useState("");
+
+    const num = (v) => {
+        const x = Number(String(v).replace(",", "."));
+        return Number.isFinite(x) ? x : 0;
+    };
+
+    const result = React.useMemo(() => {
+        const base = num(baseValue);
+        const bonus = num(bonusValue);
+
+        const raw =
+            base * (100 + ((bonus * 70) / (bonus + 22))) / 100;
+
+        return Number.isFinite(raw) ? Math.floor(raw) : 0;
+    }, [baseValue, bonusValue]);
+
+    const fmt = (x) => {
+        const r = Math.round(x * 100) / 100;
+        return String(r);
+    };
+
+    const reset = () => {
+        setBaseValue("");
+        setBonusValue("");
+    };
+
+    return (
+        <div className="infoPanel">
+            <div className="infoHeader">
+                <div className="infoTitle">Curse Effect Calculator</div>
+
+                <div className="filtersResetPanel">
+                    <button
+                        type="button"
+                        className="btn secondary"
+                        onClick={reset}
+                    >
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <div className="meta">
+                Calculates final curse effect with diminishing returns.
+            </div>
+
+            <div className="hr"/>
+
+            <div className="calcGrid">
+
+                <div className="calcRow">
+                    <div className="calcLabel">Base value</div>
+                    <input
+                        className="calcInput"
+                        type="number"
+                        value={baseValue}
+                        onChange={(e) => setBaseValue(e.target.value)}
+                        placeholder="e.g. 100"
+                    />
+                </div>
+
+                <div className="calcRow">
+                    <div className="calcLabel">Curse effect bonus</div>
+                    <input
+                        className="calcInput"
+                        type="number"
+                        value={bonusValue}
+                        onChange={(e) => setBonusValue(e.target.value)}
+                        placeholder="e.g. 50"
+                    />
+                </div>
+
+                <div className="calcOut">
+                    <div className="calcOutLabel">Final effect</div>
+                    <div className="calcOutValue">{fmt(result)}</div>
+                </div>
+
+                <div className="calcFormula dim">
+                    X = base × (100 + (bonus × 70)/(bonus + 22)) / 100
+                </div>
+
+            </div>
+        </div>
+    );
+}
+
+function AuraEffectCalculator() {
+    const [baseValue, setBaseValue] = React.useState("");
+    const [bonusValue, setBonusValue] = React.useState("");
+
+    const num = (v) => {
+        const x = Number(String(v).replace(",", "."));
+        return Number.isFinite(x) ? x : 0;
+    };
+
+    const result = React.useMemo(() => {
+        const base = num(baseValue);
+        const bonus = num(bonusValue);
+
+        const raw =
+            base * (100 + ((bonus * 60) / (bonus + 25))) / 100;
+
+        return Number.isFinite(raw) ? Math.floor(raw) : 0;
+    }, [baseValue, bonusValue]);
+
+    const fmt = (x) => {
+        const r = Math.round(x * 100) / 100;
+        return String(r);
+    };
+
+    const reset = () => {
+        setBaseValue("");
+        setBonusValue("");
+    };
+
+    return (
+        <div className="infoPanel">
+            <div className="infoHeader">
+                <div className="infoTitle">Aura Effect Calculator</div>
+
+                <div className="filtersResetPanel">
+                    <button
+                        type="button"
+                        className="btn secondary"
+                        onClick={reset}
+                    >
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <div className="meta">
+                Calculates final aura effect with diminishing returns.
+            </div>
+
+            <div className="hr"/>
+
+            <div className="calcGrid">
+
+                <div className="calcRow">
+                    <div className="calcLabel">Base value</div>
+                    <input
+                        className="calcInput"
+                        type="number"
+                        value={baseValue}
+                        onChange={(e) => setBaseValue(e.target.value)}
+                        placeholder="e.g. 100"
+                    />
+                </div>
+
+                <div className="calcRow">
+                    <div className="calcLabel">Aura effect bonus</div>
+                    <input
+                        className="calcInput"
+                        type="number"
+                        value={bonusValue}
+                        onChange={(e) => setBonusValue(e.target.value)}
+                        placeholder="e.g. 50"
+                    />
+                </div>
+
+                <div className="calcOut">
+                    <div className="calcOutLabel">Final effect</div>
+                    <div className="calcOutValue">{fmt(result)}</div>
+                </div>
+
+                <div className="calcFormula dim">
+                    X = base × (100 + (bonus × 60)/(bonus + 25)) / 100
+                </div>
+
+            </div>
+        </div>
+    );
+}
+
+function AuraRadiusEffectCalculator() {
+
+    // Radius inputs
+    const [radiusBase, setRadiusBase] = React.useState("");
+    const [radiusBonus, setRadiusBonus] = React.useState("");
+
+    // Effect inputs
+    const [effectBase, setEffectBase] = React.useState("");
+    const [effectBonus, setEffectBonus] = React.useState("");
+
+    const num = (v) => {
+        const x = Number(String(v).replace(",", "."));
+        return Number.isFinite(x) ? x : 0;
+    };
+
+    const SUBTILE_TO_YARDS = 2 / 3;          // 0.666666...
+    const YARDS_TO_SUBTILES = 1.5; // 1.5
+
+    const calcRadiusYards = React.useMemo(() => {
+        // user input (yards)
+        const baseYards = num(radiusBase);
+        const skill_radius_bonus = num(radiusBonus);
+
+        // convert yards -> subtiles (game internal)
+        // IMPORTANT: subtiles are discrete, so we round to int
+        const baseSubtiles = Math.round(baseYards * YARDS_TO_SUBTILES);
+
+        // DR bonus term (still in % units)
+        const bonusTerm =
+            (skill_radius_bonus * 70) / ((skill_radius_bonus + 18) || 1);
+
+        // apply formula in subtiles
+        const xSubtilesRaw = (baseSubtiles * (100 + bonusTerm)) / 100;
+
+        // IMPORTANT: game uses discrete subtiles
+        const xSubtiles = Math.round(xSubtilesRaw);
+
+        // convert back to yards for display
+        const xYards = xSubtiles * SUBTILE_TO_YARDS;
+
+        return Number.isFinite(xYards) ? xYards : 0;
+    }, [radiusBase, radiusBonus]);
+
+    const calcEffect = React.useMemo(() => {
+        const base_value = num(effectBase);
+        const aura_effect_bonus = num(effectBonus);
+        const bonusTerm =
+            (aura_effect_bonus * 60) / (aura_effect_bonus + 25 || 1);
+        const Y = (base_value * (100 + bonusTerm)) / 100;
+        return Number.isFinite(Y) ? Y : 0;
+    }, [effectBase, effectBonus]);
+
+    const fmt = (x) => {
+        // keep it readable, but stable
+        const r = Math.round(x * 100) / 100;
+        return String(r);
+    };
+
+    const reset = () => {
+        setRadiusBase("");
+        setRadiusBonus("");
+        setEffectBase("");
+        setEffectBonus("");
+    };
+
+    return (
+        <div className="infoPanel">
+            <div className="infoHeader">
+                <div className="infoTitle">Aura radius and effect</div>
+                <button type="button" className="btn ghost" onClick={reset}>
+                    Reset
+                </button>
+            </div>
+
+            <div className="meta">
+                Enter the base value and the bonus value; the calculator applies the
+                diminishing returns formulas used by the mod.
+            </div>
+
+            <div className="hr"/>
+
+            <div className="calcGrid">
+                <div className="calcCard">
+                    <div className="calcTitle">Radius</div>
+
+                    <div className="calcRow">
+                        <div className="calcLabel">Base value</div>
+                        <input
+                            className="calcInput"
+                            type="number"
+                            inputMode="decimal"
+                            value={radiusBase}
+                            onChange={(e) => setRadiusBase(e.target.value)}
+                            placeholder="e.g. 10"
+                        />
+                    </div>
+
+                    <div className="calcRow">
+                        <div className="calcLabel">Skill radius bonus</div>
+                        <input
+                            className="calcInput"
+                            type="number"
+                            inputMode="decimal"
+                            value={radiusBonus}
+                            onChange={(e) => setRadiusBonus(e.target.value)}
+                            placeholder="e.g. 50"
+                        />
+                    </div>
+
+                    <div className="calcOut">
+                        <div className="calcOutLabel">Radius result (X)</div>
+                        <div className="calcOutValue">{fmt(calcRadiusYards)}</div>
+                    </div>
+
+                    <div className="calcFormula dim">
+                        X = base × (100 + ((bonus×70)/(bonus+18))) / 100
+                    </div>
+                </div>
+
+                <div className="calcCard">
+                    <div className="calcTitle">Effect</div>
+
+                    <div className="calcRow">
+                        <div className="calcLabel">Base value</div>
+                        <input
+                            className="calcInput"
+                            type="number"
+                            inputMode="decimal"
+                            value={effectBase}
+                            onChange={(e) => setEffectBase(e.target.value)}
+                            placeholder="e.g. 100"
+                        />
+                    </div>
+
+                    <div className="calcRow">
+                        <div className="calcLabel">Aura effect bonus</div>
+                        <input
+                            className="calcInput"
+                            type="number"
+                            inputMode="decimal"
+                            value={effectBonus}
+                            onChange={(e) => setEffectBonus(e.target.value)}
+                            placeholder="e.g. 80"
+                        />
+                    </div>
+
+                    <div className="calcOut">
+                        <div className="calcOutLabel">Effect result (Y)</div>
+                        <div className="calcOutValue">{fmt(calcEffect)}</div>
+                    </div>
+
+                    <div className="calcFormula dim">
+                        Y = base × (100 + ((bonus×60)/(bonus+25))) / 100
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function HelpPanel() {
     return (
         <div className="helpPanel">
@@ -2261,7 +2601,7 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
 
 function TabsBar({tab, setTab}) {
     const mainKeys = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds"];
-    const secondaryKeys = ["cube", "changes"];
+    const secondaryKeys = ["cube", "changes", "damnation", "calculators"];
 
     return (
         <>
@@ -2336,10 +2676,11 @@ export default function App() {
     const runewords = useJson("Runewords.json");
     const sacreds = useJson("Sacreds.json");
     const cube = useJson("Cube.json");
-    const changes = useJson("Changes.json");
+    const standard = useJson("Standard.json");
     const changelog = useJson("Changelog.json");
     const affixes = useJson("Affixes.json");
     const skills = useJson("Skills.json");
+    const damnation = useJson("Damnation.json");
 
     const INFO_OPEN_STORAGE_KEY = "the-archivist-v1";
     const searchInputRef = React.useRef(null);
@@ -3002,6 +3343,15 @@ export default function App() {
 
                 {tab === "help" ? (
                     <HelpPanel/>
+                ) : tab === "calculators" ? (
+                    <>
+                        <div className="calcWide">
+                            <div className="panels">
+                                <AuraEffectCalculator/>
+                                <CurseEffectCalculator/>
+                            </div>
+                        </div>
+                    </>
                 ) : tab === "cube" ? (
                     <>
                         <div className="filtersStack">
@@ -3103,6 +3453,15 @@ export default function App() {
                             onChangeSort={setAffixSort}
                         />
                     </>
+                ) : tab === "damnation" ? (
+                    <>
+                        <StaticDataPanel
+                            data={damnation.data}
+                            loading={damnation.loading}
+                            error={damnation.error}
+                            onLink={handleMarkdownAppLink}
+                        />
+                    </>
                 ) : tab === "changes" ? (
                     <>
                         <div className="filtersStack">
@@ -3118,9 +3477,9 @@ export default function App() {
                             </div>
                         </div>
                         <StaticDataPanel
-                            data={changes.data}
-                            loading={changes.loading}
-                            error={changes.error}
+                            data={standard.data}
+                            loading={standard.loading}
+                            error={standard.error}
                             search={changesSearch}
                             onLink={handleMarkdownAppLink}
                         />
