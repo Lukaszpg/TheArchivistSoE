@@ -62,9 +62,9 @@
 			"- Demonic Cube can be used to remove the desecration status",
 			"- Possible mods:",
 			"  - +1 to All Skills",
-			"  - +10% Faster Cast Rate",
-			"  - +10% Faster Run/Walk",
-			"  - +10% Curse Resistance",
+			"  - +1 to Attack Projectiles",
+			"  - +1 to Spell Projectiles",
+			"  - +1 to Attack Strikes",
 			"  - +[30-40]% Enhanced Damage",
 			"  - Cannot Be Frozen",
 			"  - +2% to ALL Maximum Resistances",
@@ -221,6 +221,17 @@
 		[
 			"- Lilith's Mirror can now be used in the cube with `non-corrupted unique/set armor/weapon/amulet/ring` to create exact copy of it - transfers sockets and ethereal status. Mirrored items can't be mirrored again",
 			"- Lilith's Mirror can now be used with `magic/rare/unique regular/mythic jewels` to create exact copy of it. Mirrored jewels can't be mirrored again"
+		]
+	},
+	{
+		"id":"demonic-cube",
+		"title":"Additional Demonic Cube recipes",
+		"text": 
+		[
+			"- Reroll unique jewel type:",
+			"  - `Demonic Cube` + `Eternal Coin` + `Rainbow Facet` = `Re-rolled type of unique jewel`",
+			"  - Can result in re-rolling to jewel of the same type",
+			"  - Eg. Can re-roll fire rainbow facet to poison one"
 		]
 	}
 ]
