@@ -72,6 +72,28 @@
     ]
   },
   {
+    "id": "skill-onslaught",
+    "title": "Onslaught",
+    "text": [
+      "- Increases cast rate, attack speed and run/walk speed by 25% for 5 seconds"
+    ]
+  },
+  {
+    "id": "headhunter-speed",
+    "title": "Headhunter Speed Trophy",
+    "text": [
+      "- Increases `cast rate, attack speed and run/walk speed` by `50%` for `10 seconds`"
+    ]
+  },
+  {
+    "id": "headhunter-damage",
+    "title": "Headhunter Damage Trophy",
+    "text": [
+      "- Increases `enhanced damage` by `150%` for `10 seconds`",
+      "- Increases `fire/cold/lightning/poison/magic mastery` by `50%` for `10 second`s`"
+    ]
+  },
+  {
     "id": "necromancer-class-changes",
     "title": "Necromancer class changes",
     "text": [

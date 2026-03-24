@@ -319,6 +319,15 @@ function isUberUnique(u) {
     return src !== null && src !== undefined && String(src).trim() !== "";
 }
 
+function isHellforged(u) {
+    const text = (
+        n(u?.displayName) ||
+        n(u?.name)
+    ).toLowerCase();
+
+    return text.includes("hellforged");
+}
+
 function getItemIconUrl(tab, item) {
     if (tab === "weapons") {
         const key = weaponIconKeyForItem(item);
@@ -1045,10 +1054,13 @@ function FiltersBar({
                         setSocketsValue,
                         uberValue,
                         setUberValue,
+                        hellforgedValue,
+                        setHellforgedValue,
                         types,
                         tiers,
                         showSockets,
                         showUber,
+                        showHellforged,
                         typePlaceholder,
                         searchInputRef,
                         showTier = true,
@@ -1149,6 +1161,20 @@ function FiltersBar({
                                 type="checkbox"
                                 checked={!!uberValue}
                                 onChange={(e) => setUberValue(e.target.checked ? "yes" : "")}
+                            />
+                            <span className="toggleSlider"/>
+                        </div>
+                    </label>
+                )}
+
+                {showHellforged && (
+                    <label className="toggleWrap">
+                        <span className="toggleLabel">Hellforged</span>
+                        <div className="toggle">
+                            <input
+                                type="checkbox"
+                                checked={!!hellforgedValue}
+                                onChange={(e) => setHellforgedValue(e.target.checked ? "yes" : "")}
                             />
                             <span className="toggleSlider"/>
                         </div>
@@ -1263,7 +1289,7 @@ function TierLinks({entries, onGo}) {
     return (
         <>
             {usable.map((e) => (
-                <div key={e.tierLabel + "|" + e.code} className="line kv dim">
+                <div key={e.tierLabel + "|" + e.code} className="line kv">
                     <span>{e.tierLabel} Tier Item:</span>
                     <span>
             <a
@@ -1349,7 +1375,7 @@ function SacredTooltip({s, onLink}) {
             <div className="hr"/>
 
             {ing.length ? (
-                <div className="line dim runesDisplay">
+                <div className="line runesDisplay">
                     <Tip text={String(TOOLTIPS_TEXT_MAP["sacred"])}>
                         {ing.join(" · ")}
                     </Tip>
@@ -1827,9 +1853,9 @@ function WeaponTooltip({w, onGoCode, onGoUnique}) {
 
             <div className="hr"/>
             <div className="dropHeader">Additional item information</div>
-            {has(w?.itemTier) && lineKV("Item Tier:", n(w?.itemTier), "dim")}
+            {has(w?.itemTier) && lineKV("Item Tier:", n(w?.itemTier), "")}
             {has(w?.level) && lineKV("Quality Level:", n(w?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
-            {lineKV("Code:", n(w?.code), "dim", TOOLTIPS_TEXT_MAP["code"])}
+            {lineKV("Code:", n(w?.code), "", TOOLTIPS_TEXT_MAP["code"])}
             <TierLinks entries={tierEntries} onGo={onGoCode}/>
             <UniquesPanel uniques={w?.uniques} onGoUnique={onGoUnique}/>
         </>
@@ -2761,6 +2787,7 @@ export default function App() {
     const [changesSearch, setChangesSearch] = useState("");
     const [skillsSearch, setSkillsSearch] = useState("");
     const [uberValue, setUberValue] = useState(false);
+    const [hellforgedValue, setHellforgedValue] = useState(false);
     const [pendingUniqueCode, setPendingUniqueCode] = useState("");
     const [pendingSacredMatch, setPendingSacredMatch] = useState(null);
     const [highlightOnly, setHighlightOnly] = useState(false);
@@ -2891,6 +2918,7 @@ export default function App() {
         setTierValue("");
         setSocketsValue("");
         setUberValue(false);
+        setHellforgedValue(false);
         setHighlightOnly(false);
         setAffixTypeValue("");
 
@@ -2942,6 +2970,10 @@ export default function App() {
                 if (typeValue && uniqueBaseTypeLabel(it) !== typeValue) return false;
 
                 if (uberValue && !isUberUnique(it)) {
+                    return false;
+                }
+
+                if(hellforgedValue && !isHellforged(it)) {
                     return false;
                 }
 
@@ -3022,7 +3054,7 @@ export default function App() {
 
         // 3) Other tabs: just return filtered list as before
         return base;
-    }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly, affixTypeValue]);
+    }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, hellforgedValue, highlightOnly, affixTypeValue]);
 
     useEffect(() => {
         if (!pendingLinkTarget) return;
@@ -3116,6 +3148,7 @@ export default function App() {
         setTierValue("");
         setSocketsValue("");
         setUberValue(false);
+        setHellforgedValue(false);
         setHighlightOnly(false);
 
         setPendingSacredMatch({
@@ -3135,6 +3168,7 @@ export default function App() {
         setTierValue("");
         setSocketsValue("");
         setUberValue(false);
+        setHellforgedValue(false);
         setHighlightOnly(false);
 
         const all = dataset.data;
@@ -3155,8 +3189,8 @@ export default function App() {
         setTierValue("");
         setSocketsValue("");
         setUberValue(false);
+        setHellforgedValue(false);
         setHighlightOnly(false);
-
         setPendingUniqueCode(c);
     }
 
@@ -3410,6 +3444,8 @@ export default function App() {
                                 setSocketsValue={setSocketsValue}
                                 uberValue={uberValue}
                                 setUberValue={setUberValue}
+                                hellforgedValue={hellforgedValue}
+                                setHellforgedValue={setHellforgedValue}
                                 types={typeOptions}
                                 tiers={tierOptions}
                                 showSockets={showSockets}
@@ -3423,6 +3459,7 @@ export default function App() {
                                 showAffixType={tab === "affixes"}
                                 affixTypeValue={affixTypeValue}
                                 setAffixTypeValue={setAffixTypeValue}
+                                showHellforged={tab === "uniques"}
                             />
                             <InfoPanel
                                 title={info.title}
@@ -3506,10 +3543,13 @@ export default function App() {
                                 setSocketsValue={setSocketsValue}
                                 uberValue={uberValue}
                                 setUberValue={setUberValue}
+                                hellforgedValue={hellforgedValue}
+                                setHellforgedValue={setHellforgedValue}
                                 types={typeOptions}
                                 tiers={tierOptions}
                                 showSockets={showSockets}
                                 showUber={tab === "uniques"}
+                                showHellforged={tab === "uniques"}
                                 typePlaceholder={typePlaceholder}
                                 searchInputRef={searchInputRef}
                                 showTier={tab !== "runewords" && tab !== "sacreds"}
