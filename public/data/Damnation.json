@@ -29,23 +29,22 @@
 	"- Orb of Chance has 50% chance to destroy an item, turning it into a key",
 	"- Orb of Chance respects the occurrence chance of unique items:",
 	"- Eg. Templar’s Might shares base (Sacred Armor) with Tyrael’s Might - the first one has occurrence chance of 80% and the second one 20%",
-	"- To disenchant an unique item, cube it with a key to always obtain 1x Chance Shard",
-	"- Cain’s Wisdom cannot be disenchanted"
+	"- To disenchant an unique item, cube it with a key to always obtain 1x Chance Shard"
     ]
   },
   {
     "id": "cube-changes",
     "title": "Cube Recipe changes",
     "text": [
-		"- Cube recipe to “Obtain targeted Hellforged Unique” has been disabled",
-		"- Cube recipe to “Obtain random Hellforged Unique” has been changed from requiring 5 Mythic Orbs to require 1x Eternal Coin"
+		"- Cube recipe to `Obtain targeted Hellforged Unique` has been disabled",
+		"- Cube recipe to `Obtain random Hellforged Unique` has been changed from requiring `5x Mythic Orb` to require `1x Orb of Chance`"
     ]
   },
   {
     "id": "other-changes",
     "title": "Other changes",
     "text": [
-		"- Cain’s Wisdom exp bonus from 250-400% to 25-40%"
+		"- `Cain’s Wisdom` exp bonus from `250-400%` to `25-40%`"
     ]
   },
   {

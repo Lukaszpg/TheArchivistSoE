@@ -49,7 +49,7 @@ const TABS = {
     changes: "Standard mode",
     help: "Help",
     changelog: "Changelog",
-    calculators: "Calculators",
+    calculators: "Skill Calculators",
     damnation: "Damnation Mode"
 };
 
