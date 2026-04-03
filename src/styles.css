@@ -662,6 +662,7 @@ button.btn {
     color: var(--c-gold);
     text-transform: uppercase;
     letter-spacing: 0.6px;
+    margin-top: 4px;
 }
 
 .infoToggle {
@@ -1333,11 +1334,6 @@ body::-webkit-scrollbar-thumb:hover {
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-}
-
-/* Title block */
-.infoTitle{
-    line-height: 1.05;
 }
 
 /* Description text under title */

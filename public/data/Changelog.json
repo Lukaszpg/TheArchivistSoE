@@ -4,7 +4,8 @@
     "title": "v1.1.4",
     "text": [
       "- Added ability to filter runewords by amount of runes in a runeword",
-      "- Added ability to filter runewords by runes"
+      "- Added ability to filter runewords by runes",
+      "- Added ability to filter sacreds by runes"
     ]
   },
   {

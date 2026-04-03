@@ -2433,6 +2433,12 @@ export default function App() {
         );
     }
 
+    function sacredRunes(s) {
+        return sacredIngredients(s).filter((x) =>
+            ALL_RUNES.includes(n(x))
+        );
+    }
+
     useEffect(() => {
         if (tab !== "cube") {
             setCubeSearch("");
@@ -2691,6 +2697,16 @@ export default function App() {
                 if (typeValue) {
                     const types = sacredTypes(it);
                     if (!types.includes(typeValue)) return false;
+                }
+
+                if (selectedRunes.length) {
+                    const itemRunes = sacredRunes(it).map((r) => r.toLowerCase());
+
+                    const hasAllSelectedRunes = selectedRunes.every((r) =>
+                        itemRunes.includes(r.toLowerCase())
+                    );
+
+                    if (!hasAllSelectedRunes) return false;
                 }
             }
 
@@ -3194,7 +3210,7 @@ export default function App() {
                         runeCountValue={runeCountValue}
                         setRuneCountValue={setRuneCountValue}
                     />
-                    {tab === "runewords" && (
+                    {(tab === "runewords" || tab === "sacreds") && (
                         <div className="runeFilterPanel">
                             <div className="runeFilterHeader">
                                 <div className="runeFilterTitle">
