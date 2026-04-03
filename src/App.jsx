@@ -53,9 +53,9 @@ const TABS = {
     damnation: "Damnation Mode"
 };
 
-const PROP_HIGHLIGHT_RULES = [
-    {test: /corrupted/i, className: "propRed"},
-];
+const ALL_RUNES = ["El", "Eld", "Tir", "Nef", "Eth", "Ith", "Tal", "Ral", "Ort", "Thul", "Amn", "Sol", "Shael", "Dol", "Hel", "Io", "Lum", "Ko", "Fal", "Lem", "Pul", "Um", "Mal", "Ist", "Gul", "Vex", "Ohm", "Lo", "Sur", "Ber", "Jah", "Cham", "Zod"];
+
+const PROP_HIGHLIGHT_RULES = [{test: /corrupted/i, className: "propRed"},];
 
 const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds", "cube", "changes", "help"];
 
@@ -121,22 +121,14 @@ const JEWELRY_ICON_MAP = {
     cm1: OrnateCharmIcon,
 };
 
-const MOD_EXPANSIONS = [
-    {
-        whenIncludes: "all resistances",
-        implies: [
-            "fire resistance",
-            "cold resistance",
-            "lightning resistance",
-            "poison resistance",
-        ],
-    },
+const MOD_EXPANSIONS = [{
+    whenIncludes: "all resistances",
+    implies: ["fire resistance", "cold resistance", "lightning resistance", "poison resistance",],
+},
 
     {
-        whenIncludes: "all attributes",
-        implies: ["strength", "dexterity", "vitality", "energy"],
-    }
-];
+        whenIncludes: "all attributes", implies: ["strength", "dexterity", "vitality", "energy"],
+    }];
 
 const ARMOR_TYPE_MAP = {
     helm: "Helm",
@@ -165,22 +157,14 @@ const TOOLTIPS_TEXT_MAP = {
     "mythicDivineOrb": "In Sanctuary of Exile unique items can be created in the Cube by using base and an currency orb appropriate for item tier - Mythic Orb for normal and exceptional bases and Divine Orb for elite bases.",
     "affixMaxLevel": "If the item level is high enough, then some affixes will not be eligible to roll on it, making it more likely for better affixes to appear on the item.",
     "affixFrequency": "Frequency parameter determines how often will you roll this modifier on an item.",
-    "affixRares": "If true, then this modifier can occur on rare items."
+    "affixRares": "If true, then this modifier can occur on rare items.",
+    "affixLevel": "Determines minimum item level of the item for this affix to show."
 };
 
 const INFO_BY_TAB = {
     sacreds: {
         title: "About Sacred Items",
-        text:
-            "Sacred items system is exclusive to Sanctuary of Exile. It allows to harness the power of a runeword and imprint it to `Unique` or `Crafted` item:\n\n" +
-            "- Making an item sacred requires finding `Sacred Orb` which drops in `T4 Dungeons` or from monsters added by `Terror of Opulence`\n\n" +
-            "- To sacred an item, first use `Sacred Orb` with `Runes` (or additional items - consult appropriate recipe in the list below) used to create a runeword to create `Sacred Orb of X`\n\n" +
-            "- Runes have to be in stacked form, each with the quantity presented in the Sacred tooltip on this page\n\n" +
-            "- Use the created orb with `Unique` or `Crafted` item you wish to make sacred. Please note that added modifiers may vary by item type\n\n" +
-            "- Sacred items can be corrupted with `World Stone Shard`\n\n" +
-            "- Sacred modifiers along with sacred status can be removed from `Unique` items by using `Demonic Cube` as long as it's **not** `Corrupted`\n\n" +
-            "- Sacred modifiers along with sacred status **CANNOT** be removed from `Crafted` items, so choose wisely!\n\n" +
-            "- The additional equipment component mentioned in the recipe can be of any quality and tier"
+        text: "Sacred items system is exclusive to Sanctuary of Exile. It allows to harness the power of a runeword and imprint it to `Unique` or `Crafted` item:\n\n" + "- Making an item sacred requires finding `Sacred Orb` which drops in `T4 Dungeons` or from monsters added by `Terror of Opulence`\n\n" + "- To sacred an item, first use `Sacred Orb` with `Runes` (or additional items - consult appropriate recipe in the list below) used to create a runeword to create `Sacred Orb of X`\n\n" + "- Runes have to be in stacked form, each with the quantity presented in the Sacred tooltip on this page\n\n" + "- Use the created orb with `Unique` or `Crafted` item you wish to make sacred. Please note that added modifiers may vary by item type\n\n" + "- Sacred items can be corrupted with `World Stone Shard`\n\n" + "- Sacred modifiers along with sacred status can be removed from `Unique` items by using `Demonic Cube` as long as it's **not** `Corrupted`\n\n" + "- Sacred modifiers along with sacred status **CANNOT** be removed from `Crafted` items, so choose wisely!\n\n" + "- The additional equipment component mentioned in the recipe can be of any quality and tier"
     },
 };
 
@@ -217,6 +201,16 @@ const fmtSigned = (v) => {
     return (x > 0 ? "+" : "") + x;
 };
 
+function runewordRuneCount(rw) {
+    return [rw?.firstRuneDisplayName, rw?.secondRuneDisplayName, rw?.thirdRuneDisplayName, rw?.fourthRuneDisplayName, rw?.fifthRuneDisplayName, rw?.sixthRuneDisplayName,].filter((x) => n(x)).length;
+}
+
+function runewordRunes(rw) {
+    return [rw?.firstRuneDisplayName, rw?.secondRuneDisplayName, rw?.thirdRuneDisplayName, rw?.fourthRuneDisplayName, rw?.fifthRuneDisplayName, rw?.sixthRuneDisplayName,]
+        .map((x) => n(x))
+        .filter(Boolean);
+}
+
 // ----- Affix helpers -----
 
 function affixPrimaryPropertyAndMax(affix) {
@@ -233,10 +227,7 @@ function affixPrimaryPropertyAndMax(affix) {
     }
 
     if (first && typeof first === "object") {
-        const prop =
-            (first.property != null ? String(first.property) :
-                    first.prop != null ? String(first.prop) : ""
-            ).trim();
+        const prop = (first.property != null ? String(first.property) : first.prop != null ? String(first.prop) : "").trim();
 
         const maxRaw = first.max != null ? Number(first.max) : 0;
         const max = Number.isFinite(maxRaw) ? maxRaw : 0;
@@ -280,10 +271,7 @@ function affixMaxValue(affix) {
     // Array case
     if (Array.isArray(dp)) {
         if (dp.length && typeof dp[0] === "object") {
-            return dp.reduce(
-                (max, p) => Math.max(max, Number(p?.max ?? 0)),
-                0
-            );
+            return dp.reduce((max, p) => Math.max(max, Number(p?.max ?? 0)), 0);
         }
         // Old pure-string format – nothing numeric to sort on
         return 0;
@@ -320,10 +308,7 @@ function isUberUnique(u) {
 }
 
 function isHellforged(u) {
-    const text = (
-        n(u?.displayName) ||
-        n(u?.name)
-    ).toLowerCase();
+    const text = (n(u?.displayName) || n(u?.name)).toLowerCase();
 
     return text.includes("hellforged");
 }
@@ -386,11 +371,7 @@ function getUniqueBaseIconUrl(u) {
 }
 
 function armorIconKeyForItem(a) {
-    const t =
-        n(a?.itemType?.code) ||
-        n(a?.displayType) ||
-        ARMOR_TYPE_MAP[n(a?.type)] ||
-        n(a?.type);
+    const t = n(a?.itemType?.code) || n(a?.displayType) || ARMOR_TYPE_MAP[n(a?.type)] || n(a?.type);
 
     return t.toLowerCase();
 }
@@ -421,10 +402,7 @@ function weaponIconKeyForItem(it) {
 }
 
 function sacredPropertiesText(s) {
-    const map =
-        s?.propertiesByItemType && typeof s.propertiesByItemType === "object"
-            ? s.propertiesByItemType
-            : {};
+    const map = s?.propertiesByItemType && typeof s.propertiesByItemType === "object" ? s.propertiesByItemType : {};
 
     const lines = [];
     for (const key of Object.keys(map)) {
@@ -452,11 +430,9 @@ function renderInlineMarkdown(text, onLink) {
 
         while ((m = linkRe.exec(str)) !== null) {
             if (m.index > last) {
-                out.push(
-                    <React.Fragment key={`${keyPrefix}-t-${idx}`}>
-                        {str.slice(last, m.index)}
-                    </React.Fragment>
-                );
+                out.push(<React.Fragment key={`${keyPrefix}-t-${idx}`}>
+                    {str.slice(last, m.index)}
+                </React.Fragment>);
             }
 
             const label = m[1];
@@ -468,28 +444,24 @@ function renderInlineMarkdown(text, onLink) {
                 const tab = (tabRaw || "").toLowerCase();
                 const name = decodeURIComponent(rest.join(":")).trim();
 
-                out.push(
-                    <button
-                        key={`${keyPrefix}-app-${idx}`}
-                        type="button"
-                        className="mdLink mdLinkInternal"
-                        onClick={() => onLink({tab, name})}
-                    >
-                        {label}
-                    </button>
-                );
+                out.push(<button
+                    key={`${keyPrefix}-app-${idx}`}
+                    type="button"
+                    className="mdLink mdLinkInternal"
+                    onClick={() => onLink({tab, name})}
+                >
+                    {label}
+                </button>);
             } else {
-                out.push(
-                    <a
-                        key={`${keyPrefix}-ext-${idx}`}
-                        href={href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mdLink"
-                    >
-                        {label}
-                    </a>
-                );
+                out.push(<a
+                    key={`${keyPrefix}-ext-${idx}`}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mdLink"
+                >
+                    {label}
+                </a>);
             }
 
             last = linkRe.lastIndex;
@@ -497,11 +469,9 @@ function renderInlineMarkdown(text, onLink) {
         }
 
         if (last < str.length) {
-            out.push(
-                <React.Fragment key={`${keyPrefix}-tail`}>
-                    {str.slice(last)}
-                </React.Fragment>
-            );
+            out.push(<React.Fragment key={`${keyPrefix}-tail`}>
+                {str.slice(last)}
+            </React.Fragment>);
         }
 
         return out;
@@ -509,39 +479,31 @@ function renderInlineMarkdown(text, onLink) {
 
     return parts.map((part, idx) => {
         if (part.startsWith("`") && part.endsWith("`")) {
-            return (
-                <code key={idx} className="mdCode">
-                    {part.slice(1, -1)}
-                </code>
-            );
+            return (<code key={idx} className="mdCode">
+                {part.slice(1, -1)}
+            </code>);
         }
 
         const boldSplit = part.split(/(\*\*[^*]+\*\*)/g);
         return boldSplit.map((b, j) => {
             if (b.startsWith("**") && b.endsWith("**")) {
-                return (
-                    <strong key={`${idx}-${j}`} className="mdStrong">
-                        {b.slice(2, -2)}
-                    </strong>
-                );
+                return (<strong key={`${idx}-${j}`} className="mdStrong">
+                    {b.slice(2, -2)}
+                </strong>);
             }
 
             const italicSplit = b.split(/(\*[^*]+\*)/g);
             return italicSplit.map((it, k) => {
                 if (it.startsWith("*") && it.endsWith("*")) {
-                    return (
-                        <em key={`${idx}-${j}-${k}`} className="mdEm">
-                            {it.slice(1, -1)}
-                        </em>
-                    );
+                    return (<em key={`${idx}-${j}-${k}`} className="mdEm">
+                        {it.slice(1, -1)}
+                    </em>);
                 }
 
                 // this is the plain text segment: run link parsing here
-                return (
-                    <React.Fragment key={`${idx}-${j}-${k}`}>
-                        {renderWithLinks(it, `${idx}-${j}-${k}`)}
-                    </React.Fragment>
-                );
+                return (<React.Fragment key={`${idx}-${j}-${k}`}>
+                    {renderWithLinks(it, `${idx}-${j}-${k}`)}
+                </React.Fragment>);
             });
         });
     });
@@ -611,37 +573,25 @@ function Markdown({text, onLink}) {
     flushList();
     flushParagraph();
 
-    return (
-        <div className="md">
-            {blocks.map((b, i) => {
-                if (b.type === "ul") {
-                    return (
-                        <ul key={i} className="mdUl">
-                            {b.items.map((item, j) => (
-                                <li key={j} className="mdLi">
-                                    {renderInlineMarkdown(item.text, onLink)}
-                                    {item.children && item.children.length > 0 && (
-                                        <ul className="mdUl mdUlNested">
-                                            {item.children.map((child, k) => (
-                                                <li key={k} className="mdLi mdLiNested">
-                                                    {renderInlineMarkdown(child, onLink)}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    );
-                }
-                return (
-                    <p key={i} className="mdP">
-                        {renderInlineMarkdown(b.text, onLink)}
-                    </p>
-                );
-            })}
-        </div>
-    );
+    return (<div className="md">
+        {blocks.map((b, i) => {
+            if (b.type === "ul") {
+                return (<ul key={i} className="mdUl">
+                    {b.items.map((item, j) => (<li key={j} className="mdLi">
+                        {renderInlineMarkdown(item.text, onLink)}
+                        {item.children && item.children.length > 0 && (<ul className="mdUl mdUlNested">
+                            {item.children.map((child, k) => (<li key={k} className="mdLi mdLiNested">
+                                {renderInlineMarkdown(child, onLink)}
+                            </li>))}
+                        </ul>)}
+                    </li>))}
+                </ul>);
+            }
+            return (<p key={i} className="mdP">
+                {renderInlineMarkdown(b.text, onLink)}
+            </p>);
+        })}
+    </div>);
 }
 
 
@@ -678,12 +628,7 @@ function parseSearchQuery(input) {
 
 function isDontDisplay(it) {
     const v = it ? it.dontDisplay : false;
-    return (
-        v === true ||
-        v === 1 ||
-        v === "1" ||
-        (typeof v === "string" && v.toLowerCase() === "true")
-    );
+    return (v === true || v === 1 || v === "1" || (typeof v === "string" && v.toLowerCase() === "true"));
 }
 
 function Tip({text, children}) {
@@ -691,19 +636,15 @@ function Tip({text, children}) {
 
     const parts = String(text).split("\n");
 
-    return (
-        <span className="tipWrap">
+    return (<span className="tipWrap">
       {children}
-            <span className="tipBubble" role="tooltip">
-        {parts.map((line, i) => (
-            <React.Fragment key={i}>
-                {line}
-                {i < parts.length - 1 ? <br/> : null}
-            </React.Fragment>
-        ))}
+        <span className="tipBubble" role="tooltip">
+        {parts.map((line, i) => (<React.Fragment key={i}>
+            {line}
+            {i < parts.length - 1 ? <br/> : null}
+        </React.Fragment>))}
       </span>
-    </span>
-    );
+    </span>);
 }
 
 function buildSearchTextForItem(tab, it) {
@@ -769,9 +710,7 @@ function applyModifierExpansions(searchText) {
 }
 
 function affixTypes(it) {
-    const a = Array.isArray(it?.displayItemTypeNames)
-        ? it.displayItemTypeNames
-        : [];
+    const a = Array.isArray(it?.displayItemTypeNames) ? it.displayItemTypeNames : [];
     return a.map((x) => n(x)).filter(Boolean);
 }
 
@@ -788,8 +727,7 @@ function filterVisible(arr) {
 
 function weaponTypeLabel(w) {
     const primary = n(w?.itemType?.displayName) || n(w?.displayType) || n(w?.type);
-    const secondary =
-        n(w?.secondItemType?.displayName) || n(w?.secondDisplayType) || n(w?.secondType);
+    const secondary = n(w?.secondItemType?.displayName) || n(w?.secondDisplayType) || n(w?.secondType);
     return has(secondary) ? `${primary} / ${secondary}` : primary || "weapon";
 }
 
@@ -825,12 +763,9 @@ function uniqueBaseTypeLabelPretty(u) {
 
 function weaponDmgLines(w) {
     const out = [];
-    const min = n(w?.minDamage),
-        max = n(w?.maxDamage);
-    const tmin = n(w?.twoHandedMinDamage),
-        tmax = n(w?.twoHandedMaxDamage);
-    const mmin = n(w?.minMissileDamage),
-        mmax = n(w?.maxMissileDamage);
+    const min = n(w?.minDamage), max = n(w?.maxDamage);
+    const tmin = n(w?.twoHandedMinDamage), tmax = n(w?.twoHandedMaxDamage);
+    const mmin = n(w?.minMissileDamage), mmax = n(w?.maxMissileDamage);
 
     if (has(min) && has(max)) out.push({k: "One-Hand Damage", v: `${min} to ${max}`});
     if (has(tmin) && has(tmax)) out.push({k: "Two-Hand Damage", v: `${tmin} to ${tmax}`});
@@ -839,8 +774,7 @@ function weaponDmgLines(w) {
 }
 
 function armorDefenseLine(a) {
-    const minD = n(a?.minDefense),
-        maxD = n(a?.maxDefense);
+    const minD = n(a?.minDefense), maxD = n(a?.maxDefense);
     if (has(minD) && has(maxD)) return `${minD} to ${maxD}`;
     if (has(minD)) return `${minD}`;
     return "";
@@ -848,9 +782,7 @@ function armorDefenseLine(a) {
 
 function useJson(fileName) {
     const [state, setState] = React.useState({
-        loading: true,
-        data: [],
-        error: null,
+        loading: true, data: [], error: null,
     });
 
     React.useEffect(() => {
@@ -888,12 +820,10 @@ function useJson(fileName) {
 
 function lineKV(k, v, extraClass = "", tooltipText = "") {
     var showTooltip = tooltipText !== null && tooltipText !== "";
-    return (
-        <div className={("line kv " + (extraClass || "")).trim()}>
-            {showTooltip ? <Tip text={String(tooltipText)}><span>{k}</span></Tip> : <span>{k}</span>}
-            <span>{String(v)}</span>
-        </div>
-    );
+    return (<div className={("line kv " + (extraClass || "")).trim()}>
+        {showTooltip ? <Tip text={String(tooltipText)}><span>{k}</span></Tip> : <span>{k}</span>}
+        <span>{String(v)}</span>
+    </div>);
 }
 
 function getItemTypeForUnique(u) {
@@ -943,27 +873,19 @@ function getRequiredDexterityForUnique(u) {
 }
 
 function SearchableSelect({
-                              value,
-                              onChange,
-                              options,
-                              placeholder = "Select…",
-                              style,
-                              className = "",
+                              value, onChange, options, placeholder = "Select…", style, className = "",
                           }) {
     const [open, setOpen] = React.useState(false);
     const [query, setQuery] = React.useState("");
     const wrapRef = React.useRef(null);
     const inputRef = React.useRef(null);
 
-    const currentLabel =
-        options.find((o) => String(o.value) === String(value))?.label || "";
+    const currentLabel = options.find((o) => String(o.value) === String(value))?.label || "";
 
     const filteredOptions = React.useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!q) return options;
-        return options.filter((opt) =>
-            (opt.label || "").toLowerCase().includes(q)
-        );
+        return options.filter((opt) => (opt.label || "").toLowerCase().includes(q));
     }, [options, query]);
 
     // Close on outside click
@@ -995,52 +917,43 @@ function SearchableSelect({
         setQuery("");
     };
 
-    return (
-        <div
-            ref={wrapRef}
-            className={`selSearchWrap ${className}`}
-            style={style}
+    return (<div
+        ref={wrapRef}
+        className={`selSearchWrap ${className}`}
+        style={style}
+    >
+        <button
+            type="button"
+            className="selTrigger"
+            onClick={() => setOpen((o) => !o)}
         >
-            <button
-                type="button"
-                className="selTrigger"
-                onClick={() => setOpen((o) => !o)}
-            >
         <span className={currentLabel ? "" : "placeholder"}>
           {currentLabel || placeholder}
         </span>
-                <span className="selArrow">▾</span>
-            </button>
+            <span className="selArrow">▾</span>
+        </button>
 
-            {open && (
-                <div className="selDropdown">
-                    <input
-                        ref={inputRef}
-                        className="selSearchInput"
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Filter options…"
-                    />
-                    <div className="selOptions">
-                        {filteredOptions.length === 0 ? (
-                            <div className="selOption selEmpty">No matches</div>
-                        ) : (
-                            filteredOptions.map((opt) => (
-                                <div
-                                    key={String(opt.value) || opt.label}
-                                    className="selOption"
-                                    onClick={() => handleSelect(opt.value)}
-                                >
-                                    {opt.label}
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+        {open && (<div className="selDropdown">
+            <input
+                ref={inputRef}
+                className="selSearchInput"
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Filter options…"
+            />
+            <div className="selOptions">
+                {filteredOptions.length === 0 ? (
+                    <div className="selOption selEmpty">No matches</div>) : (filteredOptions.map((opt) => (<div
+                    key={String(opt.value) || opt.label}
+                    className="selOption"
+                    onClick={() => handleSelect(opt.value)}
+                >
+                    {opt.label}
+                </div>)))}
+            </div>
+        </div>)}
+    </div>);
 }
 
 function FiltersBar({
@@ -1071,155 +984,146 @@ function FiltersBar({
                         affixTypeValue = "",
                         setAffixTypeValue = () => {
                         },
+                        showRuneCount = false,
+                        runeCountValue = "",
+                        setRuneCountValue = () => {
+                        },
                     }) {
     // Build option lists once per render
-    const typeOptions = [
-        {value: "", label: typePlaceholder},
-        ...types.map((t) => ({value: t, label: t})),
-    ];
+    const typeOptions = [{value: "", label: typePlaceholder}, ...types.map((t) => ({value: t, label: t})),];
 
-    const socketsOptions = [
-        {value: "", label: "All sockets"},
-        ...Array.from({length: 7}, (_, i) => String(i)).map((s) => ({
-            value: s,
-            label: s,
-        })),
-    ];
+    const runeCountOptions = [{value: "", label: "All counts"}, {value: "2", label: "2 runes"}, {
+        value: "3",
+        label: "3 runes"
+    }, {value: "4", label: "4 runes"}, {value: "5", label: "5 runes"}, {value: "6", label: "6 runes"},];
 
-    const tierOptions = [
-        {value: "", label: "All tiers"},
-        ...tiers.map((t) => ({value: t, label: t})),
-    ];
+    const socketsOptions = [{
+        value: "",
+        label: "All sockets"
+    }, ...Array.from({length: 7}, (_, i) => String(i)).map((s) => ({
+        value: s, label: s,
+    })),];
 
-    const affixTypeOptions = [
-        {value: "", label: "All affix types"},
-        {value: "Prefix", label: "Prefix"},
-        {value: "Suffix", label: "Suffix"},
-    ];
+    const tierOptions = [{value: "", label: "All tiers"}, ...tiers.map((t) => ({value: t, label: t})),];
 
-    return (
-        <div className="filtersRow">
-            <div className="filtersPanel">
-                {/* Search input (same as before) */}
-                <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={search}
-                    className="searchBar"
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search item name…"
-                />
+    const affixTypeOptions = [{value: "", label: "All affix types"}, {
+        value: "Prefix",
+        label: "Prefix"
+    }, {value: "Suffix", label: "Suffix"},];
 
-                {/* Type (searchable) */}
-                <SearchableSelect
-                    value={typeValue}
-                    onChange={setTypeValue}
-                    options={typeOptions}
-                    placeholder={typePlaceholder}
-                    style={{maxWidth: 260}}
-                />
+    return (<div className="filtersRow">
+        <div className="filtersPanel">
+            {/* Search input (same as before) */}
+            <input
+                ref={searchInputRef}
+                type="text"
+                value={search}
+                className="searchBar"
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search item name…"
+            />
 
-                {/* Sockets (also searchable, even though it’s small) */}
-                {showSockets && (
-                    <SearchableSelect
-                        value={socketsValue}
-                        onChange={setSocketsValue}
-                        options={socketsOptions}
-                        placeholder="All sockets"
-                        style={{maxWidth: 180}}
+            {/* Type (searchable) */}
+            <SearchableSelect
+                value={typeValue}
+                onChange={setTypeValue}
+                options={typeOptions}
+                placeholder={typePlaceholder}
+                style={{maxWidth: 260}}
+            />
+
+            {/* Sockets (also searchable, even though it’s small) */}
+            {showSockets && (<SearchableSelect
+                value={socketsValue}
+                onChange={setSocketsValue}
+                options={socketsOptions}
+                placeholder="All sockets"
+                style={{maxWidth: 180}}
+            />)}
+
+            {showRuneCount && (<SearchableSelect
+                value={runeCountValue}
+                onChange={setRuneCountValue}
+                options={runeCountOptions}
+                placeholder="All counts"
+                style={{maxWidth: 180}}
+            />)}
+
+            {/* Tier (searchable) */}
+            {showTier && (<SearchableSelect
+                value={tierValue}
+                onChange={setTierValue}
+                options={tierOptions}
+                placeholder="All tiers"
+                style={{maxWidth: 180}}
+            />)}
+
+            {/* Affix type (Prefix / Suffix) – affixes tab only */}
+            {showAffixType && (<SearchableSelect
+                value={affixTypeValue}
+                onChange={setAffixTypeValue}
+                options={affixTypeOptions}
+                placeholder="All affix types"
+                style={{maxWidth: 200}}
+            />)}
+
+            {/* Uber boss toggle (unchanged) */}
+            {showUber && (<label className="toggleWrap">
+                <span className="toggleLabel">Uber boss unique</span>
+                <div className="toggle">
+                    <input
+                        type="checkbox"
+                        checked={!!uberValue}
+                        onChange={(e) => setUberValue(e.target.checked ? "yes" : "")}
                     />
-                )}
+                    <span className="toggleSlider"/>
+                </div>
+            </label>)}
 
-                {/* Tier (searchable) */}
-                {showTier && (
-                    <SearchableSelect
-                        value={tierValue}
-                        onChange={setTierValue}
-                        options={tierOptions}
-                        placeholder="All tiers"
-                        style={{maxWidth: 180}}
+            {showHellforged && (<label className="toggleWrap">
+                <span className="toggleLabel">Hellforged</span>
+                <div className="toggle">
+                    <input
+                        type="checkbox"
+                        checked={!!hellforgedValue}
+                        onChange={(e) => setHellforgedValue(e.target.checked ? "yes" : "")}
                     />
-                )}
+                    <span className="toggleSlider"/>
+                </div>
+            </label>)}
 
-                {/* Affix type (Prefix / Suffix) – affixes tab only */}
-                {showAffixType && (
-                    <SearchableSelect
-                        value={affixTypeValue}
-                        onChange={setAffixTypeValue}
-                        options={affixTypeOptions}
-                        placeholder="All affix types"
-                        style={{maxWidth: 200}}
+            {/* Highlight toggle (unchanged) */}
+            {showHighlight && (<label className="toggleWrap">
+                <span className="toggleLabel">SoE exclusive</span>
+                <div className="toggle">
+                    <input
+                        type="checkbox"
+                        checked={!!highlightOnly}
+                        onChange={(e) => setHighlightOnly(e.target.checked)}
                     />
-                )}
-
-                {/* Uber boss toggle (unchanged) */}
-                {showUber && (
-                    <label className="toggleWrap">
-                        <span className="toggleLabel">Uber boss unique</span>
-                        <div className="toggle">
-                            <input
-                                type="checkbox"
-                                checked={!!uberValue}
-                                onChange={(e) => setUberValue(e.target.checked ? "yes" : "")}
-                            />
-                            <span className="toggleSlider"/>
-                        </div>
-                    </label>
-                )}
-
-                {showHellforged && (
-                    <label className="toggleWrap">
-                        <span className="toggleLabel">Hellforged</span>
-                        <div className="toggle">
-                            <input
-                                type="checkbox"
-                                checked={!!hellforgedValue}
-                                onChange={(e) => setHellforgedValue(e.target.checked ? "yes" : "")}
-                            />
-                            <span className="toggleSlider"/>
-                        </div>
-                    </label>
-                )}
-
-                {/* Highlight toggle (unchanged) */}
-                {showHighlight && (
-                    <label className="toggleWrap">
-                        <span className="toggleLabel">SoE exclusive</span>
-                        <div className="toggle">
-                            <input
-                                type="checkbox"
-                                checked={!!highlightOnly}
-                                onChange={(e) => setHighlightOnly(e.target.checked)}
-                            />
-                            <span className="toggleSlider"/>
-                        </div>
-                    </label>
-                )}
-            </div>
+                    <span className="toggleSlider"/>
+                </div>
+            </label>)}
         </div>
-    );
+    </div>);
 }
 
 function InfoPanel({title, markdownText, isOpen, onToggle, onLink}) {
     if (!markdownText) return null;
 
-    return (
-        <div className="infoPanel">
-            <div className="infoHeader">
-                <div className="infoTitle">{title}</div>
+    return (<div className="infoPanel">
+        <div className="infoHeader">
+            <div className="infoTitle">{title}</div>
 
-                <button type="button" className="infoToggle" onClick={onToggle}>
-                    {isOpen ? "Hide" : "Show"}
-                </button>
-            </div>
-
-            {isOpen ? (
-                <div className="infoBody">
-                    <Markdown text={markdownText} onLink={onLink}/>
-                </div>
-            ) : null}
+            <button type="button" className="infoToggle" onClick={onToggle}>
+                {isOpen ? "Hide" : "Show"}
+            </button>
         </div>
-    );
+
+        {isOpen ? (<div className="infoBody">
+            <Markdown text={markdownText} onLink={onLink}/>
+        </div>) : null}
+    </div>);
 }
 
 function ListPanel({title, countLabel, items, activeIndex, setActiveIndex, subLabel, tinyLabel, tab}) {
@@ -1229,69 +1133,56 @@ function ListPanel({title, countLabel, items, activeIndex, setActiveIndex, subLa
         activeRowRef.current?.scrollIntoView({block: "nearest"});
     }, [activeIndex]);
 
-    return (
-        <div className="listPanel">
-            <div className="listHeader">
-                <div className="title">{title}</div>
-                <div className="count">{countLabel}</div>
-            </div>
-
-            <div className="list" role="list">
-                {items.length === 0 ? (
-                    <div className="emptyState">No items match your filters.</div>
-                ) : (
-                    items.map((it, i) => {
-                        const iconUrl = getItemIconUrl(tab, it);
-
-                        return (
-                            <div
-                                key={`${i}::${n(it?.code)}::${n(it?.displayName) || n(it?.name)}`}
-                                ref={i === activeIndex ? activeRowRef : null}
-                                className={"row" + (i === activeIndex ? " active" : "")}
-                                onClick={() => setActiveIndex(i)}
-                                role="listitem"
-                            >
-                                <div className="ico">
-                                    {iconUrl ? (
-                                        <img src={iconUrl} className="icon" alt=""/>
-                                    ) : null}
-                                </div>
-                                <div className="meta">
-                                    <div className={tab === "uniques" ? "uniqueName" : "name"}>
-                                        {n(it?.displayName) || n(it?.name) || "Unknown"} {isHighlightedItem(it) && (tab === "uniques" || tab === "armors" || tab === "weapons" || tab === "runewords") ?
-                                        <span className="uniqueSOEAsterisk">*</span> : null}
-                                    </div>
-                                    <div className="sub">{subLabel(it)}</div>
-                                    <div className="tiny">{tinyLabel(it)}</div>
-                                </div>
-                            </div>
-                        );
-                    })
-                )}
-            </div>
+    return (<div className="listPanel">
+        <div className="listHeader">
+            <div className="title">{title}</div>
+            <div className="count">{countLabel}</div>
         </div>
-    );
+
+        <div className="list" role="list">
+            {items.length === 0 ? (
+                <div className="emptyState">No items match your filters.</div>) : (items.map((it, i) => {
+                const iconUrl = getItemIconUrl(tab, it);
+
+                return (<div
+                    key={`${i}::${n(it?.code)}::${n(it?.displayName) || n(it?.name)}`}
+                    ref={i === activeIndex ? activeRowRef : null}
+                    className={"row" + (i === activeIndex ? " active" : "")}
+                    onClick={() => setActiveIndex(i)}
+                    role="listitem"
+                >
+                    <div className="ico">
+                        {iconUrl ? (<img src={iconUrl} className="icon" alt=""/>) : null}
+                    </div>
+                    <div className="meta">
+                        <div className={tab === "uniques" ? "uniqueName" : "name"}>
+                            {n(it?.displayName) || n(it?.name) || "Unknown"} {isHighlightedItem(it) && (tab === "uniques" || tab === "armors" || tab === "weapons" || tab === "runewords") ?
+                            <span className="uniqueSOEAsterisk">*</span> : null}
+                        </div>
+                        <div className="sub">{subLabel(it)}</div>
+                        <div className="tiny">{tinyLabel(it)}</div>
+                    </div>
+                </div>);
+            }))}
+        </div>
+    </div>);
 }
 
 
 function TooltipShell({children}) {
-    return (
-        <div className="tooltipShell">
-            <div className="tooltip">{children}</div>
-        </div>
-    );
+    return (<div className="tooltipShell">
+        <div className="tooltip">{children}</div>
+    </div>);
 }
 
 function TierLinks({entries, onGo}) {
     const usable = entries.filter((e) => has(e.name) && has(e.code));
     if (!usable.length) return null;
 
-    return (
-        <>
-            {usable.map((e) => (
-                <div key={e.tierLabel + "|" + e.code} className="line kv">
-                    <span>{e.tierLabel} Tier Item:</span>
-                    <span>
+    return (<>
+        {usable.map((e) => (<div key={e.tierLabel + "|" + e.code} className="line kv">
+            <span>{e.tierLabel} Tier Item:</span>
+            <span>
             <a
                 className="d2link"
                 href="#"
@@ -1303,48 +1194,38 @@ function TierLinks({entries, onGo}) {
               {e.name}
             </a>
           </span>
-                </div>
-            ))}
-        </>
-    );
+        </div>))}
+    </>);
 }
 
 function UniquesPanel({uniques, onGoUnique}) {
     const list = Array.isArray(uniques) ? uniques : [];
     if (!list.length) return null;
 
-    return (
-        <>
-            <div className="hr"/>
-            <div className="uniqueHeader">Uniques</div>
+    return (<>
+        <div className="hr"/>
+        <div className="uniqueHeader">Uniques</div>
 
-            {list.map((u, idx) => {
-                const name = n(u?.uniqueName);
-                const code = n(u?.uniqueCode);
-                if (!name) return null;
+        {list.map((u, idx) => {
+            const name = n(u?.uniqueName);
+            const code = n(u?.uniqueCode);
+            if (!name) return null;
 
-                return (
-                    <div key={`${idx}::${name}::${code}`} className="line goToLink">
-                        {code ? (
-                            <a
-                                className="d2link"
-                                href="#"
-                                onClick={(ev) => {
-                                    ev.preventDefault();
-                                    onGoUnique(code);
-                                }}
-                                title={`Go to unique: ${code}`}
-                            >
-                                {name}
-                            </a>
-                        ) : (
-                            <span className="d2linkText">{name}</span>
-                        )}
-                    </div>
-                );
-            })}
-        </>
-    );
+            return (<div key={`${idx}::${name}::${code}`} className="line goToLink">
+                {code ? (<a
+                    className="d2link"
+                    href="#"
+                    onClick={(ev) => {
+                        ev.preventDefault();
+                        onGoUnique(code);
+                    }}
+                    title={`Go to unique: ${code}`}
+                >
+                    {name}
+                </a>) : (<span className="d2linkText">{name}</span>)}
+            </div>);
+        })}
+    </>);
 }
 
 function SacredTooltip({s, onLink}) {
@@ -1354,72 +1235,53 @@ function SacredTooltip({s, onLink}) {
     const types = sacredTypes(s);
     const ing = sacredIngredients(s);
 
-    const map =
-        s?.propertiesByItemType && typeof s.propertiesByItemType === "object"
-            ? s.propertiesByItemType
-            : {};
+    const map = s?.propertiesByItemType && typeof s.propertiesByItemType === "object" ? s.propertiesByItemType : {};
 
     const typeKeys = Object.keys(map);
 
-    return (
-        <>
-            <div className="tipTitle">{title}</div>
+    return (<>
+        <div className="tipTitle">{title}</div>
 
-            {types.length ? (
-                <div className="tipSubtitle">
-                    <span className="dim"></span>
-                    {types.join(" / ")}
-                </div>
-            ) : null}
+        {types.length ? (<div className="tipSubtitle">
+            <span className="dim"></span>
+            {types.join(" / ")}
+        </div>) : null}
 
-            <div className="hr"/>
+        <div className="hr"/>
 
-            {ing.length ? (
-                <div className="line runesDisplay">
-                    <Tip text={String(TOOLTIPS_TEXT_MAP["sacred"])}>
-                        {ing.join(" · ")}
-                    </Tip>
-                </div>
-            ) : (
-                <div className="line dim">No runes listed.</div>
-            )}
+        {ing.length ? (<div className="line runesDisplay">
+            <Tip text={String(TOOLTIPS_TEXT_MAP["sacred"])}>
+                {ing.join(" · ")}
+            </Tip>
+        </div>) : (<div className="line dim">No runes listed.</div>)}
 
-            <div className="hr"/>
+        <div className="hr"/>
 
-            <div className="sacredModsHeader">Mods by item type</div>
-            {typeKeys.length ? (
-                typeKeys.map((k) => {
-                    const arr = Array.isArray(map[k]) ? map[k] : [];
-                    if (!arr.length) return null;
+        <div className="sacredModsHeader">Mods by item type</div>
+        {typeKeys.length ? (typeKeys.map((k) => {
+            const arr = Array.isArray(map[k]) ? map[k] : [];
+            if (!arr.length) return null;
 
-                    return (
-                        <div key={k} style={{marginBottom: 10}}>
-                            <div className="sacredModsItemType">{k}</div>
-                            {arr.flatMap((p, i) => {
-                                const raw = String(p ?? "");
-                                const normalized = raw.replace(/\\n/g, "\n");
-                                const lines = normalized
-                                    .split("\n")
-                                    .map((l) => l.trim())
-                                    .filter(Boolean);
+            return (<div key={k} style={{marginBottom: 10}}>
+                <div className="sacredModsItemType">{k}</div>
+                {arr.flatMap((p, i) => {
+                    const raw = String(p ?? "");
+                    const normalized = raw.replace(/\\n/g, "\n");
+                    const lines = normalized
+                        .split("\n")
+                        .map((l) => l.trim())
+                        .filter(Boolean);
 
-                                return lines.map((line, j) => (
-                                    <div
-                                        key={`${k}-${i}-${j}`}
-                                        className="runeModLine"
-                                    >
-                                        {renderInlineMarkdown(line, onLink)}
-                                    </div>
-                                ));
-                            })}
-                        </div>
-                    );
-                })
-            ) : (
-                <div className="line dim">No modifiers listed.</div>
-            )}
-        </>
-    );
+                    return lines.map((line, j) => (<div
+                        key={`${k}-${i}-${j}`}
+                        className="runeModLine"
+                    >
+                        {renderInlineMarkdown(line, onLink)}
+                    </div>));
+                })}
+            </div>);
+        })) : (<div className="line dim">No modifiers listed.</div>)}
+    </>);
 }
 
 function CurseEffectCalculator() {
@@ -1435,8 +1297,7 @@ function CurseEffectCalculator() {
         const base = num(baseValue);
         const bonus = num(bonusValue);
 
-        const raw =
-            base * (100 + ((bonus * 70) / (bonus + 22))) / 100;
+        const raw = base * (100 + ((bonus * 70) / (bonus + 22))) / 100;
 
         return Number.isFinite(raw) ? Math.floor(raw) : 0;
     }, [baseValue, bonusValue]);
@@ -1451,64 +1312,62 @@ function CurseEffectCalculator() {
         setBonusValue("");
     };
 
-    return (
-        <div className="infoPanel">
-            <div className="infoHeader">
-                <div className="infoTitle">Curse Effect Calculator</div>
+    return (<div className="infoPanel">
+        <div className="infoHeader">
+            <div className="infoTitle">Curse Effect Calculator</div>
 
-                <div className="filtersResetPanel">
-                    <button
-                        type="button"
-                        className="btn secondary"
-                        onClick={reset}
-                    >
-                        Reset
-                    </button>
-                </div>
-            </div>
-
-            <div className="meta">
-                Calculates final curse effect with diminishing returns.
-            </div>
-
-            <div className="hr"/>
-
-            <div className="calcGrid">
-
-                <div className="calcRow">
-                    <div className="calcLabel">Base value</div>
-                    <input
-                        className="calcInput"
-                        type="number"
-                        value={baseValue}
-                        onChange={(e) => setBaseValue(e.target.value)}
-                        placeholder="e.g. 100"
-                    />
-                </div>
-
-                <div className="calcRow">
-                    <div className="calcLabel">Curse effect bonus</div>
-                    <input
-                        className="calcInput"
-                        type="number"
-                        value={bonusValue}
-                        onChange={(e) => setBonusValue(e.target.value)}
-                        placeholder="e.g. 50"
-                    />
-                </div>
-
-                <div className="calcOut">
-                    <div className="calcOutLabel">Final effect</div>
-                    <div className="calcOutValue">{fmt(result)}</div>
-                </div>
-
-                <div className="calcFormula dim">
-                    X = base × (100 + (bonus × 70)/(bonus + 22)) / 100
-                </div>
-
+            <div className="filtersResetPanel">
+                <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={reset}
+                >
+                    Reset
+                </button>
             </div>
         </div>
-    );
+
+        <div className="meta">
+            Calculates final curse effect with diminishing returns.
+        </div>
+
+        <div className="hr"/>
+
+        <div className="calcGrid">
+
+            <div className="calcRow">
+                <div className="calcLabel">Base value</div>
+                <input
+                    className="calcInput"
+                    type="number"
+                    value={baseValue}
+                    onChange={(e) => setBaseValue(e.target.value)}
+                    placeholder="e.g. 100"
+                />
+            </div>
+
+            <div className="calcRow">
+                <div className="calcLabel">Curse effect bonus</div>
+                <input
+                    className="calcInput"
+                    type="number"
+                    value={bonusValue}
+                    onChange={(e) => setBonusValue(e.target.value)}
+                    placeholder="e.g. 50"
+                />
+            </div>
+
+            <div className="calcOut">
+                <div className="calcOutLabel">Final effect</div>
+                <div className="calcOutValue">{fmt(result)}</div>
+            </div>
+
+            <div className="calcFormula dim">
+                X = base × (100 + (bonus × 70)/(bonus + 22)) / 100
+            </div>
+
+        </div>
+    </div>);
 }
 
 function AuraEffectCalculator() {
@@ -1524,8 +1383,7 @@ function AuraEffectCalculator() {
         const base = num(baseValue);
         const bonus = num(bonusValue);
 
-        const raw =
-            base * (100 + ((bonus * 60) / (bonus + 25))) / 100;
+        const raw = base * (100 + ((bonus * 60) / (bonus + 25))) / 100;
 
         return Number.isFinite(raw) ? Math.floor(raw) : 0;
     }, [baseValue, bonusValue]);
@@ -1540,64 +1398,62 @@ function AuraEffectCalculator() {
         setBonusValue("");
     };
 
-    return (
-        <div className="infoPanel">
-            <div className="infoHeader">
-                <div className="infoTitle">Aura Effect Calculator</div>
+    return (<div className="infoPanel">
+        <div className="infoHeader">
+            <div className="infoTitle">Aura Effect Calculator</div>
 
-                <div className="filtersResetPanel">
-                    <button
-                        type="button"
-                        className="btn secondary"
-                        onClick={reset}
-                    >
-                        Reset
-                    </button>
-                </div>
-            </div>
-
-            <div className="meta">
-                Calculates final aura effect with diminishing returns.
-            </div>
-
-            <div className="hr"/>
-
-            <div className="calcGrid">
-
-                <div className="calcRow">
-                    <div className="calcLabel">Base value</div>
-                    <input
-                        className="calcInput"
-                        type="number"
-                        value={baseValue}
-                        onChange={(e) => setBaseValue(e.target.value)}
-                        placeholder="e.g. 100"
-                    />
-                </div>
-
-                <div className="calcRow">
-                    <div className="calcLabel">Aura effect bonus</div>
-                    <input
-                        className="calcInput"
-                        type="number"
-                        value={bonusValue}
-                        onChange={(e) => setBonusValue(e.target.value)}
-                        placeholder="e.g. 50"
-                    />
-                </div>
-
-                <div className="calcOut">
-                    <div className="calcOutLabel">Final effect</div>
-                    <div className="calcOutValue">{fmt(result)}</div>
-                </div>
-
-                <div className="calcFormula dim">
-                    X = base × (100 + (bonus × 60)/(bonus + 25)) / 100
-                </div>
-
+            <div className="filtersResetPanel">
+                <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={reset}
+                >
+                    Reset
+                </button>
             </div>
         </div>
-    );
+
+        <div className="meta">
+            Calculates final aura effect with diminishing returns.
+        </div>
+
+        <div className="hr"/>
+
+        <div className="calcGrid">
+
+            <div className="calcRow">
+                <div className="calcLabel">Base value</div>
+                <input
+                    className="calcInput"
+                    type="number"
+                    value={baseValue}
+                    onChange={(e) => setBaseValue(e.target.value)}
+                    placeholder="e.g. 100"
+                />
+            </div>
+
+            <div className="calcRow">
+                <div className="calcLabel">Aura effect bonus</div>
+                <input
+                    className="calcInput"
+                    type="number"
+                    value={bonusValue}
+                    onChange={(e) => setBonusValue(e.target.value)}
+                    placeholder="e.g. 50"
+                />
+            </div>
+
+            <div className="calcOut">
+                <div className="calcOutLabel">Final effect</div>
+                <div className="calcOutValue">{fmt(result)}</div>
+            </div>
+
+            <div className="calcFormula dim">
+                X = base × (100 + (bonus × 60)/(bonus + 25)) / 100
+            </div>
+
+        </div>
+    </div>);
 }
 
 function AuraRadiusEffectCalculator() {
@@ -1628,8 +1484,7 @@ function AuraRadiusEffectCalculator() {
         const baseSubtiles = Math.round(baseYards * YARDS_TO_SUBTILES);
 
         // DR bonus term (still in % units)
-        const bonusTerm =
-            (skill_radius_bonus * 70) / ((skill_radius_bonus + 18) || 1);
+        const bonusTerm = (skill_radius_bonus * 70) / ((skill_radius_bonus + 18) || 1);
 
         // apply formula in subtiles
         const xSubtilesRaw = (baseSubtiles * (100 + bonusTerm)) / 100;
@@ -1646,8 +1501,7 @@ function AuraRadiusEffectCalculator() {
     const calcEffect = React.useMemo(() => {
         const base_value = num(effectBase);
         const aura_effect_bonus = num(effectBonus);
-        const bonusTerm =
-            (aura_effect_bonus * 60) / (aura_effect_bonus + 25 || 1);
+        const bonusTerm = (aura_effect_bonus * 60) / (aura_effect_bonus + 25 || 1);
         const Y = (base_value * (100 + bonusTerm)) / 100;
         return Number.isFinite(Y) ? Y : 0;
     }, [effectBase, effectBonus]);
@@ -1665,136 +1519,132 @@ function AuraRadiusEffectCalculator() {
         setEffectBonus("");
     };
 
-    return (
-        <div className="infoPanel">
-            <div className="infoHeader">
-                <div className="infoTitle">Aura radius and effect</div>
-                <button type="button" className="btn ghost" onClick={reset}>
-                    Reset
-                </button>
-            </div>
+    return (<div className="infoPanel">
+        <div className="infoHeader">
+            <div className="infoTitle">Aura radius and effect</div>
+            <button type="button" className="btn ghost" onClick={reset}>
+                Reset
+            </button>
+        </div>
 
-            <div className="meta">
-                Enter the base value and the bonus value; the calculator applies the
-                diminishing returns formulas used by the mod.
-            </div>
+        <div className="meta">
+            Enter the base value and the bonus value; the calculator applies the
+            diminishing returns formulas used by the mod.
+        </div>
 
-            <div className="hr"/>
+        <div className="hr"/>
 
-            <div className="calcGrid">
-                <div className="calcCard">
-                    <div className="calcTitle">Radius</div>
+        <div className="calcGrid">
+            <div className="calcCard">
+                <div className="calcTitle">Radius</div>
 
-                    <div className="calcRow">
-                        <div className="calcLabel">Base value</div>
-                        <input
-                            className="calcInput"
-                            type="number"
-                            inputMode="decimal"
-                            value={radiusBase}
-                            onChange={(e) => setRadiusBase(e.target.value)}
-                            placeholder="e.g. 10"
-                        />
-                    </div>
-
-                    <div className="calcRow">
-                        <div className="calcLabel">Skill radius bonus</div>
-                        <input
-                            className="calcInput"
-                            type="number"
-                            inputMode="decimal"
-                            value={radiusBonus}
-                            onChange={(e) => setRadiusBonus(e.target.value)}
-                            placeholder="e.g. 50"
-                        />
-                    </div>
-
-                    <div className="calcOut">
-                        <div className="calcOutLabel">Radius result (X)</div>
-                        <div className="calcOutValue">{fmt(calcRadiusYards)}</div>
-                    </div>
-
-                    <div className="calcFormula dim">
-                        X = base × (100 + ((bonus×70)/(bonus+18))) / 100
-                    </div>
+                <div className="calcRow">
+                    <div className="calcLabel">Base value</div>
+                    <input
+                        className="calcInput"
+                        type="number"
+                        inputMode="decimal"
+                        value={radiusBase}
+                        onChange={(e) => setRadiusBase(e.target.value)}
+                        placeholder="e.g. 10"
+                    />
                 </div>
 
-                <div className="calcCard">
-                    <div className="calcTitle">Effect</div>
+                <div className="calcRow">
+                    <div className="calcLabel">Skill radius bonus</div>
+                    <input
+                        className="calcInput"
+                        type="number"
+                        inputMode="decimal"
+                        value={radiusBonus}
+                        onChange={(e) => setRadiusBonus(e.target.value)}
+                        placeholder="e.g. 50"
+                    />
+                </div>
 
-                    <div className="calcRow">
-                        <div className="calcLabel">Base value</div>
-                        <input
-                            className="calcInput"
-                            type="number"
-                            inputMode="decimal"
-                            value={effectBase}
-                            onChange={(e) => setEffectBase(e.target.value)}
-                            placeholder="e.g. 100"
-                        />
-                    </div>
+                <div className="calcOut">
+                    <div className="calcOutLabel">Radius result (X)</div>
+                    <div className="calcOutValue">{fmt(calcRadiusYards)}</div>
+                </div>
 
-                    <div className="calcRow">
-                        <div className="calcLabel">Aura effect bonus</div>
-                        <input
-                            className="calcInput"
-                            type="number"
-                            inputMode="decimal"
-                            value={effectBonus}
-                            onChange={(e) => setEffectBonus(e.target.value)}
-                            placeholder="e.g. 80"
-                        />
-                    </div>
+                <div className="calcFormula dim">
+                    X = base × (100 + ((bonus×70)/(bonus+18))) / 100
+                </div>
+            </div>
 
-                    <div className="calcOut">
-                        <div className="calcOutLabel">Effect result (Y)</div>
-                        <div className="calcOutValue">{fmt(calcEffect)}</div>
-                    </div>
+            <div className="calcCard">
+                <div className="calcTitle">Effect</div>
 
-                    <div className="calcFormula dim">
-                        Y = base × (100 + ((bonus×60)/(bonus+25))) / 100
-                    </div>
+                <div className="calcRow">
+                    <div className="calcLabel">Base value</div>
+                    <input
+                        className="calcInput"
+                        type="number"
+                        inputMode="decimal"
+                        value={effectBase}
+                        onChange={(e) => setEffectBase(e.target.value)}
+                        placeholder="e.g. 100"
+                    />
+                </div>
+
+                <div className="calcRow">
+                    <div className="calcLabel">Aura effect bonus</div>
+                    <input
+                        className="calcInput"
+                        type="number"
+                        inputMode="decimal"
+                        value={effectBonus}
+                        onChange={(e) => setEffectBonus(e.target.value)}
+                        placeholder="e.g. 80"
+                    />
+                </div>
+
+                <div className="calcOut">
+                    <div className="calcOutLabel">Effect result (Y)</div>
+                    <div className="calcOutValue">{fmt(calcEffect)}</div>
+                </div>
+
+                <div className="calcFormula dim">
+                    Y = base × (100 + ((bonus×60)/(bonus+25))) / 100
                 </div>
             </div>
         </div>
-    );
+    </div>);
 }
 
 function HelpPanel() {
-    return (
-        <div className="helpPanel">
-            <div className="helpTitle">Help</div>
+    return (<div className="helpPanel">
+        <div className="helpTitle">Help</div>
 
-            <div className="helpBody">
-                <p><b>Navigation</b></p>
-                <ul>
-                    <li><b>← / →</b> switch tabs</li>
-                    <li><b>↑ / ↓</b> move selection in the item list</li>
-                    <li><b>Ctrl/Cmd + F</b> hotkey - focus search</li>
-                    <li><b>Esc</b> unfocus search (when focused on it)</li>
-                </ul>
+        <div className="helpBody">
+            <p><b>Navigation</b></p>
+            <ul>
+                <li><b>← / →</b> switch tabs</li>
+                <li><b>↑ / ↓</b> move selection in the item list</li>
+                <li><b>Ctrl/Cmd + F</b> hotkey - focus search</li>
+                <li><b>Esc</b> unfocus search (when focused on it)</li>
+            </ul>
 
-                <p><b>Search</b></p>
-                <ul>
-                    <li>Use quotes for exact phrases: <code>"faster cast rate"</code></li>
-                    <li>In <b>Uniques</b>, <b>Runewords</b>, <b>Sacreds</b> and <b>Affixes</b> tabs, search also checks
-                        modifiers.
-                    </li>
-                </ul>
+            <p><b>Search</b></p>
+            <ul>
+                <li>Use quotes for exact phrases: <code>"faster cast rate"</code></li>
+                <li>In <b>Uniques</b>, <b>Runewords</b>, <b>Sacreds</b> and <b>Affixes</b> tabs, search also checks
+                    modifiers.
+                </li>
+            </ul>
 
-                <p><b>UI</b></p>
-                <ul>
-                    <li>Dotted underline under label means that it contains useful hint on hover.</li>
-                    <li>Dashed underline under label means that it links to an entry on this site and will transfer to
-                        it on click.
-                    </li>
-                    <li>Click the version on the right side of the footer to see <code>The Archivist</code> changelog
-                    </li>
-                    <li>Orange asterisk next to a name of the unique item means it was added in Sanctuary of Exile</li>
-                </ul>
-            </div>
+            <p><b>UI</b></p>
+            <ul>
+                <li>Dotted underline under label means that it contains useful hint on hover.</li>
+                <li>Dashed underline under label means that it links to an entry on this site and will transfer to
+                    it on click.
+                </li>
+                <li>Click the version on the right side of the footer to see <code>The Archivist</code> changelog
+                </li>
+                <li>Orange asterisk next to a name of the unique item means it was added in Sanctuary of Exile</li>
+            </ul>
         </div>
-    );
+    </div>);
 }
 
 function WeaponTooltip({w, onGoCode, onGoUnique}) {
@@ -1802,64 +1652,45 @@ function WeaponTooltip({w, onGoCode, onGoUnique}) {
     const title = n(w?.displayName) || n(w?.name) || "Unknown Item";
     const hasRequirements = (has(w?.requiredStrength) || has(w?.requiredDexterity) || has(w?.requiredLevel) && w?.requiredLevel != 0 && w?.requiredDexterity != 0 && w?.requiredStrength != 0);
 
-    const tierEntries = [
-        {
-            tierLabel: "Normal",
-            name: n(w?.normalItemDisplayName),
-            code: n(w?.normalTierCode),
-        },
-        {
-            tierLabel: "Exceptional",
-            name: n(w?.exceptionalItemDisplayName),
-            code: n(w?.exceptionalTierCode),
-        },
-        {
-            tierLabel: "Elite",
-            name: n(w?.eliteItemDisplayName),
-            code: n(w?.eliteTierCode),
-        },
-    ];
+    const tierEntries = [{
+        tierLabel: "Normal", name: n(w?.normalItemDisplayName), code: n(w?.normalTierCode),
+    }, {
+        tierLabel: "Exceptional", name: n(w?.exceptionalItemDisplayName), code: n(w?.exceptionalTierCode),
+    }, {
+        tierLabel: "Elite", name: n(w?.eliteItemDisplayName), code: n(w?.eliteTierCode),
+    },];
 
-    return (
-        <>
-            <div className="tipTitle">{title}</div>
-            <div className="tipSubtitle">{weaponTypeLabel(w)}</div>
+    return (<>
+        <div className="tipTitle">{title}</div>
+        <div className="tipSubtitle">{weaponTypeLabel(w)}</div>
+        <div className="hr"/>
+
+        {weaponDmgLines(w).map((d) => (<React.Fragment key={d.k}>{lineKV(d.k + ":", d.v)}</React.Fragment>))}
+
+        {has(w?.speed) && lineKV("Weapon Speed Modifier:", fmtSigned(w?.speed) || n(w?.speed))}
+
+        {n(w?.noDurability) === "1" ? (<div
+            className="line dim">Indestructible</div>) : (has(w?.durability) && lineKV("Durability:", n(w?.durability)))}
+
+        {has(w?.maxSockets) && lineKV("Maximum Sockets:", n(w?.maxSockets))}
+
+        {hasRequirements ? (<>
             <div className="hr"/>
+            <div className="dropHeader">Requirements</div>
+            {nz(w?.requiredLevel) && lineKV("Required Level:", n(w?.requiredLevel), "req")}
+            {(nz(w?.requiredStrength) || nz(w?.requiredDexterity))}
+            {nz(w?.requiredStrength) && lineKV("Required Strength:", n(w?.requiredStrength), "req")}
+            {nz(w?.requiredDexterity) && lineKV("Required Dexterity:", n(w?.requiredDexterity), "req")}
+        </>) : null}
 
-            {weaponDmgLines(w).map((d) => (
-                <React.Fragment key={d.k}>{lineKV(d.k + ":", d.v)}</React.Fragment>
-            ))}
-
-            {has(w?.speed) && lineKV("Weapon Speed Modifier:", fmtSigned(w?.speed) || n(w?.speed))}
-
-            {n(w?.noDurability) === "1" ? (
-                <div className="line dim">Indestructible</div>
-            ) : (
-                has(w?.durability) && lineKV("Durability:", n(w?.durability))
-            )}
-
-            {has(w?.maxSockets) && lineKV("Maximum Sockets:", n(w?.maxSockets))}
-
-            {hasRequirements ? (
-                <>
-                    <div className="hr"/>
-                    <div className="dropHeader">Requirements</div>
-                    {nz(w?.requiredLevel) && lineKV("Required Level:", n(w?.requiredLevel), "req")}
-                    {(nz(w?.requiredStrength) || nz(w?.requiredDexterity))}
-                    {nz(w?.requiredStrength) && lineKV("Required Strength:", n(w?.requiredStrength), "req")}
-                    {nz(w?.requiredDexterity) && lineKV("Required Dexterity:", n(w?.requiredDexterity), "req")}
-                </>
-            ) : null}
-
-            <div className="hr"/>
-            <div className="dropHeader">Additional item information</div>
-            {has(w?.itemTier) && lineKV("Item Tier:", n(w?.itemTier), "")}
-            {has(w?.level) && lineKV("Quality Level:", n(w?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
-            {lineKV("Code:", n(w?.code), "", TOOLTIPS_TEXT_MAP["code"])}
-            <TierLinks entries={tierEntries} onGo={onGoCode}/>
-            <UniquesPanel uniques={w?.uniques} onGoUnique={onGoUnique}/>
-        </>
-    );
+        <div className="hr"/>
+        <div className="dropHeader">Additional item information</div>
+        {has(w?.itemTier) && lineKV("Item Tier:", n(w?.itemTier), "")}
+        {has(w?.level) && lineKV("Quality Level:", n(w?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
+        {lineKV("Code:", n(w?.code), "", TOOLTIPS_TEXT_MAP["code"])}
+        <TierLinks entries={tierEntries} onGo={onGoCode}/>
+        <UniquesPanel uniques={w?.uniques} onGoUnique={onGoUnique}/>
+    </>);
 }
 
 function ArmorTooltip({a, onGoCode, onGoUnique}) {
@@ -1868,53 +1699,39 @@ function ArmorTooltip({a, onGoCode, onGoUnique}) {
     const def = armorDefenseLine(a);
     const hasRequirements = (has(a?.requiredStrength) && a?.requiredStrength > 0 && has(a?.requiredLevel) && a?.requiredLevel > 0) || (has(a?.requiredStrength) && a?.requiredStrength > 0);
 
-    const tierEntries = [
-        {
-            tierLabel: "Normal",
-            name: n(a?.normalItemDisplayName),
-            code: n(a?.normalTierCode),
-        },
-        {
-            tierLabel: "Exceptional",
-            name: n(a?.exceptionalItemDisplayName),
-            code: n(a?.exceptionalTierCode),
-        },
-        {
-            tierLabel: "Elite",
-            name: n(a?.eliteItemDisplayName),
-            code: n(a?.eliteTierCode),
-        },
-    ];
+    const tierEntries = [{
+        tierLabel: "Normal", name: n(a?.normalItemDisplayName), code: n(a?.normalTierCode),
+    }, {
+        tierLabel: "Exceptional", name: n(a?.exceptionalItemDisplayName), code: n(a?.exceptionalTierCode),
+    }, {
+        tierLabel: "Elite", name: n(a?.eliteItemDisplayName), code: n(a?.eliteTierCode),
+    },];
 
-    return (
-        <>
-            <div className="tipTitle">{title}</div>
-            <div className="tipSubtitle">{armorTypeLabel(a)}</div>
+    return (<>
+        <div className="tipTitle">{title}</div>
+        <div className="tipSubtitle">{armorTypeLabel(a)}</div>
+        <div className="hr"/>
+
+        {has(def) && lineKV("Defense:", def)}
+        {nz(a?.block) && lineKV("Chance to Block:", `${n(a?.block)}%`)}
+        {nz(a?.maxSockets) && lineKV("Maximum Sockets:", n(a?.maxSockets))}
+        {has(a?.durability) && lineKV("Durability:", n(a?.durability))}
+
+        {hasRequirements ? (<>
             <div className="hr"/>
+            <div className="dropHeader">Requirements</div>
+            {nz(a?.requiredLevel) && lineKV("Required Level:", n(a?.requiredLevel), "req")}
+            {nz(a?.requiredStrength) && lineKV("Required Strength:", n(a?.requiredStrength), "req")}
+        </>) : null}
 
-            {has(def) && lineKV("Defense:", def)}
-            {nz(a?.block) && lineKV("Chance to Block:", `${n(a?.block)}%`)}
-            {nz(a?.maxSockets) && lineKV("Maximum Sockets:", n(a?.maxSockets))}
-            {has(a?.durability) && lineKV("Durability:", n(a?.durability))}
-
-            {hasRequirements ? (
-                <>
-                    <div className="hr"/>
-                    <div className="dropHeader">Requirements</div>
-                    {nz(a?.requiredLevel) && lineKV("Required Level:", n(a?.requiredLevel), "req")}
-                    {nz(a?.requiredStrength) && lineKV("Required Strength:", n(a?.requiredStrength), "req")}
-                </>
-            ) : null}
-
-            <div className="hr"/>
-            <div className="dropHeader">Additional item information</div>
-            {has(a?.itemTier) && lineKV("Item Tier:", n(a?.itemTier), "dim")}
-            {has(a?.level) && lineKV("Quality Level:", n(a?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
-            {lineKV("Code:", n(a?.code), "dim", TOOLTIPS_TEXT_MAP["code"])}
-            <TierLinks label="Tiers:" entries={tierEntries} onGo={onGoCode}/>
-            <UniquesPanel uniques={a?.uniques} onGoUnique={onGoUnique}/>
-        </>
-    );
+        <div className="hr"/>
+        <div className="dropHeader">Additional item information</div>
+        {has(a?.itemTier) && lineKV("Item Tier:", n(a?.itemTier), "dim")}
+        {has(a?.level) && lineKV("Quality Level:", n(a?.level), "", TOOLTIPS_TEXT_MAP["qualityLevel"])}
+        {lineKV("Code:", n(a?.code), "dim", TOOLTIPS_TEXT_MAP["code"])}
+        <TierLinks label="Tiers:" entries={tierEntries} onGo={onGoCode}/>
+        <UniquesPanel uniques={a?.uniques} onGoUnique={onGoUnique}/>
+    </>);
 }
 
 function RunewordTooltip({rw, onGoSacred, onLink}) {
@@ -1923,118 +1740,77 @@ function RunewordTooltip({rw, onGoSacred, onLink}) {
     const title = n(rw?.displayName) || n(rw?.runewordName) || "Runeword";
     const hasRequirements = rw?.requiredlevel > 0;
 
-    const runes = [
-        n(rw?.firstRuneDisplayName),
-        n(rw?.secondRuneDisplayName),
-        n(rw?.thirdRuneDisplayName),
-        n(rw?.fourthRuneDisplayName),
-        n(rw?.fifthRuneDisplayName),
-        n(rw?.sixthRuneDisplayName),
-    ].filter(Boolean);
+    const runes = [n(rw?.firstRuneDisplayName), n(rw?.secondRuneDisplayName), n(rw?.thirdRuneDisplayName), n(rw?.fourthRuneDisplayName), n(rw?.fifthRuneDisplayName), n(rw?.sixthRuneDisplayName),].filter(Boolean);
 
     const types = runewordAllTypes(rw);
-    const mods = Array.isArray(rw?.displayProperties)
-        ? rw.displayProperties.filter(
-            (x) => x != null && String(x).trim() !== ""
-        )
-        : [];
+    const mods = Array.isArray(rw?.displayProperties) ? rw.displayProperties.filter((x) => x != null && String(x).trim() !== "") : [];
 
     const rwSacreds = Array.isArray(rw?.sacreds) ? rw.sacreds : [];
 
-    return (
-        <>
-            <div className="tipTitle">{title}</div>
-            {types.length ? (
-                <div className="tipSubtitle">{types.join(" / ")}</div>
-            ) : null}
+    return (<>
+        <div className="tipTitle">{title}</div>
+        {types.length ? (<div className="tipSubtitle">{types.join(" / ")}</div>) : null}
 
+        <div className="hr"/>
+        {runes.length ? (<div className="runesDisplay">
+            <Tip text={String(TOOLTIPS_TEXT_MAP["runes"])}>
+                {runes.join(" · ")}
+            </Tip>
+        </div>) : null}
+
+        <div className="hr"/>
+        <div className="uniqueHeader">Properties</div>
+        {mods.length ? (mods.flatMap((m, i) => {
+            const raw = String(m ?? "");
+            const normalized = raw.replace(/\\n/g, "\n");
+            const lines = normalized
+                .split("\n")
+                .map((l) => l.trim())
+                .filter(Boolean);
+
+            return lines.map((line, j) => {
+                const cls = classForPropertyLine(line);
+                const key = `${i}-${j}`;
+                return (<div key={key} className={"runeModLine " + cls}>
+                    {renderInlineMarkdown(line, onLink)}
+                </div>);
+            });
+        })) : (<div className="line dim">No properties listed.</div>)}
+
+        {hasRequirements ? (<>
             <div className="hr"/>
-            {runes.length ? (
-                <div className="runesDisplay">
-                    <Tip text={String(TOOLTIPS_TEXT_MAP["runes"])}>
-                        {runes.join(" · ")}
-                    </Tip>
-                </div>
-            ) : null}
+            <div className="dropHeader">Requirements</div>
+            {nz(rw?.requiredlevel) && lineKV("Required Level:", n(rw?.requiredlevel), "req")}
+        </>) : null}
 
+        {rwSacreds.length ? (<>
             <div className="hr"/>
-            <div className="uniqueHeader">Properties</div>
-            {mods.length ? (
-                mods.flatMap((m, i) => {
-                    const raw = String(m ?? "");
-                    const normalized = raw.replace(/\\n/g, "\n");
-                    const lines = normalized
-                        .split("\n")
-                        .map((l) => l.trim())
-                        .filter(Boolean);
+            <div className="dropHeader">Sacreds</div>
+            {rwSacreds.map((s, idx) => {
+                const name = n(s?.sacredName);
+                const typesText = Array.isArray(s?.itemTypes) ? s.itemTypes.filter(Boolean).join(" / ") : "";
+                if (!name) return null;
 
-                    return lines.map((line, j) => {
-                        const cls = classForPropertyLine(line);
-                        const key = `${i}-${j}`;
-                        return (
-                            <div key={key} className={"runeModLine " + cls}>
-                                {renderInlineMarkdown(line, onLink)}
-                            </div>
-                        );
-                    });
-                })
-            ) : (
-                <div className="line dim">No properties listed.</div>
-            )}
-
-            {hasRequirements ? (
-                <>
-                    <div className="hr"/>
-                    <div className="dropHeader">Requirements</div>
-                    {nz(rw?.requiredlevel) &&
-                        lineKV("Required Level:", n(rw?.requiredlevel), "req")}
-                </>
-            ) : null}
-
-            {rwSacreds.length ? (
-                <>
-                    <div className="hr"/>
-                    <div className="dropHeader">Sacreds</div>
-                    {rwSacreds.map((s, idx) => {
-                        const name = n(s?.sacredName);
-                        const typesText = Array.isArray(s?.itemTypes)
-                            ? s.itemTypes.filter(Boolean).join(" / ")
-                            : "";
-                        if (!name) return null;
-
-                        return (
-                            <div key={`${idx}::${name}`} className="line goToLink">
-                                {onGoSacred ? (
-                                    <a
-                                        href="#"
-                                        className="d2link"
-                                        onClick={(ev) => {
-                                            ev.preventDefault();
-                                            onGoSacred(
-                                                name,
-                                                Array.isArray(s?.itemTypes) ? s.itemTypes : []
-                                            );
-                                        }}
-                                        title={`Go to sacred: ${name}`}
-                                    >
-                                        {name} {typesText ? `(${typesText})` : ""}
-                                    </a>
-                                ) : (
-                                    <span className="d2linkText">{name}</span>
-                                )}
-                            </div>
-                        );
-                    })}
-                </>
-            ) : null}
-        </>
-    );
+                return (<div key={`${idx}::${name}`} className="line goToLink">
+                    {onGoSacred ? (<a
+                        href="#"
+                        className="d2link"
+                        onClick={(ev) => {
+                            ev.preventDefault();
+                            onGoSacred(name, Array.isArray(s?.itemTypes) ? s.itemTypes : []);
+                        }}
+                        title={`Go to sacred: ${name}`}
+                    >
+                        {name} {typesText ? `(${typesText})` : ""}
+                    </a>) : (<span className="d2linkText">{name}</span>)}
+                </div>);
+            })}
+        </>) : null}
+    </>);
 }
 
 function useIsMobile(maxWidth = 980) {
-    const [isMobile, setIsMobile] = React.useState(
-        typeof window !== "undefined" ? window.innerWidth <= maxWidth : false
-    );
+    const [isMobile, setIsMobile] = React.useState(typeof window !== "undefined" ? window.innerWidth <= maxWidth : false);
 
     React.useEffect(() => {
         const handler = () => setIsMobile(window.innerWidth <= maxWidth);
@@ -2053,10 +1829,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
     // Local state
 
     // Normalised data coming from global filters/search
-    const all = React.useMemo(
-        () => (Array.isArray(data) ? data : []),
-        [data]
-    );
+    const all = React.useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
     // Whenever the underlying data changes (global filters / search),
     // reset to page 0 so we don't end up on an invalid page.
@@ -2118,17 +1891,13 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
             const va = getValue(a);
             const vb = getValue(b);
 
-            const bothNumbers =
-                typeof va === "number" && !Number.isNaN(va) &&
-                typeof vb === "number" && !Number.isNaN(vb);
+            const bothNumbers = typeof va === "number" && !Number.isNaN(va) && typeof vb === "number" && !Number.isNaN(vb);
 
             if (bothNumbers) {
                 return sortDir === "asc" ? va - vb : vb - va;
             }
 
-            return sortDir === "asc"
-                ? String(va).localeCompare(String(vb))
-                : String(vb).localeCompare(String(va));
+            return sortDir === "asc" ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
         });
 
         return arr;
@@ -2151,57 +1920,49 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
     // --- Loading / empty / mobile -------------------------------------------
 
     if (loading) {
-        return (
-            <div className="infoPanel">
-                <div className="infoHeader">
-                    <div className="infoTitle">Affixes</div>
-                </div>
-                <div className="meta">Loading affixes…</div>
+        return (<div className="infoPanel">
+            <div className="infoHeader">
+                <div className="infoTitle">Affixes</div>
             </div>
-        );
+            <div className="meta">Loading affixes…</div>
+        </div>);
     }
 
     if (error) {
-        return (
-            <div className="infoPanel">
-                <div className="infoHeader">
-                    <div className="infoTitle">Affixes</div>
-                </div>
-                <div className="meta">
-                    Failed to load affixes: {String(error.message || error)}
-                </div>
+        return (<div className="infoPanel">
+            <div className="infoHeader">
+                <div className="infoTitle">Affixes</div>
             </div>
-        );
+            <div className="meta">
+                Failed to load affixes: {String(error.message || error)}
+            </div>
+        </div>);
     }
 
     if (isMobile) {
-        return (
-            <div className="infoPanel">
-                <div className="infoHeader">
-                    <div className="infoTitle">Affixes</div>
-                </div>
-                <div
-                    className="emptyState"
-                    style={{padding: "16px", textAlign: "center"}}
-                >
-                    The Affixes table is not viewable on mobile.
-                    <br/>
-                    Please use a device with larger screen.
-                </div>
+        return (<div className="infoPanel">
+            <div className="infoHeader">
+                <div className="infoTitle">Affixes</div>
             </div>
-        );
+            <div
+                className="emptyState"
+                style={{padding: "16px", textAlign: "center"}}
+            >
+                The Affixes table is not viewable on mobile.
+                <br/>
+                Please use a device with larger screen.
+            </div>
+        </div>);
     }
 
     const total = sorted.length;
     if (!total) {
-        return (
-            <div className="infoPanel">
-                <div className="infoHeader">
-                    <div className="infoTitle">Affixes</div>
-                </div>
-                <div className="emptyState">No affixes match your filters.</div>
+        return (<div className="infoPanel">
+            <div className="infoHeader">
+                <div className="infoTitle">Affixes</div>
             </div>
-        );
+            <div className="emptyState">No affixes match your filters.</div>
+        </div>);
     }
 
     // --- Pagination (on *sorted* data) ---------------------------------------
@@ -2217,158 +1978,164 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
 
     // --- Render table --------------------------------------------------------
 
-    return (
-        <div className="infoPanel">
-            <div className="infoHeader">
-                <div className="infoTitle">Affixes</div>
-            </div>
+    return (<div className="infoPanel">
+        <div className="infoHeader">
+            <div className="infoTitle">Affixes</div>
+        </div>
 
-            <div className="affixTableWrapper">
-                {/* Pager above table */}
-                <div className="affixPager">
-                    <div className="affixPagerLeft">
+        <div className="affixTableWrapper">
+            {/* Pager above table */}
+            <div className="affixPager">
+                <div className="affixPagerLeft">
             <span>
               Showing {start + 1}–{Math.min(end, total)} of {total}
             </span>
-                    </div>
-                    <div className="affixPagerRight">
-                        <button
-                            type="button"
-                            className="btn ghost affixPagerBtn"
-                            onClick={goPrev}
-                            disabled={safePage === 0}
-                        >
-                            ‹ Prev
-                        </button>
-                        <span className="affixPagerInfo">
+                </div>
+                <div className="affixPagerRight">
+                    <button
+                        type="button"
+                        className="btn ghost affixPagerBtn"
+                        onClick={goPrev}
+                        disabled={safePage === 0}
+                    >
+                        ‹ Prev
+                    </button>
+                    <span className="affixPagerInfo">
               Page {safePage + 1} / {pageCount}
             </span>
-                        <button
-                            type="button"
-                            className="btn ghost affixPagerBtn"
-                            onClick={goNext}
-                            disabled={safePage === pageCount - 1}
-                        >
-                            Next ›
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        className="btn ghost affixPagerBtn"
+                        onClick={goNext}
+                        disabled={safePage === pageCount - 1}
+                    >
+                        Next ›
+                    </button>
                 </div>
+            </div>
 
-                {/* Scrollable table */}
-                <div className="affixTableScroll">
-                    <table className="affixTable">
-                        <thead>
-                        <tr>
-                            <th
-                                className="sortable"
-                                onClick={() => handleSort("name")}
-                            >
+            {/* Scrollable table */}
+            <div className="affixTableScroll">
+                <table className="affixTable">
+                    <thead>
+                    <tr>
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("name")}
+                        >
                   <span className="thLabel">
                     Name {sortArrowFor("name")}
                   </span>
-                            </th>
+                        </th>
 
-                            <th
-                                className="sortable"
-                                onClick={() => handleSort("attrs")}
-                            >
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("attrs")}
+                        >
                   <span className="thLabel">
                     Attributes {sortArrowFor("attrs")}
                   </span>
-                            </th>
+                        </th>
 
-                            <th
-                                className="sortable"
-                                onClick={() => handleSort("rare")}
-                            >
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("level")}
+                        >
+                  <span className="thLabel">
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixLevel"])}>Affix level</Tip> {sortArrowFor("level")}
+                  </span>
+                        </th>
+
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("rare")}
+                        >
                   <span className="thLabel">
                       <Tip text={String(TOOLTIPS_TEXT_MAP["affixRares"])}>Rares {sortArrowFor("rare")}</Tip>
                   </span>
 
-                            </th>
+                        </th>
 
-                            <th
-                                className="sortable"
-                                onClick={() => handleSort("freq")}
-                            >
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("freq")}
+                        >
                   <span className="thLabel">
                       <Tip text={String(TOOLTIPS_TEXT_MAP["affixFrequency"])}>Frequency</Tip> {sortArrowFor("freq")}
                   </span>
-                            </th>
+                        </th>
 
-                            <th
-                                className="sortable"
-                                onClick={() => handleSort("maxLevel")}
-                            >
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("maxLevel")}
+                        >
                   <span className="thLabel">
                       <Tip text={String(TOOLTIPS_TEXT_MAP["affixMaxLevel"])}>Max level</Tip> {sortArrowFor("maxLevel")}
                   </span>
-                            </th>
+                        </th>
 
-                            <th
-                                className="sortable"
-                                onClick={() => handleSort("types")}
-                            >
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("types")}
+                        >
                   <span className="thLabel">
                     Item types {sortArrowFor("types")}
                   </span>
-                            </th>
+                        </th>
 
-                            <th
-                                className="sortable"
-                                onClick={() => handleSort("excluded")}
-                            >
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("excluded")}
+                        >
                   <span className="thLabel">
                     Excluded item types {sortArrowFor("excluded")}
                   </span>
-                            </th>
+                        </th>
 
-                            <th
-                                className="sortable"
-                                onClick={() => handleSort("class")}
-                            >
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("class")}
+                        >
                   <span className="thLabel">
                     Class {sortArrowFor("class")}
                   </span>
-                            </th>
+                        </th>
 
-                            <th
-                                className="sortable"
-                                onClick={() => handleSort("reqLevel")}
-                            >
+                        <th
+                            className="sortable"
+                            onClick={() => handleSort("reqLevel")}
+                        >
                   <span className="thLabel">
                     Required level {sortArrowFor("reqLevel")}
                   </span>
-                            </th>
-                        </tr>
-                        </thead>
+                        </th>
+                    </tr>
+                    </thead>
 
-                        <tbody>
-                        {current.map((it, idx) => (
-                            <tr key={`${safePage}-${idx}-${it.id || it.name}`}>
-                                <td>{n(it?.name)}</td>
-                                <td>{affixDisplayString(it)}</td>
-                                <td>{it?.rare ? "Yes" : "No"}</td>
-                                <td>{has(it?.frequency) ? it.frequency : ""}</td>
-                                <td>{has(it?.maxLevel) ? it.maxLevel : ""}</td>
-                                <td>
-                                    {(it?.displayItemTypeNames || []).join(", ")}
-                                </td>
-                                <td>
-                                    {(it?.displayExcludedItemTypeNames || []).join(", ")}
-                                </td>
-                                <td>{n(it?.classDisplayName)}</td>
-                                <td>
-                                    {has(it?.requiredLevel) ? it.requiredLevel : ""}
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
+                    <tbody>
+                    {current.map((it, idx) => (<tr key={`${safePage}-${idx}-${it.id || it.name}`}>
+                        <td>{n(it?.name)}</td>
+                        <td>{affixDisplayString(it)}</td>
+                        <td>{has(it?.level) ? it.level : ""}</td>
+                        <td>{it?.rare ? "Yes" : "No"}</td>
+                        <td>{has(it?.frequency) ? it.frequency : ""}</td>
+                        <td>{has(it?.maxLevel) ? it.maxLevel : ""}</td>
+                        <td>
+                            {(it?.displayItemTypeNames || []).join(", ")}
+                        </td>
+                        <td>
+                            {(it?.displayExcludedItemTypeNames || []).join(", ")}
+                        </td>
+                        <td>{n(it?.classDisplayName)}</td>
+                        <td>
+                            {has(it?.requiredLevel) ? it.requiredLevel : ""}
+                        </td>
+                    </tr>))}
+                    </tbody>
+                </table>
             </div>
         </div>
-    );
+    </div>);
 }
 
 function UniqueTooltip({u, onLink}) {
@@ -2380,141 +2147,93 @@ function UniqueTooltip({u, onLink}) {
     const baseName = n(base?.displayName) || n(base?.name) || "";
     const baseTypePretty = uniqueBaseTypeLabelPretty(u) || uniqueBaseTypeLabel(u);
 
-    const mods = Array.isArray(u?.displayProperties)
-        ? u.displayProperties.filter((x) => x != null && String(x).trim() !== "")
-        : [];
+    const mods = Array.isArray(u?.displayProperties) ? u.displayProperties.filter((x) => x != null && String(x).trim() !== "") : [];
 
     const dropSource = u?.dropSource;
     const dropRate = u?.dropRate;
     const occurrenceChance = u?.occurrenceChance;
 
-    const hasDropSource =
-        dropSource !== null &&
-        dropSource !== undefined &&
-        String(dropSource).trim() !== "";
-    const hasDropRate =
-        dropRate !== null &&
-        dropRate !== undefined &&
-        String(dropRate).trim() !== "";
-    const hasOccurrenceChance =
-        occurrenceChance !== null &&
-        occurrenceChance !== undefined &&
-        String(occurrenceChance).trim() !== "";
+    const hasDropSource = dropSource !== null && dropSource !== undefined && String(dropSource).trim() !== "";
+    const hasDropRate = dropRate !== null && dropRate !== undefined && String(dropRate).trim() !== "";
+    const hasOccurrenceChance = occurrenceChance !== null && occurrenceChance !== undefined && String(occurrenceChance).trim() !== "";
     const hasDropInfo = hasDropSource || hasDropRate || hasOccurrenceChance;
 
     const itemType = getItemTypeForUnique(u);
     const requiredLevel = getRequiredLevelForUnique(u, itemType);
     const requiredDexterity = getRequiredDexterityForUnique(u, itemType);
     const requiredStrength = getRequiredStrengthForUnique(u, itemType);
-    const hasRequirements =
-        (requiredLevel > 0 && requiredStrength > 0) ||
-        (requiredLevel > 0 && requiredDexterity > 0) ||
-        (requiredLevel > 0 &&
-            requiredDexterity > 0 &&
-            requiredStrength > 0);
+    const hasRequirements = (requiredLevel > 0 && requiredStrength > 0) || (requiredLevel > 0 && requiredDexterity > 0) || (requiredLevel > 0 && requiredDexterity > 0 && requiredStrength > 0);
 
-    const creationOrb =
-        u?.itemTier === "Normal" || u?.itemTier === "Exceptional"
-            ? "Mythic Orb"
-            : "Divine Orb";
+    const creationOrb = u?.itemTier === "Normal" || u?.itemTier === "Exceptional" ? "Mythic Orb" : "Divine Orb";
 
-    return (
-        <>
-            <div className="tipUniqueTitle">{title}</div>
-            <div className="tipSubtitle">
-                {baseName}
-            </div>
+    return (<>
+        <div className="tipUniqueTitle">{title}</div>
+        <div className="tipSubtitle">
+            {baseName}
+        </div>
 
-            {u?.carryOne === "1" ? (
-                <div className="carryOne">
-                    You can have only one in your inventory and stash!
-                </div>
-            ) : null}
+        {u?.carryOne === "1" ? (<div className="carryOne">
+            You can have only one in your inventory and stash!
+        </div>) : null}
 
-            {has(u?.weaponBase) ? (
-                <>
-                    <div className="hr"/>
-                    {has(u?.displayOneHandDamage) &&
-                        lineKV("One hand damage:", n(u?.displayOneHandDamage), "")}
-                    {has(u?.displayTwoHandDamage) &&
-                        lineKV("Two hand damage:", n(u?.displayTwoHandDamage), "")}
-                </>
-            ) : null}
-
-            {has(u?.armorBase) ? (
-                <>
-                    <div className="hr"/>
-                    {has(u?.displayDefense) &&
-                        lineKV("Defense:", n(u?.displayDefense), "")}
-                </>
-            ) : null}
-
+        {has(u?.weaponBase) ? (<>
             <div className="hr"/>
-            <div className="uniqueHeader">Unique modifiers</div>
+            {has(u?.displayOneHandDamage) && lineKV("One hand damage:", n(u?.displayOneHandDamage), "")}
+            {has(u?.displayTwoHandDamage) && lineKV("Two hand damage:", n(u?.displayTwoHandDamage), "")}
+        </>) : null}
 
-            {mods.length ? (
-                mods.flatMap((m, idx) => {
-                    const raw = String(m ?? "");
-                    // support both "\n" and actual newlines
-                    const normalized = raw.replace(/\\n/g, "\n");
-                    const lines = normalized
-                        .split("\n")
-                        .map((l) => l.trim())
-                        .filter(Boolean);
+        {has(u?.armorBase) ? (<>
+            <div className="hr"/>
+            {has(u?.displayDefense) && lineKV("Defense:", n(u?.displayDefense), "")}
+        </>) : null}
 
-                    return lines.map((line, j) => {
-                        const cls = classForPropertyLine(line);
-                        const key = `${idx}-${j}`;
+        <div className="hr"/>
+        <div className="uniqueHeader">Unique modifiers</div>
 
-                        return (
-                            <div key={key} className={"uniqueMod " + cls}>
-                                {renderInlineMarkdown(line, onLink)}
-                            </div>
-                        );
-                    });
-                })
-            ) : (
-                <div className="line dim">No modifiers listed.</div>
-            )}
+        {mods.length ? (mods.flatMap((m, idx) => {
+            const raw = String(m ?? "");
+            // support both "\n" and actual newlines
+            const normalized = raw.replace(/\\n/g, "\n");
+            const lines = normalized
+                .split("\n")
+                .map((l) => l.trim())
+                .filter(Boolean);
 
-            {hasDropInfo ? (
-                <>
-                    <div className="hr"/>
-                    <div className="dropHeader">Drop information</div>
-                    {hasDropSource &&
-                        lineKV("Drop source:", String(dropSource), "")}
-                    {hasDropRate &&
-                        lineKV("Drop rate:", String(dropRate), "")}
-                    {hasOccurrenceChance &&
-                        lineKV("Occurrence chance:", String(occurrenceChance), "")}
-                </>
-            ) : null}
+            return lines.map((line, j) => {
+                const cls = classForPropertyLine(line);
+                const key = `${idx}-${j}`;
 
-            {hasRequirements ? (
-                <>
-                    <div className="hr"/>
-                    <div className="dropHeader">Requirements</div>
-                    {nz(requiredLevel) &&
-                        lineKV("Required Level:", n(requiredLevel), "req")}
-                    {nz(requiredStrength) &&
-                        lineKV("Required Strength:", n(requiredStrength), "req")}
-                    {nz(requiredDexterity) &&
-                        lineKV("Required Dexterity:", n(requiredDexterity), "req")}
-                </>
-            ) : null}
+                return (<div key={key} className={"uniqueMod " + cls}>
+                    {renderInlineMarkdown(line, onLink)}
+                </div>);
+            });
+        })) : (<div className="line dim">No modifiers listed.</div>)}
 
-            {u?.showCanBeCreatedWith === true ? (
-                <>
-                    <div className="hr"/>
-                    <div className="dropHeader">Crafting</div>
-                    <div className="line dim">
-                        You can create this unique with a{" "}
-                        <span className="highlight">{creationOrb}</span> on its base item.
-                    </div>
-                </>
-            ) : null}
-        </>
-    );
+        {hasDropInfo ? (<>
+            <div className="hr"/>
+            <div className="dropHeader">Drop information</div>
+            {hasDropSource && lineKV("Drop source:", String(dropSource), "")}
+            {hasDropRate && lineKV("Drop rate:", String(dropRate), "")}
+            {hasOccurrenceChance && lineKV("Occurrence chance:", String(occurrenceChance), "")}
+        </>) : null}
+
+        {hasRequirements ? (<>
+            <div className="hr"/>
+            <div className="dropHeader">Requirements</div>
+            {nz(requiredLevel) && lineKV("Required Level:", n(requiredLevel), "req")}
+            {nz(requiredStrength) && lineKV("Required Strength:", n(requiredStrength), "req")}
+            {nz(requiredDexterity) && lineKV("Required Dexterity:", n(requiredDexterity), "req")}
+        </>) : null}
+
+        {u?.showCanBeCreatedWith === true ? (<>
+            <div className="hr"/>
+            <div className="dropHeader">Crafting</div>
+            <div className="line dim">
+                You can create this unique with a{" "}
+                <span className="highlight">{creationOrb}</span> on its base item.
+            </div>
+        </>) : null}
+    </>);
 }
 
 function StaticDataPanel({data, loading, error, search, onLink}) {
@@ -2528,22 +2247,18 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
     };
 
     if (loading) {
-        return (
-            <div className="helpPanel">
-                <div className="helpBody">Loading data…</div>
-            </div>
-        );
+        return (<div className="helpPanel">
+            <div className="helpBody">Loading data…</div>
+        </div>);
     }
 
     if (error) {
-        return (
-            <div className="helpPanel">
-                <div className="helpBody">
-                    Failed to load <code>data</code>:{" "}
-                    {String(error.message || error)}
-                </div>
+        return (<div className="helpPanel">
+            <div className="helpBody">
+                Failed to load <code>data</code>:{" "}
+                {String(error.message || error)}
             </div>
-        );
+        </div>);
     }
 
     const all = Array.isArray(data) ? data : [];
@@ -2566,132 +2281,110 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
     }, [all, search]);
 
     if (!filtered.length) {
-        return (
-            <div className="helpPanel">
-                <div className="helpBody">
-                    <div className="emptyState">No cube recipes match your search.</div>
-                </div>
+        return (<div className="helpPanel">
+            <div className="helpBody">
+                <div className="emptyState">No cube recipes match your search.</div>
             </div>
-        );
+        </div>);
     }
 
-    return (
-        <>
-            {filtered.map((r, idx) => {
-                const id = r.id || `${r.type || "recipe"}-${idx}`;
-                const isOpen = openMap[id] ?? true;
-                const title = n(r.title) || `Recipe ${idx + 1}`;
-                const kind = n(r.type);
+    return (<>
+        {filtered.map((r, idx) => {
+            const id = r.id || `${r.type || "recipe"}-${idx}`;
+            const isOpen = openMap[id] ?? true;
+            const title = n(r.title) || `Recipe ${idx + 1}`;
+            const kind = n(r.type);
 
-                return (
-                    <div key={id} className="infoPanel" style={{marginBottom: 10}}>
-                        <div className="infoHeader">
-                            <div className="infoTitle" style={{fontSize: 18}}>
-                                {title}
-                                {kind && (
-                                    <span
-                                        style={{
-                                            fontSize: 14,
-                                            marginLeft: 8,
-                                            color: "var(--muted)",
-                                            textTransform: "none",
-                                            letterSpacing: 0,
-                                            fontWeight: 400,
-                                        }}
-                                    >
+            return (<div key={id} className="infoPanel" style={{marginBottom: 10}}>
+                <div className="infoHeader">
+                    <div className="infoTitle" style={{fontSize: 18}}>
+                        {title}
+                        {kind && (<span
+                            style={{
+                                fontSize: 14,
+                                marginLeft: 8,
+                                color: "var(--muted)",
+                                textTransform: "none",
+                                letterSpacing: 0,
+                                fontWeight: 400,
+                            }}
+                        >
                     · {kind}
-                  </span>
-                                )}
-                            </div>
-
-                            <button
-                                type="button"
-                                className="infoToggle"
-                                onClick={() => toggle(id)}
-                            >
-                                {isOpen ? "Hide" : "Show"}
-                            </button>
-                        </div>
-
-                        {isOpen && (
-                            <div className="infoBody cubeInfoBody">
-                                <Markdown text={r.text} onLink={onLink}/>
-                            </div>
-                        )}
+                  </span>)}
                     </div>
-                );
-            })}
-        </>
-    );
+
+                    <button
+                        type="button"
+                        className="infoToggle"
+                        onClick={() => toggle(id)}
+                    >
+                        {isOpen ? "Hide" : "Show"}
+                    </button>
+                </div>
+
+                {isOpen && (<div className="infoBody cubeInfoBody">
+                    <Markdown text={r.text} onLink={onLink}/>
+                </div>)}
+            </div>);
+        })}
+    </>);
 }
 
 function TabsBar({tab, setTab}) {
     const mainKeys = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds"];
     const secondaryKeys = ["cube", "changes", "damnation", "calculators"];
 
-    return (
-        <>
-            {/* Top row: main content tabs */}
-            <div className="tabsPanel">
-                <div className="tabsLeft">
-                    <div className="tabs">
-                        {mainKeys.map((key) => (
-                            <div
-                                key={key}
-                                className={"tab" + (tab === key ? " active" : "")}
-                                onClick={() => setTab(key)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) =>
-                                    (e.key === "Enter" || e.key === " ") && setTab(key)
-                                }
-                            >
-                                {TABS[key]}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                {/* keep an empty right side so layout matches existing styles */}
-                <div className="tabsRight"/>
-            </div>
-
-            {/* Second row: cube + changes on the left, help on the right */}
-            <div className="tabsPanel">
-                <div className="tabsLeft">
-                    <div className="tabs">
-                        {secondaryKeys.map((key) => (
-                            <div
-                                key={key}
-                                className={"tab" + (tab === key ? " active" : "")}
-                                onClick={() => setTab(key)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) =>
-                                    (e.key === "Enter" || e.key === " ") && setTab(key)
-                                }
-                            >
-                                {TABS[key]}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="tabsRight">
-                    <div
-                        className={"tab" + (tab === "help" ? " active" : "")}
-                        onClick={() => setTab("help")}
+    return (<>
+        {/* Top row: main content tabs */}
+        <div className="tabsPanel">
+            <div className="tabsLeft">
+                <div className="tabs">
+                    {mainKeys.map((key) => (<div
+                        key={key}
+                        className={"tab" + (tab === key ? " active" : "")}
+                        onClick={() => setTab(key)}
                         role="button"
                         tabIndex={0}
-                        onKeyDown={(e) =>
-                            (e.key === "Enter" || e.key === " ") && setTab("help")
-                        }
+                        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setTab(key)}
                     >
-                        {TABS.help}
-                    </div>
+                        {TABS[key]}
+                    </div>))}
                 </div>
             </div>
-        </>
-    );
+            {/* keep an empty right side so layout matches existing styles */}
+            <div className="tabsRight"/>
+        </div>
+
+        {/* Second row: cube + changes on the left, help on the right */}
+        <div className="tabsPanel">
+            <div className="tabsLeft">
+                <div className="tabs">
+                    {secondaryKeys.map((key) => (<div
+                        key={key}
+                        className={"tab" + (tab === key ? " active" : "")}
+                        onClick={() => setTab(key)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setTab(key)}
+                    >
+                        {TABS[key]}
+                    </div>))}
+                </div>
+            </div>
+
+            <div className="tabsRight">
+                <div
+                    className={"tab" + (tab === "help" ? " active" : "")}
+                    onClick={() => setTab("help")}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setTab("help")}
+                >
+                    {TABS.help}
+                </div>
+            </div>
+        </div>
+    </>);
 }
 
 
@@ -2724,25 +2417,21 @@ export default function App() {
     });
 
     const [infoOpenByTab, setInfoOpenByTab] = useState(() => ({
-        weapons: true,
-        armors: true,
-        uniques: true,
-        runewords: true,
-        sacreds: true,
+        weapons: true, armors: true, uniques: true, runewords: true, sacreds: true,
     }));
 
     const info = INFO_BY_TAB[tab] || {title: "About", text: ""};
     const infoOpen = !!infoOpenByTab[tab];
 
-    const dataset =
-        tab === "weapons" ? weapons :
-            tab === "armors" ? armors :
-                tab === "uniques" ? uniques :
-                    tab === "runewords" ? runewords :
-                        tab === "sacreds" ? sacreds :
-                            tab === "affixes" ? affixes :
-                                tab === "skills" ? skills :
-                                    weapons; // fallback
+    const dataset = tab === "weapons" ? weapons : tab === "armors" ? armors : tab === "uniques" ? uniques : tab === "runewords" ? runewords : tab === "sacreds" ? sacreds : tab === "affixes" ? affixes : tab === "skills" ? skills : weapons; // fallback
+
+    function toggleRuneFilter(rune) {
+        setSelectedRunes((prev) =>
+            prev.includes(rune)
+                ? prev.filter((x) => x !== rune)
+                : [...prev, rune]
+        );
+    }
 
     useEffect(() => {
         if (tab !== "cube") {
@@ -2770,8 +2459,7 @@ export default function App() {
             const parsed = JSON.parse(raw);
             if (parsed && typeof parsed === "object") {
                 setInfoOpenByTab((prev) => ({
-                    ...prev,
-                    ...parsed,
+                    ...prev, ...parsed,
                 }));
             }
         } catch (e) {
@@ -2792,6 +2480,9 @@ export default function App() {
     const [pendingSacredMatch, setPendingSacredMatch] = useState(null);
     const [highlightOnly, setHighlightOnly] = useState(false);
     const [affixTypeValue, setAffixTypeValue] = useState("");
+    const [runeCountValue, setRuneCountValue] = useState("");
+    const [selectedRunes, setSelectedRunes] = useState([]);
+    const [showRuneFilterBar, setShowRuneFilterBar] = useState(false);
 
     const items = dataset.data;
 
@@ -2799,87 +2490,81 @@ export default function App() {
         setTab("changelog");
     };
 
-    const handleMarkdownAppLink = React.useCallback(
-        ({tab: targetTab, name}) => {
-            const t = (targetTab || "").toLowerCase();
-            const label = (name || "").trim();
-            const hasName = !!label;
-            const needle = label.toLowerCase();
+    const handleMarkdownAppLink = React.useCallback(({tab: targetTab, name}) => {
+        const t = (targetTab || "").toLowerCase();
+        const label = (name || "").trim();
+        const hasName = !!label;
+        const needle = label.toLowerCase();
 
-            // --- Cube Recipes tab ---
-            if (t === "cube") {
-                setTab("cube");
-                if (hasName) {
-                    setCubeSearch(needle);
-                    if (cubeSearchInputRef.current) {
-                        cubeSearchInputRef.current.focus();
-                        cubeSearchInputRef.current.select();
-                    }
+        // --- Cube Recipes tab ---
+        if (t === "cube") {
+            setTab("cube");
+            if (hasName) {
+                setCubeSearch(needle);
+                if (cubeSearchInputRef.current) {
+                    cubeSearchInputRef.current.focus();
+                    cubeSearchInputRef.current.select();
                 }
-                // if no name → just jump to tab, keep existing cubeSearch as-is
-                return;
             }
+            // if no name → just jump to tab, keep existing cubeSearch as-is
+            return;
+        }
 
-            // --- SoE changes tab ---
-            if (t === "changes") {
-                setTab("changes");
-                if (hasName) {
-                    setChangesSearch(needle);
-                    if (changesSearchInputRef.current) {
-                        changesSearchInputRef.current.focus();
-                        changesSearchInputRef.current.select();
-                    }
+        // --- SoE changes tab ---
+        if (t === "changes") {
+            setTab("changes");
+            if (hasName) {
+                setChangesSearch(needle);
+                if (changesSearchInputRef.current) {
+                    changesSearchInputRef.current.focus();
+                    changesSearchInputRef.current.select();
                 }
-                return;
             }
+            return;
+        }
 
-            // --- Skills tab ---
-            if (t === "skills") {
-                setTab("skills");
-                if (hasName) {
-                    setSkillsSearch(needle);
-                    if (skillsSearchInputRef.current) {
-                        skillsSearchInputRef.current.focus();
-                        skillsSearchInputRef.current.select();
-                    }
+        // --- Skills tab ---
+        if (t === "skills") {
+            setTab("skills");
+            if (hasName) {
+                setSkillsSearch(needle);
+                if (skillsSearchInputRef.current) {
+                    skillsSearchInputRef.current.focus();
+                    skillsSearchInputRef.current.select();
                 }
-                // if no name → just jump to tab, keep existing skillsSearch as-is
-                return;
             }
+            // if no name → just jump to tab, keep existing skillsSearch as-is
+            return;
+        }
 
-            // --- item tabs (weapons / armors / uniques / runewords / sacreds) ---
-            if (!TAB_KEYS.includes(t)) return;
+        // --- item tabs (weapons / armors / uniques / runewords / sacreds) ---
+        if (!TAB_KEYS.includes(t)) return;
 
-            // If there's no name part, just jump to the tab and let normal
-            // "tab change" behavior reset filters etc.
-            if (!hasName) {
-                setTab(t);
-                return;
-            }
-
-            // Name present → full "go-to-item" behavior
-            skipFilterResetRef.current = true;
-            skipAutoIndexRef.current = true;
-
+        // If there's no name part, just jump to the tab and let normal
+        // "tab change" behavior reset filters etc.
+        if (!hasName) {
             setTab(t);
-            setSearch(needle);
-            setPendingLinkTarget({tab: t, name: needle});
-        },
-        []
-    );
+            return;
+        }
+
+        // Name present → full "go-to-item" behavior
+        skipFilterResetRef.current = true;
+        skipAutoIndexRef.current = true;
+
+        setTab(t);
+        setSearch(needle);
+        setPendingLinkTarget({tab: t, name: needle});
+    }, []);
 
 
     const typeOptions = useMemo(() => {
         if (!items.length) return [];
 
-        if (tab === "weapons")
-            return Array.from(new Set(items.map(weaponTypeForFilter).filter(Boolean))).sort();
+        if (tab === "weapons") return Array.from(new Set(items.map(weaponTypeForFilter).filter(Boolean))).sort();
 
-        if (tab === "armors")
-            return Array.from(new Set(items.map(armorTypeForFilter).filter(Boolean))).sort();
+        if (tab === "armors") return Array.from(new Set(items.map(armorTypeForFilter).filter(Boolean))).sort();
 
-        if (tab === "uniques")
-            return Array.from(new Set(items.map(uniqueBaseTypeLabel).filter(Boolean))).sort();
+        if (tab === "uniques") return Array.from(new Set(items.map(uniqueBaseTypeLabel).filter(Boolean))).sort();
 
         if (tab === "runewords") {
             const all = items.flatMap(runewordAllTypes);
@@ -2898,8 +2583,7 @@ export default function App() {
     const tierOptions = useMemo(() => {
         const tiers = Array.from(new Set(items.map((it) => n(it?.itemTier)).filter(Boolean)));
         return tiers.sort((a, b) => {
-            const an = Number(a),
-                bn = Number(b);
+            const an = Number(a), bn = Number(b);
             if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
             return a.localeCompare(b);
         });
@@ -2921,6 +2605,8 @@ export default function App() {
         setHellforgedValue(false);
         setHighlightOnly(false);
         setAffixTypeValue("");
+        setRuneCountValue("");
+        setSelectedRunes([]);
 
         setActiveIndex(0);
     }, [tab]);
@@ -2930,11 +2616,7 @@ export default function App() {
 
         // 1) Apply all existing filters first
         const base = items.filter((it) => {
-            const name = (
-                n(it?.displayName) ||
-                n(it?.runewordName) ||
-                n(it?.name)
-            ).toLowerCase();
+            const name = (n(it?.displayName) || n(it?.runewordName) || n(it?.name)).toLowerCase();
 
             const searchText = buildSearchTextForItem(tab, it);
 
@@ -2973,7 +2655,7 @@ export default function App() {
                     return false;
                 }
 
-                if(hellforgedValue && !isHellforged(it)) {
+                if (hellforgedValue && !isHellforged(it)) {
                     return false;
                 }
 
@@ -2990,6 +2672,18 @@ export default function App() {
 
                 if (highlightOnly && !isHighlightedItem(it)) {
                     return false;
+                }
+
+                if (runeCountValue) {
+                    if (runewordRuneCount(it) !== Number(runeCountValue)) return false;
+                }
+
+                if (selectedRunes.length) {
+                    const itemRunes = runewordRunes(it).map((r) => r.toLowerCase());
+
+                    const hasAllSelectedRunes = selectedRunes.every((r) => itemRunes.includes(r.toLowerCase()));
+
+                    if (!hasAllSelectedRunes) return false;
                 }
             }
 
@@ -3035,16 +2729,8 @@ export default function App() {
                 if (typeCmp !== 0) return typeCmp;
 
                 // Tie-break by name for stable ordering
-                const aName = (
-                    n(a?.name) ||
-                    n(a?.displayName) ||
-                    ""
-                ).toLowerCase();
-                const bName = (
-                    n(b?.name) ||
-                    n(b?.displayName) ||
-                    ""
-                ).toLowerCase();
+                const aName = (n(a?.name) || n(a?.displayName) || "").toLowerCase();
+                const bName = (n(b?.name) || n(b?.displayName) || "").toLowerCase();
 
                 return aName.localeCompare(bName);
             });
@@ -3054,7 +2740,7 @@ export default function App() {
 
         // 3) Other tabs: just return filtered list as before
         return base;
-    }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, hellforgedValue, highlightOnly, affixTypeValue]);
+    }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, hellforgedValue, highlightOnly, affixTypeValue, runeCountValue, selectedRunes]);
 
     useEffect(() => {
         if (!pendingLinkTarget) return;
@@ -3064,11 +2750,7 @@ export default function App() {
         const targetName = pendingLinkTarget.name;
 
         const idx = filtered.findIndex((it) => {
-            const nm = (
-                n(it?.displayName) ||
-                n(it?.runewordName) ||
-                n(it?.name)
-            ).toLowerCase();
+            const nm = (n(it?.displayName) || n(it?.runewordName) || n(it?.name)).toLowerCase();
 
             return nm === targetName;
         });
@@ -3133,9 +2815,7 @@ export default function App() {
 
     function jumpToSacred(sacredName, itemTypes) {
         const name = n(sacredName);
-        const types = Array.isArray(itemTypes)
-            ? itemTypes.map((t) => n(t).toLowerCase()).filter(Boolean)
-            : [];
+        const types = Array.isArray(itemTypes) ? itemTypes.map((t) => n(t).toLowerCase()).filter(Boolean) : [];
 
         if (!name && !types.length) return;
 
@@ -3152,8 +2832,7 @@ export default function App() {
         setHighlightOnly(false);
 
         setPendingSacredMatch({
-            name: name.toLowerCase(),
-            types,
+            name: name.toLowerCase(), types,
         });
     }
 
@@ -3232,9 +2911,7 @@ export default function App() {
 
             if (e.key === "ArrowDown") {
                 e.preventDefault();
-                setActiveIndex((i) =>
-                    Math.min(i + 1, Math.max(filtered.length - 1, 0))
-                );
+                setActiveIndex((i) => Math.min(i + 1, Math.max(filtered.length - 1, 0)));
                 return;
             }
 
@@ -3251,8 +2928,7 @@ export default function App() {
                 if (idx === -1) return;
 
                 const dir = e.key === "ArrowRight" ? 1 : -1;
-                const next =
-                    (idx + dir + TAB_KEYS.length) % TAB_KEYS.length;
+                const next = (idx + dir + TAB_KEYS.length) % TAB_KEYS.length;
 
                 setTab(TAB_KEYS[next]);
             }
@@ -3318,14 +2994,7 @@ export default function App() {
 
         if (tab === "runewords") {
             return (it) => {
-                const runes = [
-                    n(it?.firstRune),
-                    n(it?.secondRune),
-                    n(it?.thirdRune),
-                    n(it?.fourthRune),
-                    n(it?.fifthRune),
-                    n(it?.sixthRune),
-                ].filter(Boolean);
+                const runes = [n(it?.firstRune), n(it?.secondRune), n(it?.thirdRune), n(it?.fourthRune), n(it?.fifthRune), n(it?.sixthRune),].filter(Boolean);
 
                 const count = runes.length ? `${runes.length} runes` : "";
                 const props = Array.isArray(it?.displayProperties) ? it.displayProperties.filter(Boolean).length : 0;
@@ -3336,14 +3005,9 @@ export default function App() {
         if (tab === "sacreds") {
             return (it) => {
                 const ing = sacredIngredients(it);
-                const map = it?.propertiesByItemType && typeof it.propertiesByItemType === "object"
-                    ? it.propertiesByItemType
-                    : {};
+                const map = it?.propertiesByItemType && typeof it.propertiesByItemType === "object" ? it.propertiesByItemType : {};
                 const typeCount = Object.keys(map).length;
-                return [
-                    ing.length ? `${ing.length} inputs` : "",
-                    typeCount ? `${typeCount} type variants` : "",
-                ].filter(Boolean).join(" • ");
+                return [ing.length ? `${ing.length} inputs` : "", typeCount ? `${typeCount} type variants` : "",].filter(Boolean).join(" • ");
             };
         }
 
@@ -3357,282 +3021,295 @@ export default function App() {
     }, [tab]);
 
     const title = getTitleByTab(tab);
-    const countLabel = dataset.loading
-        ? "Loading…"
-        : dataset.error
-            ? `Error: ${dataset.error.message}`
-            : `${filtered.length} items`;
+    const countLabel = dataset.loading ? "Loading…" : dataset.error ? `Error: ${dataset.error.message}` : `${filtered.length} items`;
 
     const showSockets = tab === "weapons" || tab === "armors";
-    const typePlaceholder =
-        tab === "uniques" ? "All base types" :
-            (tab === "runewords" || tab === "sacreds") ? "All item types" :
-                "All types";
+    const typePlaceholder = tab === "uniques" ? "All base types" : (tab === "runewords" || tab === "sacreds") ? "All item types" : "All types";
 
-    return (
-        <div className="appRoot">
-            <div className="wrap">
-                <TabsBar tab={tab} setTab={setTab}/>
+    return (<div className="appRoot">
+        <div className="wrap">
+            <TabsBar tab={tab} setTab={setTab}/>
 
 
-                {tab === "help" ? (
-                    <HelpPanel/>
-                ) : tab === "calculators" ? (
-                    <>
-                        <div className="calcWide">
-                            <div className="panels">
-                                <AuraEffectCalculator/>
-                                <CurseEffectCalculator/>
+            {tab === "help" ? (<HelpPanel/>) : tab === "calculators" ? (<>
+                <div className="calcWide">
+                    <div className="panels">
+                        <AuraEffectCalculator/>
+                        <CurseEffectCalculator/>
+                    </div>
+                </div>
+            </>) : tab === "cube" ? (<>
+                <div className="filtersStack">
+                    <div className="filtersPanel">
+                        <input
+                            type="text"
+                            ref={cubeSearchInputRef}
+                            value={cubeSearch}
+                            onChange={(e) => setCubeSearch(e.target.value)}
+                            className="searchBar"
+                            placeholder="Search cube recipes…"
+                        />
+                    </div>
+                </div>
+                <StaticDataPanel
+                    data={cube.data}
+                    loading={cube.loading}
+                    error={cube.error}
+                    search={cubeSearch}
+                    onLink={handleMarkdownAppLink}
+                />
+            </>) : tab === "skills" ? (<>
+                <div className="filtersStack">
+                    <div className="filtersPanel">
+                        <input
+                            type="text"
+                            ref={skillsSearchInputRef}
+                            value={skillsSearch}
+                            onChange={(e) => setSkillsSearch(e.target.value)}
+                            className="searchBar"
+                            placeholder="Search skills…"
+                        />
+                    </div>
+                </div>
+                <StaticDataPanel
+                    data={skills.data}
+                    loading={skills.loading}
+                    error={skills.error}
+                    search={skillsSearch}
+                    onLink={handleMarkdownAppLink}
+                />
+            </>) : tab === "affixes" ? (<>
+                <div className="filtersStack">
+                    <FiltersBar
+                        search={search}
+                        setSearch={setSearch}
+                        typeValue={typeValue}
+                        setTypeValue={setTypeValue}
+                        tierValue={tierValue}
+                        setTierValue={setTierValue}
+                        socketsValue={socketsValue}
+                        setSocketsValue={setSocketsValue}
+                        uberValue={uberValue}
+                        setUberValue={setUberValue}
+                        hellforgedValue={hellforgedValue}
+                        setHellforgedValue={setHellforgedValue}
+                        types={typeOptions}
+                        tiers={tierOptions}
+                        showSockets={showSockets}
+                        showUber={tab === "uniques"}
+                        typePlaceholder={typePlaceholder}
+                        searchInputRef={searchInputRef}
+                        showTier={tab !== "runewords" && tab !== "sacreds" && tab !== "affixes"}
+                        showHighlight={tab === "uniques" || tab === "runewords" || tab === "weapons" || tab === "armors"}
+                        highlightOnly={highlightOnly}
+                        setHighlightOnly={setHighlightOnly}
+                        showAffixType={tab === "affixes"}
+                        affixTypeValue={affixTypeValue}
+                        setAffixTypeValue={setAffixTypeValue}
+                        showHellforged={tab === "uniques"}
+                    />
+                    <InfoPanel
+                        title={info.title}
+                        markdownText={info.text}
+                        isOpen={infoOpen}
+                        onLink={handleMarkdownAppLink}
+                        onToggle={() => setInfoOpenByTab((prev) => {
+                            const next = {...prev, [tab]: !prev[tab]};
+                            try {
+                                window.localStorage.setItem(INFO_OPEN_STORAGE_KEY, JSON.stringify(next));
+                            } catch (e) {
+                                console.warn("Failed to save info panel state", e);
+                            }
+                            return next;
+                        })}
+                    />
+                </div>
+                <AffixesPanel
+                    data={filtered}
+                    loading={affixes.loading}
+                    error={affixes.error}
+                    sort={affixSort}
+                    onChangeSort={setAffixSort}
+                />
+            </>) : tab === "damnation" ? (<>
+                <StaticDataPanel
+                    data={damnation.data}
+                    loading={damnation.loading}
+                    error={damnation.error}
+                    onLink={handleMarkdownAppLink}
+                />
+            </>) : tab === "changes" ? (<>
+                <div className="filtersStack">
+                    <div className="filtersPanel">
+                        <input
+                            type="text"
+                            ref={changesSearchInputRef}
+                            value={changesSearch}
+                            onChange={(e) => setChangesSearch(e.target.value)}
+                            className="searchBar"
+                            placeholder="Search SoE changes…"
+                        />
+                    </div>
+                </div>
+                <StaticDataPanel
+                    data={standard.data}
+                    loading={standard.loading}
+                    error={standard.error}
+                    search={changesSearch}
+                    onLink={handleMarkdownAppLink}
+                />
+            </>) : tab === "changelog" ? (<>
+                <StaticDataPanel
+                    data={changelog.data}
+                    loading={changelog.loading}
+                    error={changelog.error}
+                />
+            </>) : (<>
+                <div className="filtersStack">
+                    <FiltersBar
+                        search={search}
+                        setSearch={setSearch}
+                        typeValue={typeValue}
+                        setTypeValue={setTypeValue}
+                        tierValue={tierValue}
+                        setTierValue={setTierValue}
+                        socketsValue={socketsValue}
+                        setSocketsValue={setSocketsValue}
+                        uberValue={uberValue}
+                        setUberValue={setUberValue}
+                        hellforgedValue={hellforgedValue}
+                        setHellforgedValue={setHellforgedValue}
+                        types={typeOptions}
+                        tiers={tierOptions}
+                        showSockets={showSockets}
+                        showUber={tab === "uniques"}
+                        showHellforged={tab === "uniques"}
+                        typePlaceholder={typePlaceholder}
+                        searchInputRef={searchInputRef}
+                        showTier={tab !== "runewords" && tab !== "sacreds"}
+                        showHighlight={tab === "uniques" || tab === "runewords" || tab === "weapons" || tab === "armors"}
+                        highlightOnly={highlightOnly}
+                        setHighlightOnly={setHighlightOnly}
+                        showRuneCount={tab === "runewords"}
+                        runeCountValue={runeCountValue}
+                        setRuneCountValue={setRuneCountValue}
+                    />
+                    {tab === "runewords" && (
+                        <div className="runeFilterPanel">
+                            <div className="runeFilterHeader">
+                                <div className="runeFilterTitle">
+                                    Rune Filter
+                                    {selectedRunes.length ? ` (${selectedRunes.length})` : ""}
+                                </div>
+
+                                <div className="runeFilterActions">
+                                    {selectedRunes.length > 0 && (
+                                        <button
+                                            type="button"
+                                            className="btn runeFilterClear"
+                                            onClick={() => setSelectedRunes([])}
+                                        >
+                                            Clear
+                                        </button>
+                                    )}
+
+                                    <button
+                                        type="button"
+                                        className="infoToggle"
+                                        onClick={() => setShowRuneFilterBar((v) => !v)}
+                                    >
+                                        {showRuneFilterBar ? "Hide" : "Show"}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </>
-                ) : tab === "cube" ? (
-                    <>
-                        <div className="filtersStack">
-                            <div className="filtersPanel">
-                                <input
-                                    type="text"
-                                    ref={cubeSearchInputRef}
-                                    value={cubeSearch}
-                                    onChange={(e) => setCubeSearch(e.target.value)}
-                                    className="searchBar"
-                                    placeholder="Search cube recipes…"
-                                />
-                            </div>
-                        </div>
-                        <StaticDataPanel
-                            data={cube.data}
-                            loading={cube.loading}
-                            error={cube.error}
-                            search={cubeSearch}
-                            onLink={handleMarkdownAppLink}
-                        />
-                    </>
-                ) : tab === "skills" ? (
-                    <>
-                        <div className="filtersStack">
-                            <div className="filtersPanel">
-                                <input
-                                    type="text"
-                                    ref={skillsSearchInputRef}
-                                    value={skillsSearch}
-                                    onChange={(e) => setSkillsSearch(e.target.value)}
-                                    className="searchBar"
-                                    placeholder="Search skills…"
-                                />
-                            </div>
-                        </div>
-                        <StaticDataPanel
-                            data={skills.data}
-                            loading={skills.loading}
-                            error={skills.error}
-                            search={skillsSearch}
-                            onLink={handleMarkdownAppLink}
-                        />
-                    </>
-                ) : tab === "affixes" ? (
-                    <>
-                        <div className="filtersStack">
-                            <FiltersBar
-                                search={search}
-                                setSearch={setSearch}
-                                typeValue={typeValue}
-                                setTypeValue={setTypeValue}
-                                tierValue={tierValue}
-                                setTierValue={setTierValue}
-                                socketsValue={socketsValue}
-                                setSocketsValue={setSocketsValue}
-                                uberValue={uberValue}
-                                setUberValue={setUberValue}
-                                hellforgedValue={hellforgedValue}
-                                setHellforgedValue={setHellforgedValue}
-                                types={typeOptions}
-                                tiers={tierOptions}
-                                showSockets={showSockets}
-                                showUber={tab === "uniques"}
-                                typePlaceholder={typePlaceholder}
-                                searchInputRef={searchInputRef}
-                                showTier={tab !== "runewords" && tab !== "sacreds" && tab !== "affixes"}
-                                showHighlight={tab === "uniques" || tab === "runewords" || tab === "weapons" || tab === "armors"}
-                                highlightOnly={highlightOnly}
-                                setHighlightOnly={setHighlightOnly}
-                                showAffixType={tab === "affixes"}
-                                affixTypeValue={affixTypeValue}
-                                setAffixTypeValue={setAffixTypeValue}
-                                showHellforged={tab === "uniques"}
-                            />
-                            <InfoPanel
-                                title={info.title}
-                                markdownText={info.text}
-                                isOpen={infoOpen}
-                                onLink={handleMarkdownAppLink}
-                                onToggle={() =>
-                                    setInfoOpenByTab((prev) => {
-                                        const next = {...prev, [tab]: !prev[tab]};
-                                        try {
-                                            window.localStorage.setItem(
-                                                INFO_OPEN_STORAGE_KEY,
-                                                JSON.stringify(next)
-                                            );
-                                        } catch (e) {
-                                            console.warn("Failed to save info panel state", e);
-                                        }
-                                        return next;
-                                    })
-                                }
-                            />
-                        </div>
-                        <AffixesPanel
-                            data={filtered}
-                            loading={affixes.loading}
-                            error={affixes.error}
-                            sort={affixSort}
-                            onChangeSort={setAffixSort}
-                        />
-                    </>
-                ) : tab === "damnation" ? (
-                    <>
-                        <StaticDataPanel
-                            data={damnation.data}
-                            loading={damnation.loading}
-                            error={damnation.error}
-                            onLink={handleMarkdownAppLink}
-                        />
-                    </>
-                ) : tab === "changes" ? (
-                    <>
-                        <div className="filtersStack">
-                            <div className="filtersPanel">
-                                <input
-                                    type="text"
-                                    ref={changesSearchInputRef}
-                                    value={changesSearch}
-                                    onChange={(e) => setChangesSearch(e.target.value)}
-                                    className="searchBar"
-                                    placeholder="Search SoE changes…"
-                                />
-                            </div>
-                        </div>
-                        <StaticDataPanel
-                            data={standard.data}
-                            loading={standard.loading}
-                            error={standard.error}
-                            search={changesSearch}
-                            onLink={handleMarkdownAppLink}
-                        />
-                    </>
-                ) : tab === "changelog" ? (
-                    <>
-                        <StaticDataPanel
-                            data={changelog.data}
-                            loading={changelog.loading}
-                            error={changelog.error}
-                        />
-                    </>
-                ) : (
-                    <>
-                        <div className="filtersStack">
-                            <FiltersBar
-                                search={search}
-                                setSearch={setSearch}
-                                typeValue={typeValue}
-                                setTypeValue={setTypeValue}
-                                tierValue={tierValue}
-                                setTierValue={setTierValue}
-                                socketsValue={socketsValue}
-                                setSocketsValue={setSocketsValue}
-                                uberValue={uberValue}
-                                setUberValue={setUberValue}
-                                hellforgedValue={hellforgedValue}
-                                setHellforgedValue={setHellforgedValue}
-                                types={typeOptions}
-                                tiers={tierOptions}
-                                showSockets={showSockets}
-                                showUber={tab === "uniques"}
-                                showHellforged={tab === "uniques"}
-                                typePlaceholder={typePlaceholder}
-                                searchInputRef={searchInputRef}
-                                showTier={tab !== "runewords" && tab !== "sacreds"}
-                                showHighlight={tab === "uniques" || tab === "runewords" || tab === "weapons" || tab === "armors"}
-                                highlightOnly={highlightOnly}
-                                setHighlightOnly={setHighlightOnly}
-                            />
-                            <InfoPanel
-                                title={info.title}
-                                markdownText={info.text}
-                                isOpen={infoOpen}
-                                onLink={handleMarkdownAppLink}
-                                onToggle={() =>
-                                    setInfoOpenByTab((prev) => {
-                                        const next = {...prev, [tab]: !prev[tab]};
-                                        try {
-                                            window.localStorage.setItem(
-                                                INFO_OPEN_STORAGE_KEY,
-                                                JSON.stringify(next)
-                                            );
-                                        } catch (e) {
-                                            console.warn("Failed to save info panel state", e);
-                                        }
-                                        return next;
-                                    })
-                                }
-                            />
-                        </div>
 
-                        <ListPanel
-                            tab={tab}
-                            title={title}
-                            countLabel={countLabel}
-                            items={filtered}
-                            activeIndex={activeIndex}
-                            setActiveIndex={setActiveIndex}
-                            subLabel={subLabel}
-                            tinyLabel={tinyLabel}
-                        />
+                            {showRuneFilterBar && (
+                                <div className="runeGrid">
+                                    {ALL_RUNES.map((rune) => {
+                                        const active = selectedRunes.includes(rune);
 
-                        <TooltipShell>
-                            {tab === "weapons" && (
-                                <WeaponTooltip
-                                    w={activeItem}
-                                    onGoCode={jumpToCode}
-                                    onGoUnique={jumpToUnique}
-                                />
+                                        return (
+                                            <button
+                                                key={rune}
+                                                type="button"
+                                                className={`runeChip${active ? " active" : ""}`}
+                                                onClick={() => toggleRuneFilter(rune)}
+                                            >
+                                                <img src={RuneIcon} alt="" className="runeChipIcon"/>
+                                                <span>{rune}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             )}
+                        </div>
+                    )}
+                    <InfoPanel
+                        title={info.title}
+                        markdownText={info.text}
+                        isOpen={infoOpen}
+                        onLink={handleMarkdownAppLink}
+                        onToggle={() => setInfoOpenByTab((prev) => {
+                            const next = {...prev, [tab]: !prev[tab]};
+                            try {
+                                window.localStorage.setItem(INFO_OPEN_STORAGE_KEY, JSON.stringify(next));
+                            } catch (e) {
+                                console.warn("Failed to save info panel state", e);
+                            }
+                            return next;
+                        })}
+                    />
+                </div>
 
-                            {tab === "runewords" && <RunewordTooltip rw={activeItem} onGoSacred={jumpToSacred}
-                                                                     onLink={handleMarkdownAppLink}/>}
+                <ListPanel
+                    tab={tab}
+                    title={title}
+                    countLabel={countLabel}
+                    items={filtered}
+                    activeIndex={activeIndex}
+                    setActiveIndex={setActiveIndex}
+                    subLabel={subLabel}
+                    tinyLabel={tinyLabel}
+                />
 
-                            {tab === "armors" && (
-                                <ArmorTooltip
-                                    a={activeItem}
-                                    onGoCode={jumpToCode}
-                                    onGoUnique={jumpToUnique}
-                                />
-                            )}
-                            {tab === "uniques" && <UniqueTooltip u={activeItem} onLink={handleMarkdownAppLink}/>}
-                            {tab === "sacreds" && <SacredTooltip s={activeItem} onLink={handleMarkdownAppLink}/>}
-                        </TooltipShell>
-                    </>)}
-            </div>
+                <TooltipShell>
+                    {tab === "weapons" && (<WeaponTooltip
+                        w={activeItem}
+                        onGoCode={jumpToCode}
+                        onGoUnique={jumpToUnique}
+                    />)}
 
-            <footer className="footer">
-                <div className="footerInner">
+                    {tab === "runewords" && <RunewordTooltip rw={activeItem} onGoSacred={jumpToSacred}
+                                                             onLink={handleMarkdownAppLink}/>}
+
+                    {tab === "armors" && (<ArmorTooltip
+                        a={activeItem}
+                        onGoCode={jumpToCode}
+                        onGoUnique={jumpToUnique}
+                    />)}
+                    {tab === "uniques" && <UniqueTooltip u={activeItem} onLink={handleMarkdownAppLink}/>}
+                    {tab === "sacreds" && <SacredTooltip s={activeItem} onLink={handleMarkdownAppLink}/>}
+                </TooltipShell>
+            </>)}
+        </div>
+
+        <footer className="footer">
+            <div className="footerInner">
                     <span className="footerLeft">by <a className="footerGitLink" target="_blank"
                                                        href="https://github.com/Lukaszpg">MindH1ve</a></span>
 
-                    <span
-                        className="footerRight"
-                        onClick={handleVersionClick}
-                        style={{cursor: "pointer"}}
-                    >Parser version: v{PARSER_VERSION}</span>
+                <span
+                    className="footerRight"
+                    onClick={handleVersionClick}
+                    style={{cursor: "pointer"}}
+                >Parser version: v{PARSER_VERSION}</span>
 
-                    <span
-                        className="footerRight"
-                        onClick={handleVersionClick}
-                        style={{cursor: "pointer"}}
-                    >UI version: v{APP_VERSION}</span>
-                </div>
-            </footer>
-        </div>
-    );
+                <span
+                    className="footerRight"
+                    onClick={handleVersionClick}
+                    style={{cursor: "pointer"}}
+                >UI version: v{APP_VERSION}</span>
+            </div>
+        </footer>
+    </div>);
 }
