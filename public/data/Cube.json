@@ -122,17 +122,6 @@
 		]
 	},
 	{
-		"id":"infernal-crucible",
-		"title":"Infernal Crucible recipes",
-		"text": 
-		[
-			"- Infernal Crucible gives three random stacks of three uber materials after cubing twice",
-			"- Infernal Crucible can be influenced to give certain material",
-			"- Example: If you would like to receive more Splinter of the Void, then use the recipe `Infernal Crucible` + `Splinter of The Void` = `Influenced Infernal Crucible`",
-			"- In the above example, one `Splinter of the Void` will be consumed, but you will receive three in return along with other uber crafting materials"
-		]
-	},
-	{
 		"id":"rune-downgrading",
 		"title":"Rune downgrading recipes",
 		"text": 
