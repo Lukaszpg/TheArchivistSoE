@@ -308,9 +308,7 @@ function isUberUnique(u) {
 }
 
 function isHellforged(u) {
-    const text = (n(u?.displayName) || n(u?.name)).toLowerCase();
-
-    return text.includes("hellforged");
+    return u?.hellforged;
 }
 
 function getItemIconUrl(tab, item) {
@@ -2209,7 +2207,7 @@ function UniqueTooltip({u, onLink}) {
             });
         })) : (<div className="line dim">No modifiers listed.</div>)}
 
-        {hasDropInfo ? (<>
+        {hasDropInfo && !u?.hellforged ? (<>
             <div className="hr"/>
             <div className="dropHeader">Drop information</div>
             {hasDropSource && lineKV("Drop source:", String(dropSource), "")}
@@ -2225,12 +2223,20 @@ function UniqueTooltip({u, onLink}) {
             {nz(requiredDexterity) && lineKV("Required Dexterity:", n(requiredDexterity), "req")}
         </>) : null}
 
-        {u?.showCanBeCreatedWith === true ? (<>
+        {u?.showCanBeCreatedWith === true && !u?.hellforged ? (<>
             <div className="hr"/>
             <div className="dropHeader">Crafting</div>
             <div className="line dim">
                 You can create this unique with a{" "}
                 <span className="highlight">{creationOrb}</span> on its base item.
+            </div>
+        </>) : null}
+
+        {u?.hellforged ? (<>
+            <div className="hr"/>
+            <div className="dropHeader">Crafting</div>
+            <div className="line dim">
+                You can create this unique with a special Infernal Kiln Cube Recipes. Check Cube recipes tab above.
             </div>
         </>) : null}
     </>);
