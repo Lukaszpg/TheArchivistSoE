@@ -12,7 +12,7 @@
     "title": "Frailty",
     "text": [
       "Frailty is a new aura that reduces enemy physical resistance: ",
-      "- Reduces enemy physical resistance - starts at 10% and receives 1% additional reduction per level",
+      "- Reduces enemy physical resistance - starts at 15% and receives 1% additional reduction per level",
       "- Reduces enemy defense - min. 25%, max 90%",
       "- Can break immunities"
     ]
