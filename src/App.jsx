@@ -666,7 +666,13 @@ function buildSearchTextForItem(tab, it) {
     }
 
     if (tab === "corruptions") {
-        return n(it?.displayName).toLowerCase();
+        const name = n(it?.displayName);
+
+        const props = Array.isArray(it?.corruptionProperties)
+            ? it.corruptionProperties.join(" ")
+            : "";
+
+        return `${name} ${props}`.toLowerCase();
     }
 
     if (tab === "affixes") {
