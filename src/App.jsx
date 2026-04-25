@@ -58,7 +58,7 @@ const ALL_RUNES = ["El", "Eld", "Tir", "Nef", "Eth", "Ith", "Tal", "Ral", "Ort",
 
 const PROP_HIGHLIGHT_RULES = [{test: /corrupted/i, className: "propRed"},];
 
-const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds", "corruptions", "cube", "changes", "help"];
+const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds", "corruptions", "cube", "changes", "damnation", "calculators", "help"];
 
 const WEAPON_ICON_MAP = {
     sword: SwordIcon,
