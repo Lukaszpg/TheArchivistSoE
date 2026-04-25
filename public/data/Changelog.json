@@ -1,5 +1,13 @@
 [
   {
+    "id": "1.1.5",
+    "title": "v1.1.5",
+    "text": [
+      "- Added corruptions tab with filtering capabilities by item type",
+      "- This feature is still in beta and will be tweaked"
+    ]
+  },
+  {
     "id": "1.1.4",
     "title": "v1.1.4",
     "text": [

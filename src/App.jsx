@@ -35,7 +35,7 @@ import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
-const PARSER_VERSION = "1.1.4";
+const PARSER_VERSION = "1.1.5";
 
 const TABS = {
     weapons: "Weapons",
@@ -44,6 +44,7 @@ const TABS = {
     runewords: "Runewords",
     affixes: "Affixes",
     sacreds: "Sacreds",
+    corruptions: "Corruptions",
     skills: "Skills",
     cube: "Cube Recipes",
     changes: "Standard mode",
@@ -57,7 +58,7 @@ const ALL_RUNES = ["El", "Eld", "Tir", "Nef", "Eth", "Ith", "Tal", "Ral", "Ort",
 
 const PROP_HIGHLIGHT_RULES = [{test: /corrupted/i, className: "propRed"},];
 
-const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds", "cube", "changes", "help"];
+const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds", "corruptions", "cube", "changes", "help"];
 
 const WEAPON_ICON_MAP = {
     sword: SwordIcon,
@@ -662,6 +663,10 @@ function buildSearchTextForItem(tab, it) {
         const ing = sacredIngredients(it).join("\n").toLowerCase();
         const props = sacredPropertiesText(it).toLowerCase();
         return `${name}\n${ing}\n${props}`;
+    }
+
+    if (tab === "corruptions") {
+        return n(it?.displayName).toLowerCase();
     }
 
     if (tab === "affixes") {
@@ -1819,6 +1824,50 @@ function useIsMobile(maxWidth = 980) {
     return isMobile;
 }
 
+function CorruptionsTable({items}) {
+    return (
+        <div className="affixTableWrapper corruptionsTableWrapper">
+            <div className="affixPager">
+                <span>{items.length} corruptions</span>
+            </div>
+
+            <div className="affixTableScroll">
+                <table className="affixTable corruptionsTable">
+                    <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Corruption</th>
+                        <th>Chance</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {items.length === 0 ? (
+                        <tr>
+                            <td colSpan={3} className="emptyState">
+                                No corruptions match your filters.
+                            </td>
+                        </tr>
+                    ) : (
+                        items.map((it, idx) => (
+                            <tr key={`${idx}-${n(it?.displayName)}-${n(it?.chance)}`}>
+                                <td>{n(it?.displayName)}</td>
+                                <td className="affixAttr">
+                                    {Array.isArray(it?.corruptionProperties) && it.corruptionProperties.length
+                                        ? it.corruptionProperties.join("\n")
+                                        : "—"}
+                                </td>
+                                <td>{n(it?.chance)}%</td>
+                            </tr>
+                        ))
+                    )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
 function AffixesPanel({data, loading, error, sort, onChangeSort}) {
     const [page, setPage] = React.useState(0);
     const isMobile = useIsMobile(895);
@@ -2337,7 +2386,7 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
 }
 
 function TabsBar({tab, setTab}) {
-    const mainKeys = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds"];
+    const mainKeys = ["weapons", "armors", "uniques", "runewords", "affixes", "skills", "sacreds", "corruptions"];
     const secondaryKeys = ["cube", "changes", "damnation", "calculators"];
 
     return (<>
@@ -2406,6 +2455,7 @@ export default function App() {
     const affixes = useJson("Affixes.json");
     const skills = useJson("Skills.json");
     const damnation = useJson("Damnation.json");
+    const corruptions = useJson("Corruptions.json");
 
     const INFO_OPEN_STORAGE_KEY = "the-archivist-v1";
     const searchInputRef = React.useRef(null);
@@ -2429,7 +2479,7 @@ export default function App() {
     const info = INFO_BY_TAB[tab] || {title: "About", text: ""};
     const infoOpen = !!infoOpenByTab[tab];
 
-    const dataset = tab === "weapons" ? weapons : tab === "armors" ? armors : tab === "uniques" ? uniques : tab === "runewords" ? runewords : tab === "sacreds" ? sacreds : tab === "affixes" ? affixes : tab === "skills" ? skills : weapons; // fallback
+    const dataset = tab === "weapons" ? weapons : tab === "armors" ? armors : tab === "uniques" ? uniques : tab === "runewords" ? runewords : tab === "sacreds" ? sacreds : tab === "affixes" ? affixes : tab === "skills" ? skills : tab === "corruptions" ? corruptions : weapons; // fallback
 
     function toggleRuneFilter(rune) {
         setSelectedRunes((prev) =>
@@ -2588,6 +2638,10 @@ export default function App() {
             return Array.from(new Set(all)).sort();
         }
 
+        if (tab === "corruptions") {
+            return [...new Set(items.map((it) => n(it?.displayName)).filter(Boolean))].sort();
+        }
+
         const all = items.flatMap(sacredTypes);
         return Array.from(new Set(all)).sort();
     }, [items, tab]);
@@ -2726,6 +2780,12 @@ export default function App() {
                     if (!it?.suffix) return false;
                 } else if (affixTypeValue === "Prefix") {
                     if (it?.suffix) return false;
+                }
+            }
+
+            if (tab === "corruptions") {
+                if (typeValue && n(it?.displayName) !== typeValue) {
+                    return false;
                 }
             }
 
@@ -3080,6 +3140,38 @@ export default function App() {
                     search={cubeSearch}
                     onLink={handleMarkdownAppLink}
                 />
+            </>) : tab === "corruptions" ? (<>
+                <div className="filtersStack">
+                    <FiltersBar
+                        search={search}
+                        setSearch={setSearch}
+                        typeValue={typeValue}
+                        setTypeValue={setTypeValue}
+                        tierValue={tierValue}
+                        setTierValue={setTierValue}
+                        socketsValue={socketsValue}
+                        setSocketsValue={setSocketsValue}
+                        uberValue={uberValue}
+                        setUberValue={setUberValue}
+                        hellforgedValue={hellforgedValue}
+                        setHellforgedValue={setHellforgedValue}
+                        types={typeOptions}
+                        tiers={tierOptions}
+                        showSockets={showSockets}
+                        showUber={tab === "uniques"}
+                        typePlaceholder={typePlaceholder}
+                        searchInputRef={searchInputRef}
+                        showTier={tab !== "runewords" && tab !== "sacreds" && tab !== "affixes" && tab !== "corruptions"}
+                        showHighlight={tab === "uniques" || tab === "runewords" || tab === "weapons" || tab === "armors"}
+                        highlightOnly={highlightOnly}
+                        setHighlightOnly={setHighlightOnly}
+                        showAffixType={tab === "affixes"}
+                        affixTypeValue={affixTypeValue}
+                        setAffixTypeValue={setAffixTypeValue}
+                        showHellforged={tab === "uniques"}
+                    />
+                </div>
+                <CorruptionsTable items={filtered}/>
             </>) : tab === "skills" ? (<>
                 <div className="filtersStack">
                     <div className="filtersPanel">
