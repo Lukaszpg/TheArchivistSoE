@@ -1824,11 +1824,55 @@ function useIsMobile(maxWidth = 980) {
     return isMobile;
 }
 
-function CorruptionsTable({items}) {
+function CorruptionsTable({ items }) {
+    const PAGE_SIZE = 50;
+    const [page, setPage] = React.useState(1);
+
+    React.useEffect(() => {
+        setPage(1);
+    }, [items]);
+
+    const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+    const safePage = Math.min(page, totalPages);
+
+    const pageItems = React.useMemo(() => {
+        const start = (safePage - 1) * PAGE_SIZE;
+        return items.slice(start, start + PAGE_SIZE);
+    }, [items, safePage]);
+
     return (
-        <div className="affixTableWrapper corruptionsTableWrapper">
+        <div className="affixTableWrapper">
             <div className="affixPager">
-                <span>{items.length} corruptions</span>
+                <div>
+                    <div className="helpTitle">Corruptions</div>
+                    <div>
+                        Showing {(safePage - 1) * PAGE_SIZE + 1}-{Math.min(safePage * PAGE_SIZE, items.length)} of {items.length}
+                    </div>
+                </div>
+
+                <div className="affixPagerRight">
+                    <button
+                        type="button"
+                        className="btn affixPagerBtn"
+                        disabled={safePage <= 1}
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                        ‹ Prev
+                    </button>
+
+                    <span className="affixPagerInfo">
+                        Page {safePage} / {totalPages}
+                    </span>
+
+                    <button
+                        type="button"
+                        className="btn affixPagerBtn"
+                        disabled={safePage >= totalPages}
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    >
+                        Next ›
+                    </button>
+                </div>
             </div>
 
             <div className="affixTableScroll">
@@ -1842,25 +1886,17 @@ function CorruptionsTable({items}) {
                     </thead>
 
                     <tbody>
-                    {items.length === 0 ? (
-                        <tr>
-                            <td colSpan={3} className="emptyState">
-                                No corruptions match your filters.
+                    {pageItems.map((it, idx) => (
+                        <tr key={`${safePage}-${idx}-${n(it?.displayName)}-${n(it?.chance)}`}>
+                            <td>{n(it?.displayName)}</td>
+                            <td className="affixAttr">
+                                {Array.isArray(it?.corruptionProperties) && it.corruptionProperties.length
+                                    ? it.corruptionProperties.join("\n")
+                                    : "—"}
                             </td>
+                            <td className="corruptionChance">{n(it?.chance)}%</td>
                         </tr>
-                    ) : (
-                        items.map((it, idx) => (
-                            <tr key={`${idx}-${n(it?.displayName)}-${n(it?.chance)}`}>
-                                <td>{n(it?.displayName)}</td>
-                                <td className="affixAttr">
-                                    {Array.isArray(it?.corruptionProperties) && it.corruptionProperties.length
-                                        ? it.corruptionProperties.join("\n")
-                                        : "—"}
-                                </td>
-                                <td>{n(it?.chance)}%</td>
-                            </tr>
-                        ))
-                    )}
+                    ))}
                     </tbody>
                 </table>
             </div>
@@ -3171,7 +3207,9 @@ export default function App() {
                         showHellforged={tab === "uniques"}
                     />
                 </div>
-                <CorruptionsTable items={filtered}/>
+                <div className="affixPanel corruptionsPanel">
+                    <CorruptionsTable items={filtered} />
+                </div>
             </>) : tab === "skills" ? (<>
                 <div className="filtersStack">
                     <div className="filtersPanel">

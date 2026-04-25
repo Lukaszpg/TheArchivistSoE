@@ -842,10 +842,32 @@ button.btn {
 /* Corruptions table                                                          */
 /* -------------------------------------------------------------------------- */
 
-.corruptionsPanel,
-.corruptionsTableWrapper {
+.affixPanel,
+.corruptionsPanel {
     grid-column: 1 / -1;
     width: 100%;
+    min-width: 0;
+
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.corruptionsTable th:first-child,
+.corruptionsTable td:first-child {
+    width: 180px;
+}
+
+.corruptionsTable th:last-child,
+.corruptionsTable td:last-child {
+    width: 110px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.corruptionChance {
+    color: var(--c-white);
 }
 
 /* -------------------------------------------------------------------------- */
