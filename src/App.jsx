@@ -2507,6 +2507,7 @@ export default function App() {
     const changesSearchInputRef = React.useRef(null);
     const skipFilterResetRef = React.useRef(false);
     const [pendingLinkTarget, setPendingLinkTarget] = useState(null);
+    const [showTopButton, setShowTopButton] = useState(false);
     const [tab, setTab] = useState("weapons");
 
     const [affixSort, setAffixSort] = useState({
@@ -2522,6 +2523,21 @@ export default function App() {
     const infoOpen = !!infoOpenByTab[tab];
 
     const dataset = tab === "weapons" ? weapons : tab === "armors" ? armors : tab === "uniques" ? uniques : tab === "runewords" ? runewords : tab === "sacreds" ? sacreds : tab === "affixes" ? affixes : tab === "skills" ? skills : tab === "corruptions" ? corruptions : weapons; // fallback
+
+    useEffect(() => {
+        const onScroll = () => {
+            setShowTopButton(window.scrollY > 400);
+        };
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
+
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+
+    function goToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
     function toggleRuneFilter(rune) {
         setSelectedRunes((prev) =>
@@ -3469,5 +3485,17 @@ export default function App() {
                 >UI version: v{APP_VERSION}</span>
             </div>
         </footer>
+
+        {showTopButton && (
+            <button
+                type="button"
+                className="goTopBtn"
+                onClick={goToTop}
+                aria-label="Go to top"
+                title="Go to top"
+            >
+                ↑
+            </button>
+        )}
     </div>);
 }

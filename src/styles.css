@@ -838,6 +838,46 @@ button.btn {
     transform: rotate(45deg);
 }
 
+.goTopBtn {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1000;
+
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+
+    cursor: pointer;
+    border: 1px solid rgba(202, 161, 74, 0.55);
+    background: linear-gradient(
+            180deg,
+            rgba(202, 161, 74, 0.3),
+            rgba(107, 75, 22, 0.3)
+    );
+    color: var(--c-white);
+
+    font: inherit;
+    font-size: 24px;
+    font-weight: 900;
+
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.goTopBtn:hover {
+    filter: brightness(1.12);
+}
+
+@media (max-width: 700px) {
+    .goTopBtn {
+        right: 14px;
+        bottom: 14px;
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+    }
+}
+
 /* -------------------------------------------------------------------------- */
 /* Corruptions table                                                          */
 /* -------------------------------------------------------------------------- */
