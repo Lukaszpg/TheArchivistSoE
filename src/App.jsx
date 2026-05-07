@@ -35,7 +35,7 @@ import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
-const PARSER_VERSION = "1.1.5";
+const GAME_VERSION = "12.1.5";
 
 const TABS = {
     weapons: "Weapons",
@@ -3476,13 +3476,13 @@ export default function App() {
                     className="footerRight"
                     onClick={handleVersionClick}
                     style={{cursor: "pointer"}}
-                >Parser version: v{PARSER_VERSION}</span>
+                >Mod version: v{GAME_VERSION}</span>
 
                 <span
                     className="footerRight"
                     onClick={handleVersionClick}
                     style={{cursor: "pointer"}}
-                >UI version: v{APP_VERSION}</span>
+                >Wiki version: v{APP_VERSION}</span>
             </div>
         </footer>
 
