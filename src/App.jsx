@@ -36,6 +36,7 @@ import SacredIcon from "./icons/sacred.svg";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
 const GAME_VERSION = "12.1.5";
+const LATEST_RELEASE = "https://github.com/Lukaszpg/PD2-Sanctuary-of-Exile/releases/tag/v12.1.5";
 
 const TABS = {
     weapons: "Weapons",
@@ -3472,11 +3473,11 @@ export default function App() {
                     <span className="footerLeft">by <a className="footerGitLink" target="_blank"
                                                        href="https://github.com/Lukaszpg">MindH1ve</a></span>
 
-                <span
+                <a
                     className="footerRight"
-                    onClick={handleVersionClick}
+                    href={LATEST_RELEASE}
                     style={{cursor: "pointer"}}
-                >Mod version: v{GAME_VERSION}</span>
+                >Mod version: v{GAME_VERSION}</a>
 
                 <span
                     className="footerRight"
