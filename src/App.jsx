@@ -3476,6 +3476,7 @@ export default function App() {
                 <a
                     className="footerRight"
                     href={LATEST_RELEASE}
+                    target="_blank"
                     style={{cursor: "pointer"}}
                 >Mod version: v{GAME_VERSION}</a>
 
